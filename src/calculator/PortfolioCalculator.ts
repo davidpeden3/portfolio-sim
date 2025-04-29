@@ -58,8 +58,8 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         netPortfolioValue: (initialShareCount * initialSharePrice) - loanAmount
     });
 
-    // --- Months 1..240 ---
-    for (let month = 1; month <= 240; month++) {
+    // --- Months 1..amortizationMonths ---
+    for (let month = 1; month <= amortizationMonths; month++) {
         const prev = amortization[month - 1];
 
         const updatedSharePrice = prev.sharePrice * (1 + (monthlyAppreciationPercent / 100));
@@ -74,9 +74,17 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         const marginalTaxRate = lookupTaxRate(baseIncome, newYtdDistribution);
         const marginalTaxesWithheld = withholdTaxes ? distribution * marginalTaxRate : 0;
 
-        const surplusForDrip = distribution - (marginalTaxesWithheld + monthlyLoanPayment);
-
-        const additionalPrincipal = Math.min(surplusForDrip * (surplusForDripToPrincipalPercent / 100), prev.loanPrincipal);
+        // Determine if loan is paid off
+        const loanIsActive = prev.loanPrincipal > 0;
+        
+        // Only apply loan payments if loan is still active
+        const loanPayment = loanIsActive ? monthlyLoanPayment : 0;
+        const surplusForDrip = distribution - (marginalTaxesWithheld + loanPayment);
+        
+        // Only apply additional principal if loan is still active
+        const additionalPrincipal = loanIsActive 
+            ? Math.min(surplusForDrip * (surplusForDripToPrincipalPercent / 100), prev.loanPrincipal) 
+            : 0;
 
         const actualDrip = surplusForDrip - additionalPrincipal;
 
@@ -85,12 +93,15 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
 
         const portfolioValue = totalShares * updatedSharePrice;
 
-        const updatedLoanPrincipal = Math.round(
-            Math.max(
-                (prev.loanPrincipal * (1 + monthlyLoanInterestRate)) - monthlyLoanPayment - additionalPrincipal,
-                0
-            ) * 100
-        ) / 100;
+        // Calculate updated loan principal only if the loan is still active
+        const updatedLoanPrincipal = loanIsActive
+            ? Math.round(
+                Math.max(
+                    (prev.loanPrincipal * (1 + monthlyLoanInterestRate)) - loanPayment - additionalPrincipal,
+                    0
+                ) * 100
+              ) / 100
+            : 0;
 
         const netPortfolioValue = portfolioValue - updatedLoanPrincipal;
 
@@ -101,7 +112,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             distribution,
             ytdDistribution: newYtdDistribution,
             marginalTaxesWithheld,
-            loanPayment: monthlyLoanPayment,
+            loanPayment,
             surplusForDrip,
             additionalPrincipal,
             actualDrip,
@@ -112,10 +123,6 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             loanPrincipal: updatedLoanPrincipal,
             netPortfolioValue
         });
-
-        if (updatedLoanPrincipal <= 0) {
-            break;
-        }
     }
 
     const loanPayoffEntry = amortization.find(entry => entry.loanPrincipal <= 0);
