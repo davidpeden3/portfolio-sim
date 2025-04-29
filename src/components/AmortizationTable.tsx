@@ -6,52 +6,54 @@ interface AmortizationTableProps {
 
 const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     return (
-        <div style={{ marginBottom: "2rem", maxHeight: "500px", overflowY: "auto" }}>
-            <h2>Amortization Schedule</h2>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Share Count</th>
-                        <th>Dividend</th>
-                        <th>Distribution</th>
-                        <th>YTD Distribution</th>
-                        <th>Taxes Withheld</th>
-                        <th>Loan Payment</th>
-                        <th>Surplus for DRIP</th>
-                        <th>Additional Principal</th>
-                        <th>Actual DRIP</th>
-                        <th>Share Price</th>
-                        <th>New Shares</th>
-                        <th>Total Shares</th>
-                        <th>Portfolio Value</th>
-                        <th>Loan Principal</th>
-                        <th>Net Portfolio Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {amortization.map((entry) => (
-                        <tr key={entry.month}>
-                            <td>{entry.month}</td>
-                            <td>{entry.shareCount.toFixed(2)}</td>
-                            <td>{entry.dividend.toFixed(2)}</td>
-                            <td>{entry.distribution.toFixed(2)}</td>
-                            <td>{entry.ytdDistribution.toFixed(2)}</td>
-                            <td>{entry.marginalTaxesWithheld.toFixed(2)}</td>
-                            <td>{entry.loanPayment.toFixed(2)}</td>
-                            <td>{entry.surplusForDrip.toFixed(2)}</td>
-                            <td>{entry.additionalPrincipal.toFixed(2)}</td>
-                            <td>{entry.actualDrip.toFixed(2)}</td>
-                            <td>{entry.sharePrice.toFixed(2)}</td>
-                            <td>{entry.newSharesFromDrip.toFixed(2)}</td>
-                            <td>{entry.totalShares.toFixed(2)}</td>
-                            <td>{entry.portfolioValue.toFixed(2)}</td>
-                            <td>{entry.loanPrincipal.toFixed(2)}</td>
-                            <td>{entry.netPortfolioValue.toFixed(2)}</td>
+        <div className="mb-8 max-h-[500px] overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Amortization Schedule</h2>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Month</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Share Count</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Dividend</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Distribution</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">YTD Distribution</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Taxes Withheld</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Loan Payment</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Surplus for DRIP</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Additional Principal</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Actual DRIP</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Share Price</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">New Shares</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Total Shares</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Portfolio Value</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Loan Principal</th>
+                            <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">Net Portfolio Value</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {amortization.map((entry, index) => (
+                            <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.month}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.dividend.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.distribution.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.ytdDistribution.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.marginalTaxesWithheld.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.loanPayment.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.surplusForDrip.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.additionalPrincipal.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.actualDrip.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.sharePrice.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.portfolioValue.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.loanPrincipal.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.netPortfolioValue.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

@@ -15,28 +15,50 @@ interface PortfolioChartProps {
 }
 
 const PortfolioChart = ({ amortization }: PortfolioChartProps) => {
-    const data = amortization.map((entry) => ({
+    // Prepare data for chart
+    const chartData = amortization.map(entry => ({
         month: entry.month,
-        portfolioValue: parseFloat(entry.portfolioValue.toFixed(2)),
-        loanPrincipal: parseFloat(entry.loanPrincipal.toFixed(2)),
-        netPortfolioValue: parseFloat(entry.netPortfolioValue.toFixed(2)),
+        portfolioValue: Number(entry.portfolioValue.toFixed(2)),
+        loanPrincipal: Number(entry.loanPrincipal.toFixed(2)),
+        netPortfolioValue: Number(entry.netPortfolioValue.toFixed(2))
     }));
 
     return (
-        <div style={{ marginBottom: "2rem", height: "400px" }}>
-            <h2>Portfolio Value Over Time</h2>
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
-                    <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="portfolioValue" stroke="#8884d8" name="Portfolio Value" />
-                    <Line type="monotone" dataKey="loanPrincipal" stroke="#82ca9d" name="Loan Principal" />
-                    <Line type="monotone" dataKey="netPortfolioValue" stroke="#ff7300" name="Net Portfolio Value" />
-                </LineChart>
-            </ResponsiveContainer>
+        <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Portfolio Value Over Time</h2>
+            <div style={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer>
+                    <LineChart
+                        data={chartData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Tooltip />
+                        <Legend />
+                        <Line 
+                            type="monotone" 
+                            dataKey="portfolioValue" 
+                            name="Portfolio Value" 
+                            stroke="#3b82f6" 
+                            activeDot={{ r: 8 }} 
+                        />
+                        <Line 
+                            type="monotone" 
+                            dataKey="loanPrincipal" 
+                            name="Loan Principal" 
+                            stroke="#ef4444" 
+                        />
+                        <Line 
+                            type="monotone" 
+                            dataKey="netPortfolioValue" 
+                            name="Net Portfolio Value" 
+                            stroke="#10b981" 
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 };

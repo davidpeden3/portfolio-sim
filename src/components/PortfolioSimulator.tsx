@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { calculatePortfolio } from "../calculator/PortfolioCalculator";
+import { AmortizationEntry } from "../models/AmortizationEntry";
+import { CalculatedSummary } from "../models/CalculatedSummary";
+import PortfolioChart from "./PortfolioChart";
+import AmortizationTable from "./AmortizationTable";
+import CalculatedSummaryDisplay from "./CalculatedSummary";
 
 export function PortfolioSimulator() {
   const [formData, setFormData] = useState({
@@ -14,6 +20,11 @@ export function PortfolioSimulator() {
     withholdTaxes: true,
   });
 
+  const [results, setResults] = useState<{
+    summary: CalculatedSummary;
+    amortization: AmortizationEntry[];
+  } | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -24,7 +35,24 @@ export function PortfolioSimulator() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Trigger calculation here
+    
+    // Map form data to assumptions
+    const assumptions = {
+      initialInvestment: formData.initialInvestment,
+      initialSharePrice: formData.initialSharePrice,
+      dividendYieldPer4wPercent: formData.dividendYield4w,
+      monthlyAppreciationPercent: formData.monthlyAppreciation,
+      loanAmount: formData.loanAmount,
+      annualInterestRatePercent: formData.annualInterestRate,
+      amortizationMonths: formData.amortizationMonths,
+      baseIncome: formData.baseIncome,
+      surplusForDripToPrincipalPercent: formData.surplusForDripPercent,
+      withholdTaxes: formData.withholdTaxes,
+    };
+    
+    // Calculate results
+    const calculationResults = calculatePortfolio(assumptions);
+    setResults(calculationResults);
   };
 
   return (
@@ -161,6 +189,16 @@ export function PortfolioSimulator() {
             </button>
           </div>
         </form>
+
+        {results && (
+          <div className="mt-8">
+            <div className="border-t pt-8">
+              <CalculatedSummaryDisplay summary={results.summary} />
+              <PortfolioChart amortization={results.amortization} />
+              <AmortizationTable amortization={results.amortization} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
