@@ -3,4 +3,5 @@ export interface CalculatedSummary {
     annualizedDividendYieldPercent: number;
     monthlyLoanPayment: number;
     loanPayoffMonth: number;
+    yearlyPortfolioValues: { month: number; value: number }[];
 }

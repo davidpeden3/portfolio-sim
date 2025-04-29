@@ -127,12 +127,21 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
 
     const loanPayoffEntry = amortization.find(entry => entry.loanPrincipal <= 0);
     const loanPayoffMonth = loanPayoffEntry ? loanPayoffEntry.month : amortizationMonths;
+    
+    // Extract yearly portfolio values
+    const yearlyPortfolioValues = amortization
+        .filter(entry => entry.month > 0 && entry.month % 12 === 0)
+        .map(entry => ({ 
+            month: entry.month, 
+            value: entry.netPortfolioValue
+        }));
 
     const summary: CalculatedSummary = {
         initialShareCount,
         annualizedDividendYieldPercent,
         monthlyLoanPayment,
-        loanPayoffMonth
+        loanPayoffMonth,
+        yearlyPortfolioValues
     };
 
     return { summary, amortization };
