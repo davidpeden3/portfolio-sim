@@ -34,21 +34,21 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                         {amortization.map((entry, index) => (
                             <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.month}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.dividend.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.distribution.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.ytdDistribution.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.marginalTaxesWithheld.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.loanPayment.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.surplusForDrip.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.additionalPrincipal.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.actualDrip.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.sharePrice.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.portfolioValue.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.loanPrincipal.toFixed(2)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.netPortfolioValue.toFixed(2)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.dividend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.distribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.ytdDistribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.marginalTaxesWithheld.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.surplusForDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.additionalPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.actualDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.sharePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.portfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.netPortfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                             </tr>
                         ))}
                     </tbody>

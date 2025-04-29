@@ -13,15 +13,15 @@ const CalculatedSummaryDisplay = ({ summary }: CalculatedSummaryProps) => {
                     <tbody className="divide-y divide-gray-200">
                         <tr>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/2">Initial Share Count:</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{summary.initialShareCount.toFixed(2)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{summary.initialShareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         </tr>
                         <tr>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Annualized Dividend Yield (%):</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{summary.annualizedDividendYieldPercent.toFixed(2)}%</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{summary.annualizedDividendYieldPercent.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</td>
                         </tr>
                         <tr>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Monthly Loan Payment:</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${summary.monthlyLoanPayment.toFixed(2)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${summary.monthlyLoanPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         </tr>
                         <tr>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Loan Payoff Month:</td>
