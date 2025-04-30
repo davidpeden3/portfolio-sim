@@ -39,12 +39,12 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         
         // Add sticky class for the first column
         if (colIndex === 0) {
-            className += " sticky left-0 z-30";
+            className += " sticky left-0 z-50";
         }
         
         // Add hover highlight for the column
         if (colIndex === hoveredColumn) {
-            className += " bg-blue-100 bg-opacity-50";
+            className += " bg-blue-200 bg-opacity-70";
         }
         
         return className;
@@ -56,24 +56,27 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         
         let className = baseClass;
         
-        // Handle sticky first column
-        if (colIndex === 0) {
-            className += ` sticky left-0 z-10 ${rowBgClass}`;
-        }
+        // Always apply base background first
+        className += colIndex === 0 ? ` sticky left-0 ${rowBgClass}` : ` ${rowBgClass}`;
         
-        // Add row highlight
+        // Layer 1: Row highlight (base layer)
         if (rowIndex === hoveredRow) {
-            className += " bg-blue-100 bg-opacity-30";
+            className += " bg-blue-200 bg-opacity-70";
         }
         
-        // Add column highlight
+        // Layer 2: Column highlight
         if (colIndex === hoveredColumn) {
-            className += " bg-blue-100 bg-opacity-30";
+            className += " bg-blue-200 bg-opacity-70";
         }
         
-        // Add intersection highlight (stronger opacity)
+        // Layer 3: Intersection highlight (stronger opacity to create stacking effect)
         if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
-            className += " bg-blue-100 bg-opacity-50";
+            className += " bg-blue-300 bg-opacity-90";
+        }
+        
+        // Finally, add z-index to ensure month column stays on top regardless of highlight
+        if (colIndex === 0) {
+            className += " z-50";
         }
         
         return className;
@@ -81,46 +84,48 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     
     // Render the amortization table with either yearly data or full detail
     const renderAmortizationTable = (entries: AmortizationEntry[]) => (
-        <div className="max-h-[500px] overflow-y-auto relative">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0 z-20">
-                    <tr>
-                        {columns.map((column, colIndex) => (
-                            <th 
-                                key={column.key}
-                                className={getHeaderCellClass(colIndex)}
-                                onMouseEnter={() => setHoveredColumn(colIndex)}
-                                onMouseLeave={() => setHoveredColumn(null)}
-                            >
-                                {column.label}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {entries.map((entry, rowIndex) => (
-                        <tr 
-                            key={entry.month} 
-                            className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                            onMouseEnter={() => setHoveredRow(rowIndex)}
-                            onMouseLeave={() => setHoveredRow(null)}
-                        >
+        <div className="max-h-[500px] overflow-auto">
+            <div className="isolation-auto">
+                <table className="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
+                    <thead className="bg-gray-50 sticky top-0 z-20">
+                        <tr>
                             {columns.map((column, colIndex) => (
-                                <td 
-                                    key={`${entry.month}-${column.key}`}
-                                    className={getDataCellClass(rowIndex, colIndex, rowIndex % 2 === 0)}
+                                <th 
+                                    key={column.key}
+                                    className={getHeaderCellClass(colIndex)}
                                     onMouseEnter={() => setHoveredColumn(colIndex)}
                                     onMouseLeave={() => setHoveredColumn(null)}
                                 >
-                                    {column.key === 'month' 
-                                        ? entry.month 
-                                        : column.format ? column.format(entry[column.key as keyof AmortizationEntry] as number) : entry[column.key as keyof AmortizationEntry]}
-                                </td>
+                                    {column.label}
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {entries.map((entry, rowIndex) => (
+                            <tr 
+                                key={entry.month} 
+                                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                                onMouseEnter={() => setHoveredRow(rowIndex)}
+                                onMouseLeave={() => setHoveredRow(null)}
+                            >
+                                {columns.map((column, colIndex) => (
+                                    <td 
+                                        key={`${entry.month}-${column.key}`}
+                                        className={getDataCellClass(rowIndex, colIndex, rowIndex % 2 === 0)}
+                                        onMouseEnter={() => setHoveredColumn(colIndex)}
+                                        onMouseLeave={() => setHoveredColumn(null)}
+                                    >
+                                        {column.key === 'month' 
+                                            ? entry.month 
+                                            : column.format ? column.format(entry[column.key as keyof AmortizationEntry] as number) : entry[column.key as keyof AmortizationEntry]}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 
@@ -152,7 +157,7 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                 </button>
             </div>
             
-            <div className="overflow-x-auto">
+            <div className="overflow-hidden">
                 {activeTab === "summary" 
                     ? renderAmortizationTable(yearlyAmortization)
                     : renderAmortizationTable(amortization)
