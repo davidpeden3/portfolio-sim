@@ -35,21 +35,21 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     
     // CSS class helpers for highlighting
     const getHeaderCellClass = (colIndex: number) => {
-        let className = "px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50";
+        // Base styling without background
+        let className = "px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
         
         // Add sticky class for the first column
         if (colIndex === 0) {
             className += " sticky left-0 z-20";
         }
         
-        // Add hover highlight for the column
+        // Add background last to ensure it's not overridden
         if (colIndex === hoveredColumn) {
-            if (colIndex === 0) {
-                // Make sure month header's background is solid for hover state
-                className = className.replace("bg-gray-50", "bg-green-200 bg-opacity-50");
-            } else {
-                className += " bg-green-200 bg-opacity-50";
-            }
+            // Column is highlighted
+            className += " bg-green-100";
+        } else {
+            // Normal header background
+            className += " bg-gray-50";
         }
         
         return className;
@@ -57,46 +57,29 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     
     const getDataCellClass = (rowIndex: number, colIndex: number, isEvenRow: boolean) => {
         const baseClass = "px-3 py-2 whitespace-nowrap text-sm text-gray-900";
-        const rowBgClass = isEvenRow ? "bg-white" : "bg-gray-50";
         
         // Start with base styling
         let className = baseClass;
         
-        // Special handling for the first column (month)
+        // Apply sticky positioning for month column
         if (colIndex === 0) {
-            // Start with basic styling for month column
             className += " sticky left-0 z-20";
-            
-            // Apply base background
-            if (rowIndex === hoveredRow && hoveredColumn === 0) {
-                // Intersection of row and column hover on month
-                className += " bg-green-300";
-            } else if (rowIndex === hoveredRow) {
-                // Row hover on month
-                className += " bg-green-100";
-            } else if (colIndex === hoveredColumn) {
-                // Column hover on month
-                className += " bg-green-100";
-            } else {
-                // Default background
-                className += ` ${rowBgClass}`;
-            }
+        }
+        
+        // Determine cell background
+        // First determine if this cell needs highlighting
+        if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
+            // Intersection highlight (strongest)
+            className += " bg-green-300";
+        } else if (rowIndex === hoveredRow) {
+            // Row highlight
+            className += " bg-green-100";
+        } else if (colIndex === hoveredColumn) {
+            // Column highlight
+            className += " bg-green-100";
         } else {
-            // For all other columns
-            // Apply base background
-            className += ` ${rowBgClass}`;
-            
-            // Apply hover styles
-            if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
-                // Intersection highlight
-                className += " bg-green-300";
-            } else if (rowIndex === hoveredRow) {
-                // Row highlight
-                className += " bg-green-200 bg-opacity-50";
-            } else if (colIndex === hoveredColumn) {
-                // Column highlight
-                className += " bg-green-200 bg-opacity-50";
-            }
+            // No highlighting, apply normal row striping
+            className += isEvenRow ? " bg-white" : " bg-gray-50";
         }
         
         return className;
