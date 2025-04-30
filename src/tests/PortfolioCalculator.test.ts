@@ -10,6 +10,7 @@ function round2(value: number): number {
 describe('portfolioCalculator', () => {
   it('should correctly calculate amortization schedule and summary for sample data', () => {
     const assumptions: Assumptions = {
+      initialShareCount: 0,
       initialInvestment: 200000,
       initialSharePrice: 22.50,
       dividendYieldPer4wPercent: 5.0,

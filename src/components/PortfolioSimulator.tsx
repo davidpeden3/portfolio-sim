@@ -8,6 +8,7 @@ import CalculatedSummaryDisplay from "./CalculatedSummary";
 
 export function PortfolioSimulator() {
   const [formData, setFormData] = useState({
+    initialShareCount: 0,
     initialInvestment: 200000,
     initialSharePrice: 22.5,
     dividendYield4w: 5,
@@ -38,6 +39,7 @@ export function PortfolioSimulator() {
     
     // Map form data to assumptions
     const assumptions = {
+      initialShareCount: formData.initialShareCount,
       initialInvestment: formData.initialInvestment,
       initialSharePrice: formData.initialSharePrice,
       dividendYieldPer4wPercent: formData.dividendYield4w,
@@ -63,6 +65,17 @@ export function PortfolioSimulator() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left column */}
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Initial Share Count</label>
+              <input
+                type="number"
+                name="initialShareCount"
+                value={formData.initialShareCount}
+                onChange={handleChange}
+                step="0.01"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Initial Investment</label>
               <input

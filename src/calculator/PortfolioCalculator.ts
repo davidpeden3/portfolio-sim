@@ -19,6 +19,7 @@ function lookupTaxRate(baseIncome: number, ytdDistribution: number): number {
 
 export function calculatePortfolio(assumptions: Assumptions): { summary: CalculatedSummary, amortization: AmortizationEntry[] } {
     const {
+        initialShareCount: preexistingShares,
         initialInvestment,
         initialSharePrice,
         dividendYieldPer4wPercent,
@@ -31,7 +32,9 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         withholdTaxes
     } = assumptions;
 
-    const initialShareCount = initialInvestment / initialSharePrice;
+    // Calculate shares from investment and add any pre-existing shares
+    const sharesFromInvestment = initialInvestment / initialSharePrice;
+    const initialShareCount = sharesFromInvestment + preexistingShares;
     const annualizedDividendYieldPercent = 13 * dividendYieldPer4wPercent;
     const monthlyLoanInterestRate = annualInterestRatePercent / 12 / 100;
     const monthlyLoanPayment = calculatePmt(monthlyLoanInterestRate, amortizationMonths, loanAmount);

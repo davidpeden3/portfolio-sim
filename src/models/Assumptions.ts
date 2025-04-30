@@ -1,4 +1,5 @@
 export interface Assumptions {
+    initialShareCount: number;
     initialInvestment: number;
     initialSharePrice: number;
     dividendYieldPer4wPercent: number;

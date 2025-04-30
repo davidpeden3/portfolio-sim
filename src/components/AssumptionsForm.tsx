@@ -7,6 +7,7 @@ interface AssumptionsFormProps {
 
 const AssumptionsForm = ({ onCalculate }: AssumptionsFormProps) => {
     const [form, setForm] = useState<Assumptions>({
+        initialShareCount: 0,
         initialInvestment: 200000,
         initialSharePrice: 22.5,
         dividendYieldPer4wPercent: 5,
@@ -35,6 +36,16 @@ const AssumptionsForm = ({ onCalculate }: AssumptionsFormProps) => {
     return (
         <form onSubmit={handleSubmit} style={{ marginBottom: "2rem" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <label>
+                    Initial Share Count:
+                    <input
+                        type="number"
+                        name="initialShareCount"
+                        value={form.initialShareCount}
+                        onChange={handleChange}
+                        step="0.01"
+                    />
+                </label>
                 <label>
                     Initial Investment:
                     <input
