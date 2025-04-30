@@ -39,12 +39,17 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         
         // Add sticky class for the first column
         if (colIndex === 0) {
-            className += " sticky left-0 z-50";
+            className += " sticky left-0 z-20";
         }
         
         // Add hover highlight for the column
         if (colIndex === hoveredColumn) {
-            className += " bg-blue-200 bg-opacity-70";
+            if (colIndex === 0) {
+                // Make sure month header's background is solid for hover state
+                className = className.replace("bg-gray-50", "bg-blue-100");
+            } else {
+                className += " bg-blue-200 bg-opacity-50";
+            }
         }
         
         return className;
@@ -60,7 +65,7 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         // Special handling for the first column (month)
         if (colIndex === 0) {
             // Start with basic styling for month column
-            className += " sticky left-0 z-50";
+            className += " sticky left-0 z-20";
             
             // Apply base background
             if (rowIndex === hoveredRow && hoveredColumn === 0) {
@@ -68,10 +73,10 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                 className += " bg-blue-300";
             } else if (rowIndex === hoveredRow) {
                 // Row hover on month
-                className += " bg-blue-200";
+                className += " bg-blue-100";
             } else if (colIndex === hoveredColumn) {
                 // Column hover on month
-                className += " bg-blue-200";
+                className += " bg-blue-100";
             } else {
                 // Default background
                 className += ` ${rowBgClass}`;
@@ -87,10 +92,10 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                 className += " bg-blue-300";
             } else if (rowIndex === hoveredRow) {
                 // Row highlight
-                className += " bg-blue-200";
+                className += " bg-blue-200 bg-opacity-50";
             } else if (colIndex === hoveredColumn) {
                 // Column highlight
-                className += " bg-blue-200";
+                className += " bg-blue-200 bg-opacity-50";
             }
         }
         
@@ -100,9 +105,9 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     // Render the amortization table with either yearly data or full detail
     const renderAmortizationTable = (entries: AmortizationEntry[]) => (
         <div className="max-h-[500px] overflow-auto">
-            <div className="isolation-auto">
-                <table className="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
-                    <thead className="bg-gray-50 sticky top-0 z-20">
+            <div className="relative">
+                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                    <thead className="bg-gray-50 sticky top-0 z-30">
                         <tr>
                             {columns.map((column, colIndex) => (
                                 <th 
