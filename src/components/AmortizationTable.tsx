@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 
 interface AmortizationTableProps {
@@ -5,60 +6,98 @@ interface AmortizationTableProps {
 }
 
 const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
+    const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
+    
+    // Filter yearly entries for summary tab (months where n % 12 === 0)
+    const yearlyAmortization = amortization.filter(entry => entry.month > 0 && entry.month % 12 === 0);
+    
+    // Render the amortization table with either yearly data or full detail
+    const renderAmortizationTable = (entries: AmortizationEntry[]) => (
+        <div className="max-h-[500px] overflow-y-auto relative">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0 z-20">
+                    <tr>
+                        {/* First cell is sticky in both directions */}
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky left-0 z-30">Month</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Count</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Dividend</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Distribution</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">YTD Distribution</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Taxes Withheld</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Payment</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Surplus for DRIP</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Additional Principal</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actual DRIP</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Price</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">New Shares</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Total Shares</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Portfolio Value</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Principal</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Net Portfolio Value</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {entries.map((entry, index) => (
+                        <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            {/* First column is sticky */}
+                            <td className={`px-3 py-2 whitespace-nowrap text-sm text-gray-900 sticky left-0 z-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                                {entry.month}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.dividend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.distribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.ytdDistribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.marginalTaxesWithheld.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.surplusForDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.additionalPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.actualDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.sharePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.portfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.netPortfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+
     return (
         <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Amortization Schedule</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Amortization Data</h2>
+            
+            {/* Tabs */}
+            <div className="flex border-b mb-4">
+                <button
+                    className={`py-2 px-4 font-medium ${
+                        activeTab === "summary"
+                            ? "text-blue-600 border-b-2 border-blue-600"
+                            : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setActiveTab("summary")}
+                >
+                    Yearly Summary
+                </button>
+                <button
+                    className={`py-2 px-4 font-medium ${
+                        activeTab === "detail"
+                            ? "text-blue-600 border-b-2 border-blue-600"
+                            : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setActiveTab("detail")}
+                >
+                    Full Detail
+                </button>
+            </div>
+            
             <div className="overflow-x-auto">
-                <div className="max-h-[500px] overflow-y-auto relative">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 sticky top-0 z-20">
-                            <tr>
-                                {/* First cell is sticky in both directions */}
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky left-0 z-30">Month</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Count</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Dividend</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Distribution</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">YTD Distribution</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Taxes Withheld</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Payment</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Surplus for DRIP</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Additional Principal</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actual DRIP</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Price</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">New Shares</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Total Shares</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Portfolio Value</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Principal</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Net Portfolio Value</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {amortization.map((entry, index) => (
-                                <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                    {/* First column is sticky */}
-                                    <td className={`px-3 py-2 whitespace-nowrap text-sm text-gray-900 sticky left-0 z-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                                        {entry.month}
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.dividend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.distribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.ytdDistribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.marginalTaxesWithheld.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.surplusForDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.additionalPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.actualDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.sharePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.portfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.netPortfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {activeTab === "summary" 
+                    ? renderAmortizationTable(yearlyAmortization)
+                    : renderAmortizationTable(amortization)
+                }
             </div>
         </div>
     );
