@@ -54,29 +54,44 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         const baseClass = "px-3 py-2 whitespace-nowrap text-sm text-gray-900";
         const rowBgClass = isEvenRow ? "bg-white" : "bg-gray-50";
         
+        // Start with base styling
         let className = baseClass;
         
-        // Always apply base background first
-        className += colIndex === 0 ? ` sticky left-0 ${rowBgClass}` : ` ${rowBgClass}`;
-        
-        // Layer 1: Row highlight (base layer)
-        if (rowIndex === hoveredRow) {
-            className += " bg-blue-200 bg-opacity-70";
-        }
-        
-        // Layer 2: Column highlight
-        if (colIndex === hoveredColumn) {
-            className += " bg-blue-200 bg-opacity-70";
-        }
-        
-        // Layer 3: Intersection highlight (stronger opacity to create stacking effect)
-        if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
-            className += " bg-blue-300 bg-opacity-90";
-        }
-        
-        // Finally, add z-index to ensure month column stays on top regardless of highlight
+        // Special handling for the first column (month)
         if (colIndex === 0) {
-            className += " z-50";
+            // Start with basic styling for month column
+            className += " sticky left-0 z-50";
+            
+            // Apply base background
+            if (rowIndex === hoveredRow && hoveredColumn === 0) {
+                // Intersection of row and column hover on month
+                className += " bg-blue-300";
+            } else if (rowIndex === hoveredRow) {
+                // Row hover on month
+                className += " bg-blue-200";
+            } else if (colIndex === hoveredColumn) {
+                // Column hover on month
+                className += " bg-blue-200";
+            } else {
+                // Default background
+                className += ` ${rowBgClass}`;
+            }
+        } else {
+            // For all other columns
+            // Apply base background
+            className += ` ${rowBgClass}`;
+            
+            // Apply hover styles
+            if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
+                // Intersection highlight
+                className += " bg-blue-300";
+            } else if (rowIndex === hoveredRow) {
+                // Row highlight
+                className += " bg-blue-200";
+            } else if (colIndex === hoveredColumn) {
+                // Column highlight
+                className += " bg-blue-200";
+            }
         }
         
         return className;
