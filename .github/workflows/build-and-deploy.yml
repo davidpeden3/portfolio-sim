@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0  # This gets all history for getting commit details
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
@@ -55,7 +55,7 @@ jobs:
         run: npm run build
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: dist
@@ -67,7 +67,7 @@ jobs:
   #   if: github.ref == 'refs/heads/main'
   #   steps:
   #     - name: Download build artifacts
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: build
   #         path: dist
