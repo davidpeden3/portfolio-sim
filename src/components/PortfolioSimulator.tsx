@@ -28,10 +28,21 @@ export function PortfolioSimulator() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : parseFloat(value),
-    }));
+    
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked,
+      }));
+    } else {
+      // For numeric inputs, handle empty string and convert to number
+      // Default to 0 if parsing fails or input is empty
+      const numValue = value === "" ? 0 : parseFloat(value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: isNaN(numValue) ? 0 : numValue,
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -3,14 +3,15 @@ import { useState } from "react";
 import { Assumptions } from "../models/Assumptions";
 import { CalculatedSummary } from "../models/CalculatedSummary";
 import { AmortizationEntry } from "../models/AmortizationEntry";
-import { calculatePortfolio } from "../calculator/portfolioCalculator";
+import { calculatePortfolio } from "../calculator/PortfolioCalculator";
 import AssumptionsForm from "../components/AssumptionsForm";
 import CalculatedSummaryDisplay from "../components/CalculatedSummary";
 import AmortizationTable from "../components/AmortizationTable";
 import PortfolioChart from "../components/PortfolioChart";
 
 const HomePage = () => {
-    const [assumptions, setAssumptions] = useState<Assumptions | null>(null);
+    // We use this state to track the current assumptions
+    const [, setAssumptions] = useState<Assumptions | null>(null);
     const [summary, setSummary] = useState<CalculatedSummary | null>(null);
     const [amortization, setAmortization] = useState<AmortizationEntry[]>([]);
 
