@@ -46,9 +46,9 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         if (colIndex === hoveredColumn) {
             if (colIndex === 0) {
                 // Make sure month header's background is solid for hover state
-                className = className.replace("bg-gray-50", "bg-blue-100");
+                className = className.replace("bg-gray-50", "bg-green-200 bg-opacity-50");
             } else {
-                className += " bg-blue-200 bg-opacity-50";
+                className += " bg-green-200 bg-opacity-50";
             }
         }
         
@@ -70,13 +70,13 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
             // Apply base background
             if (rowIndex === hoveredRow && hoveredColumn === 0) {
                 // Intersection of row and column hover on month
-                className += " bg-blue-300";
+                className += " bg-green-300";
             } else if (rowIndex === hoveredRow) {
                 // Row hover on month
-                className += " bg-blue-100";
+                className += " bg-green-100";
             } else if (colIndex === hoveredColumn) {
                 // Column hover on month
-                className += " bg-blue-100";
+                className += " bg-green-100";
             } else {
                 // Default background
                 className += ` ${rowBgClass}`;
@@ -89,13 +89,13 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
             // Apply hover styles
             if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
                 // Intersection highlight
-                className += " bg-blue-300";
+                className += " bg-green-300";
             } else if (rowIndex === hoveredRow) {
                 // Row highlight
-                className += " bg-blue-200 bg-opacity-50";
+                className += " bg-green-200 bg-opacity-50";
             } else if (colIndex === hoveredColumn) {
                 // Column highlight
-                className += " bg-blue-200 bg-opacity-50";
+                className += " bg-green-200 bg-opacity-50";
             }
         }
         
