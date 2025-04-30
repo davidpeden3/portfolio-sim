@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { calculatePortfolio } from "../calculator/PortfolioCalculator";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 import { CalculatedSummary } from "../models/CalculatedSummary";
@@ -6,25 +6,66 @@ import PortfolioChart from "./PortfolioChart";
 import AmortizationTable from "./AmortizationTable";
 import CalculatedSummaryDisplay from "./CalculatedSummary";
 
-export function PortfolioSimulator() {
-  const [formData, setFormData] = useState({
-    initialShareCount: 0,
-    initialInvestment: 200000,
-    initialSharePrice: 24.33,
-    dividendYield4w: 5,
-    monthlyAppreciation: -1,
-    annualInterestRate: 7.5,
-    loanAmount: 200000,
-    amortizationMonths: 240,
-    baseIncome: 100000,
-    surplusForDripPercent: 75,
-    withholdTaxes: true,
-  });
+// Default values if nothing is in localStorage
+const DEFAULT_FORM_DATA = {
+  initialShareCount: 0,
+  initialInvestment: 200000,
+  initialSharePrice: 24.33,
+  dividendYield4w: 5,
+  monthlyAppreciation: -1,
+  annualInterestRate: 7.5,
+  loanAmount: 200000,
+  amortizationMonths: 240,
+  baseIncome: 100000,
+  surplusForDripPercent: 75,
+  withholdTaxes: true,
+};
 
+// Local storage key
+const STORAGE_KEY = 'portfolio-simulator-settings';
+
+export function PortfolioSimulator() {
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [results, setResults] = useState<{
     summary: CalculatedSummary;
     amortization: AmortizationEntry[];
   } | null>(null);
+
+  // Load saved settings from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem(STORAGE_KEY);
+      if (savedSettings) {
+        const parsedSettings = JSON.parse(savedSettings);
+        setFormData(parsedSettings);
+      }
+    } catch (error) {
+      console.error('Failed to load settings from localStorage:', error);
+    }
+  }, []);
+
+  // Save settings to localStorage when form data changes (with debounce)
+  useEffect(() => {
+    const saveSettings = () => {
+      try {
+        setSaveStatus('saving');
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        setSaveStatus('saved');
+      } catch (error) {
+        console.error('Failed to save settings to localStorage:', error);
+        setSaveStatus('unsaved');
+      }
+    };
+
+    // Set to unsaved immediately when form data changes
+    setSaveStatus('unsaved');
+    
+    // Debounce the save operation to avoid excessive localStorage writes
+    const timerId = setTimeout(saveSettings, 1000);
+    
+    return () => clearTimeout(timerId); // Clean up timer on unmount or before next effect run
+  }, [formData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -68,10 +109,23 @@ export function PortfolioSimulator() {
     setResults(calculationResults);
   };
 
+  const resetToDefaults = () => {
+    if (window.confirm('Are you sure you want to reset all values to default settings?')) {
+      setFormData(DEFAULT_FORM_DATA);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">Portfolio Simulator</h1>
+        <h1 className="text-3xl font-bold mb-2 text-center text-gray-800">Portfolio Simulator</h1>
+        
+        <div className="text-center mb-6 text-sm text-gray-500">
+          Your inputs are automatically saved to your browser's local storage.
+          {saveStatus === 'saving' && <span className="ml-2 italic">Saving...</span>}
+          {saveStatus === 'saved' && <span className="ml-2 text-green-600">✓ Saved</span>}
+          {saveStatus === 'unsaved' && <span className="ml-2 text-yellow-600">Unsaved changes</span>}
+        </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left column */}
@@ -204,12 +258,19 @@ export function PortfolioSimulator() {
             </div>
           </div>
 
-          <div className="col-span-1 md:col-span-2 flex justify-center mt-6">
+          <div className="col-span-1 md:col-span-2 flex justify-center mt-6 space-x-4">
             <button
               type="submit"
               className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition"
             >
               Calculate
+            </button>
+            <button
+              type="button"
+              onClick={resetToDefaults}
+              className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition"
+            >
+              Reset to Defaults
             </button>
           </div>
         </form>
