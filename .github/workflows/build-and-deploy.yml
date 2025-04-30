@@ -1,0 +1,76 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # This gets all history for getting commit details
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version information
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          BUILD_DATE=$(date -u +"%Y-%m-%d")
+          VERSION=$(node -p "require('./package.json').version")
+          
+          # Generate version.ts file with build information
+          cat > src/version.ts << EOL
+          export interface VersionInfo {
+            version: string;
+            buildDate: string;
+            commitHash: string;
+            environment: string;
+          }
+          
+          const versionInfo: VersionInfo = {
+            version: "$VERSION",
+            buildDate: "$BUILD_DATE",
+            commitHash: "$COMMIT_HASH",
+            environment: import.meta.env.MODE
+          };
+          
+          export default versionInfo;
+          EOL
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist
+
+  # Example deployment job (uncomment and adjust as needed)
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: build
+  #         path: dist
+  #
+  #     - name: Deploy to production
+  #       # Add your deployment steps here

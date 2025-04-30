@@ -7,4 +7,13 @@ export default defineConfig({
     outDir: 'dist'
   },
   base: './', // Use relative paths
+  resolve: {
+    alias: {
+      // Allow importing package.json directly
+      '@package': '/package.json',
+    },
+  },
+  optimizeDeps: {
+    include: ['@package'],
+  },
 });

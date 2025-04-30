@@ -6,6 +6,7 @@ import PortfolioChart from "./PortfolioChart";
 import AmortizationTable from "./AmortizationTable";
 import CalculatedSummaryDisplay from "./CalculatedSummary";
 import HelpModal from "./HelpModal";
+import VersionFooter from "./VersionFooter";
 
 // Default values if nothing is in localStorage
 const DEFAULT_FORM_DATA = {
@@ -325,6 +326,7 @@ export function PortfolioSimulator() {
               GitHub Issues page
             </a> to report bugs or suggest features.
           </p>
+          <VersionFooter />
         </div>
         
         {/* Help Modal */}
