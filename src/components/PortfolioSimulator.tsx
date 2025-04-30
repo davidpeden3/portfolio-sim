@@ -10,7 +10,7 @@ export function PortfolioSimulator() {
   const [formData, setFormData] = useState({
     initialShareCount: 0,
     initialInvestment: 200000,
-    initialSharePrice: 22.5,
+    initialSharePrice: 24.33,
     dividendYield4w: 5,
     monthlyAppreciation: -1,
     annualInterestRate: 7.5,
