@@ -114,7 +114,7 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                                 >
                                     {column.key === 'month' 
                                         ? entry.month 
-                                        : column.format(entry[column.key as keyof AmortizationEntry] as number)}
+                                        : column.format ? column.format(entry[column.key as keyof AmortizationEntry] as number) : entry[column.key as keyof AmortizationEntry]}
                                 </td>
                             ))}
                         </tr>
