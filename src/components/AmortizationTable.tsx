@@ -7,9 +7,77 @@ interface AmortizationTableProps {
 
 const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
+    const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+    const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
     
     // Filter yearly entries for summary tab (months where n % 12 === 0)
     const yearlyAmortization = amortization.filter(entry => entry.month > 0 && entry.month % 12 === 0);
+
+    // Column definitions for more programmatic handling
+    const columns = [
+        { key: "month", label: "Month", sticky: true },
+        { key: "shareCount", label: "Share Count", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "dividend", label: "Dividend", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "distribution", label: "Distribution", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "ytdDistribution", label: "YTD Distribution", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "marginalTaxesWithheld", label: "Taxes Withheld", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPayment", label: "Loan Payment", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "surplusForDrip", label: "Surplus for DRIP", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "additionalPrincipal", label: "Additional Principal", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "actualDrip", label: "Actual DRIP", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "sharePrice", label: "Share Price", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "newSharesFromDrip", label: "New Shares", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "totalShares", label: "Total Shares", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "portfolioValue", label: "Portfolio Value", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPrincipal", label: "Loan Principal", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "netPortfolioValue", label: "Net Portfolio Value", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }
+    ];
+    
+    // CSS class helpers for highlighting
+    const getHeaderCellClass = (colIndex: number) => {
+        let className = "px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50";
+        
+        // Add sticky class for the first column
+        if (colIndex === 0) {
+            className += " sticky left-0 z-30";
+        }
+        
+        // Add hover highlight for the column
+        if (colIndex === hoveredColumn) {
+            className += " bg-blue-100 bg-opacity-50";
+        }
+        
+        return className;
+    };
+    
+    const getDataCellClass = (rowIndex: number, colIndex: number, isEvenRow: boolean) => {
+        const baseClass = "px-3 py-2 whitespace-nowrap text-sm text-gray-900";
+        const rowBgClass = isEvenRow ? "bg-white" : "bg-gray-50";
+        
+        let className = baseClass;
+        
+        // Handle sticky first column
+        if (colIndex === 0) {
+            className += ` sticky left-0 z-10 ${rowBgClass}`;
+        }
+        
+        // Add row highlight
+        if (rowIndex === hoveredRow) {
+            className += " bg-blue-100 bg-opacity-30";
+        }
+        
+        // Add column highlight
+        if (colIndex === hoveredColumn) {
+            className += " bg-blue-100 bg-opacity-30";
+        }
+        
+        // Add intersection highlight (stronger opacity)
+        if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
+            className += " bg-blue-100 bg-opacity-50";
+        }
+        
+        return className;
+    };
     
     // Render the amortization table with either yearly data or full detail
     const renderAmortizationTable = (entries: AmortizationEntry[]) => (
@@ -17,47 +85,38 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0 z-20">
                     <tr>
-                        {/* First cell is sticky in both directions */}
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky left-0 z-30">Month</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Count</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Dividend</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Distribution</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">YTD Distribution</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Taxes Withheld</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Payment</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Surplus for DRIP</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Additional Principal</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Actual DRIP</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Price</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">New Shares</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Total Shares</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Portfolio Value</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Loan Principal</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Net Portfolio Value</th>
+                        {columns.map((column, colIndex) => (
+                            <th 
+                                key={column.key}
+                                className={getHeaderCellClass(colIndex)}
+                                onMouseEnter={() => setHoveredColumn(colIndex)}
+                                onMouseLeave={() => setHoveredColumn(null)}
+                            >
+                                {column.label}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                    {entries.map((entry, index) => (
-                        <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            {/* First column is sticky */}
-                            <td className={`px-3 py-2 whitespace-nowrap text-sm text-gray-900 sticky left-0 z-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                                {entry.month}
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.dividend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.distribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.ytdDistribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.marginalTaxesWithheld.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.surplusForDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.additionalPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.actualDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.sharePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.newSharesFromDrip.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.totalShares.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.portfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.loanPrincipal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.netPortfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    {entries.map((entry, rowIndex) => (
+                        <tr 
+                            key={entry.month} 
+                            className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                            onMouseEnter={() => setHoveredRow(rowIndex)}
+                            onMouseLeave={() => setHoveredRow(null)}
+                        >
+                            {columns.map((column, colIndex) => (
+                                <td 
+                                    key={`${entry.month}-${column.key}`}
+                                    className={getDataCellClass(rowIndex, colIndex, rowIndex % 2 === 0)}
+                                    onMouseEnter={() => setHoveredColumn(colIndex)}
+                                    onMouseLeave={() => setHoveredColumn(null)}
+                                >
+                                    {column.key === 'month' 
+                                        ? entry.month 
+                                        : column.format(entry[column.key as keyof AmortizationEntry] as number)}
+                                </td>
+                            ))}
                         </tr>
                     ))}
                 </tbody>
