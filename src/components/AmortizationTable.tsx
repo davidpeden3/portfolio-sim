@@ -9,11 +9,12 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Amortization Schedule</h2>
             <div className="overflow-x-auto">
-                <div className="max-h-[500px] overflow-y-auto">
+                <div className="max-h-[500px] overflow-y-auto relative">
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
+                        <thead className="bg-gray-50 sticky top-0 z-20">
                             <tr>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Month</th>
+                                {/* First cell is sticky in both directions */}
+                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky left-0 z-30">Month</th>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Share Count</th>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Dividend</th>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">Distribution</th>
@@ -34,7 +35,10 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {amortization.map((entry, index) => (
                                 <tr key={entry.month} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.month}</td>
+                                    {/* First column is sticky */}
+                                    <td className={`px-3 py-2 whitespace-nowrap text-sm text-gray-900 sticky left-0 z-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                                        {entry.month}
+                                    </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{entry.shareCount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                     <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.dividend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                     <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${entry.distribution.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
