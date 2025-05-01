@@ -19,18 +19,28 @@ function lookupTaxRate(baseIncome: number, ytdDistribution: number): number {
 
 export function calculatePortfolio(assumptions: Assumptions): { summary: CalculatedSummary, amortization: AmortizationEntry[] } {
     const {
+        // Investor Profile
         initialShareCount: preexistingShares,
         initialInvestment,
+        baseIncome,
+        surplusForDripToPrincipalPercent,
+        withholdTaxes,
+        
+        // Simulation Parameters
+        simulationMonths,
         initialSharePrice,
         dividendYieldPer4wPercent,
         monthlyAppreciationPercent,
-        loanAmount,
+        
+        // Loan Settings
+        includeLoan,
+        loanAmount: rawLoanAmount,
         annualInterestRatePercent,
-        amortizationMonths,
-        baseIncome,
-        surplusForDripToPrincipalPercent,
-        withholdTaxes
+        amortizationMonths
     } = assumptions;
+    
+    // If loan is not included, use 0 as effective loan amount
+    const loanAmount = includeLoan ? rawLoanAmount : 0;
 
     // Calculate shares from investment and add any pre-existing shares
     const sharesFromInvestment = initialInvestment / initialSharePrice;
@@ -61,8 +71,8 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         netPortfolioValue: (initialShareCount * initialSharePrice) - loanAmount
     });
 
-    // --- Months 1..amortizationMonths ---
-    for (let month = 1; month <= amortizationMonths; month++) {
+    // --- Months 1..simulationMonths ---
+    for (let month = 1; month <= simulationMonths; month++) {
         const prev = amortization[month - 1];
 
         const updatedSharePrice = prev.sharePrice * (1 + (monthlyAppreciationPercent / 100));

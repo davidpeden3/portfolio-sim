@@ -176,17 +176,24 @@ export function PortfolioSimulator() {
     
     // Map form data to assumptions
     const assumptions = {
+      // Investor Profile
       initialShareCount: formData.initialShareCount,
       initialInvestment: formData.initialInvestment,
-      initialSharePrice: formData.initialSharePrice,
-      dividendYieldPer4wPercent: formData.dividendYield4w,
-      monthlyAppreciationPercent: formData.monthlyAppreciation,
-      loanAmount: formData.loanAmount,
-      annualInterestRatePercent: formData.annualInterestRate,
-      amortizationMonths: formData.amortizationMonths,
       baseIncome: formData.baseIncome,
       surplusForDripToPrincipalPercent: formData.surplusForDripPercent,
       withholdTaxes: formData.withholdTaxes,
+      
+      // Simulation Parameters
+      simulationMonths: formData.simulationMonths,
+      initialSharePrice: formData.initialSharePrice,
+      dividendYieldPer4wPercent: formData.dividendYield4w,
+      monthlyAppreciationPercent: formData.monthlyAppreciation,
+      
+      // Loan Settings
+      includeLoan: formData.includeLoan,
+      loanAmount: formData.loanAmount,
+      annualInterestRatePercent: formData.annualInterestRate,
+      amortizationMonths: formData.amortizationMonths,
     };
     
     // Calculate results
@@ -232,40 +239,16 @@ export function PortfolioSimulator() {
           </div>
         </div>
         
-        <div className="text-center mb-6 text-sm text-gray-500">
-          Your inputs are automatically saved to your browser's local storage.
-          {saveStatus === 'saving' && <span className="ml-2 italic">Saving...</span>}
-          {saveStatus === 'saved' && <span className="ml-2 text-green-600">✓ Saved</span>}
-          {saveStatus === 'unsaved' && <span className="ml-2 text-yellow-600">Unsaved changes</span>}
-        </div>
-
-        {/* Profile Selector */}
-        <ProfileSelector 
-          selectedProfile={selectedProfile}
-          isCustomized={isCustomized}
-          hasCustomProfile={hasCustomProfile}
-          onProfileChange={handleProfileChange}
-        />
 
         {/* Form with input fields */}
-        <div className="flex justify-between mb-4">
-          <div className="text-center text-sm text-gray-500">
-            Your inputs are automatically saved to your browser's local storage.
-          </div>
-          <button
-            type="button"
-            onClick={resetToDefaults}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
-          >
-            Reset to Defaults
-          </button>
-        </div>
-
         <AssumptionsForm 
           formData={formData}
           onChange={handleFormChange}
           onSubmit={handleSubmit}
-          saveStatus={saveStatus}
+          selectedProfile={selectedProfile}
+          isCustomized={isCustomized}
+          hasCustomProfile={hasCustomProfile}
+          onProfileChange={handleProfileChange}
         />
 
         {results && (

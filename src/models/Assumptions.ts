@@ -1,13 +1,20 @@
 export interface Assumptions {
+    // Investor Profile
     initialShareCount: number;
     initialInvestment: number;
-    initialSharePrice: number;
-    dividendYieldPer4wPercent: number;
-    monthlyAppreciationPercent: number;
-    loanAmount: number;
-    annualInterestRatePercent: number;
-    amortizationMonths: number;
     baseIncome: number;
     surplusForDripToPrincipalPercent: number;
     withholdTaxes: boolean;
+    
+    // Simulation Parameters
+    simulationMonths: number;
+    initialSharePrice: number;
+    dividendYieldPer4wPercent: number;
+    monthlyAppreciationPercent: number;
+    
+    // Loan Settings
+    includeLoan: boolean;
+    loanAmount: number;
+    annualInterestRatePercent: number;
+    amortizationMonths: number;
 }
