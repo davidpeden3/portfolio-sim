@@ -1,4 +1,6 @@
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
+// Re-export these icons for use in other components
+export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
 // Form data type for PortfolioSimulator
 export interface PortfolioFormData {
@@ -130,99 +132,6 @@ export const INVESTOR_PROFILES = {
 
 export type ProfileType = "earlyCareer" | "midCareer" | "retirement" | "custom";
 
-// Profile Selector component
-interface ProfileSelectorProps {
-    selectedProfile: ProfileType;
-    isCustomized: boolean;
-    onProfileChange: (profile: ProfileType) => void;
-    hasCustomProfile?: boolean; // Whether a custom profile exists, even if not currently selected
-}
-
-export const ProfileSelector = ({ 
-    selectedProfile, 
-    isCustomized, 
-    onProfileChange, 
-    hasCustomProfile = isCustomized // Default to isCustomized if not provided
-}: ProfileSelectorProps) => {
-    return (
-        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Select Investor Profile</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
-                <div 
-                    onClick={() => onProfileChange("earlyCareer")}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedProfile === "earlyCareer" 
-                            ? "border-indigo-500 bg-indigo-50" 
-                            : "border-gray-200 hover:border-indigo-300"
-                    }`}
-                >
-                    <div className="flex items-center mb-2">
-                        <div className={`mr-3 ${selectedProfile === "earlyCareer" ? "text-indigo-500" : "text-gray-500"}`}>
-                            <EarlyCareerIcon />
-                        </div>
-                        <h4 className="font-medium">{INVESTOR_PROFILES.earlyCareer.name}</h4>
-                    </div>
-                    <p className="text-sm text-gray-600">{INVESTOR_PROFILES.earlyCareer.description}</p>
-                </div>
-                
-                <div 
-                    onClick={() => onProfileChange("midCareer")}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedProfile === "midCareer" 
-                            ? "border-indigo-500 bg-indigo-50" 
-                            : "border-gray-200 hover:border-indigo-300"
-                    }`}
-                >
-                    <div className="flex items-center mb-2">
-                        <div className={`mr-3 ${selectedProfile === "midCareer" ? "text-indigo-500" : "text-gray-500"}`}>
-                            <MidCareerIcon />
-                        </div>
-                        <h4 className="font-medium">{INVESTOR_PROFILES.midCareer.name}</h4>
-                    </div>
-                    <p className="text-sm text-gray-600">{INVESTOR_PROFILES.midCareer.description}</p>
-                </div>
-                
-                <div 
-                    onClick={() => onProfileChange("retirement")}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedProfile === "retirement" 
-                            ? "border-indigo-500 bg-indigo-50" 
-                            : "border-gray-200 hover:border-indigo-300"
-                    }`}
-                >
-                    <div className="flex items-center mb-2">
-                        <div className={`mr-3 ${selectedProfile === "retirement" ? "text-indigo-500" : "text-gray-500"}`}>
-                            <RetirementIcon />
-                        </div>
-                        <h4 className="font-medium">{INVESTOR_PROFILES.retirement.name}</h4>
-                    </div>
-                    <p className="text-sm text-gray-600">{INVESTOR_PROFILES.retirement.description}</p>
-                </div>
-                
-                {hasCustomProfile && (
-                    <div 
-                        onClick={() => onProfileChange("custom")}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                            selectedProfile === "custom" 
-                                ? "border-indigo-500 bg-indigo-50" 
-                                : "border-gray-200 hover:border-indigo-300"
-                        }`}
-                    >
-                        <div className="flex items-center mb-2">
-                            <div className={`mr-3 ${selectedProfile === "custom" ? "text-indigo-500" : "text-gray-500"}`}>
-                                <CustomIcon />
-                            </div>
-                            <h4 className="font-medium">{INVESTOR_PROFILES.custom.name}</h4>
-                        </div>
-                        <p className="text-sm text-gray-600">{INVESTOR_PROFILES.custom.description}</p>
-                    </div>
-                )}
-            </div>
-            
-        </div>
-    );
-};
 
 interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
     selectedProfile: ProfileType;
@@ -253,78 +162,90 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, isCust
 
     return (
         <form onSubmit={onSubmit} className="space-y-8">
-            {/* Simulation Parameters Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Simulation Parameters</h3>
-                <p className="text-sm text-gray-500 mb-4">Settings that control how the portfolio simulation runs.</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Simulation Duration (months)</label>
-                            <input
-                                type="number"
-                                name="simulationMonths"
-                                value={formData.simulationMonths}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                            <p className="mt-1 text-xs text-gray-500">How many months to run the simulation</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Initial Share Price</label>
-                            <input
-                                type="number"
-                                name="initialSharePrice"
-                                value={formData.initialSharePrice}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Dividend Yield per 4w (%)</label>
-                            <input
-                                type="number"
-                                name="dividendYield4w"
-                                value={formData.dividendYield4w}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Monthly Appreciation (%)</label>
-                            <input
-                                type="number"
-                                name="monthlyAppreciation"
-                                value={formData.monthlyAppreciation}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            {/* Profile Selector */}
-            <ProfileSelector 
-                selectedProfile={selectedProfile}
-                isCustomized={isCustomized}
-                hasCustomProfile={hasCustomProfile}
-                onProfileChange={onProfileChange}
-            />
-            
             {/* Investor Profile Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Investor Profile</h3>
-                <p className="text-sm text-gray-500 mb-4">Core settings that define your investment approach.</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
+                {/* Profile Selector */}
+                <div className="mb-6">
+                    <p className="text-sm text-gray-500 mb-3">Select a predefined profile or customize your own:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div 
+                            onClick={() => onProfileChange("earlyCareer")}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                selectedProfile === "earlyCareer" 
+                                    ? "border-indigo-500 bg-indigo-50" 
+                                    : "border-gray-200 hover:border-indigo-300"
+                            }`}
+                        >
+                            <div className="flex items-center mb-1">
+                                <div className={`mr-2 ${selectedProfile === "earlyCareer" ? "text-indigo-500" : "text-gray-500"}`}>
+                                    <EarlyCareerIcon />
+                                </div>
+                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.earlyCareer.name}</h4>
+                            </div>
+                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.earlyCareer.description}</p>
+                        </div>
+                        
+                        <div 
+                            onClick={() => onProfileChange("midCareer")}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                selectedProfile === "midCareer" 
+                                    ? "border-indigo-500 bg-indigo-50" 
+                                    : "border-gray-200 hover:border-indigo-300"
+                            }`}
+                        >
+                            <div className="flex items-center mb-1">
+                                <div className={`mr-2 ${selectedProfile === "midCareer" ? "text-indigo-500" : "text-gray-500"}`}>
+                                    <MidCareerIcon />
+                                </div>
+                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.midCareer.name}</h4>
+                            </div>
+                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.midCareer.description}</p>
+                        </div>
+                        
+                        <div 
+                            onClick={() => onProfileChange("retirement")}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                selectedProfile === "retirement" 
+                                    ? "border-indigo-500 bg-indigo-50" 
+                                    : "border-gray-200 hover:border-indigo-300"
+                            }`}
+                        >
+                            <div className="flex items-center mb-1">
+                                <div className={`mr-2 ${selectedProfile === "retirement" ? "text-indigo-500" : "text-gray-500"}`}>
+                                    <RetirementIcon />
+                                </div>
+                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.retirement.name}</h4>
+                            </div>
+                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.retirement.description}</p>
+                        </div>
+                        
+                        {hasCustomProfile && (
+                            <div 
+                                onClick={() => onProfileChange("custom")}
+                                className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                    selectedProfile === "custom" 
+                                        ? "border-indigo-500 bg-indigo-50" 
+                                        : "border-gray-200 hover:border-indigo-300"
+                                }`}
+                            >
+                                <div className="flex items-center mb-1">
+                                    <div className={`mr-2 ${selectedProfile === "custom" ? "text-indigo-500" : "text-gray-500"}`}>
+                                        <CustomIcon />
+                                    </div>
+                                    <h4 className="font-medium text-sm">{INVESTOR_PROFILES.custom.name}</h4>
+                                </div>
+                                <p className="text-xs text-gray-600">{INVESTOR_PROFILES.custom.description}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                
+                {/* Profile Settings */}
+                <div className="pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-500 mb-4">Core settings that define your investment approach:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Initial Share Count</label>
                             <input
@@ -347,26 +268,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, isCust
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
-                    </div>
-                    
-                    <div className="space-y-4">
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Base Income</label>
                             <input
                                 type="number"
                                 name="baseIncome"
                                 value={formData.baseIncome}
-                                onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Surplus for DRIP to Principal (%)</label>
-                            <input
-                                type="number"
-                                name="surplusForDripPercent"
-                                value={formData.surplusForDripPercent}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                             />
@@ -385,6 +293,61 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, isCust
                                 Withhold Taxes
                             </label>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Simulation Parameters Section */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Simulation Parameters</h3>
+                <p className="text-sm text-gray-500 mb-4">Settings that control how the portfolio simulation runs.</p>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Simulation Duration</label>
+                        <input
+                            type="number"
+                            name="simulationMonths"
+                            value={formData.simulationMonths}
+                            onChange={handleChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">months</p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Initial Share Price</label>
+                        <input
+                            type="number"
+                            name="initialSharePrice"
+                            value={formData.initialSharePrice}
+                            onChange={handleChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Dividend Yield</label>
+                        <input
+                            type="number"
+                            name="dividendYield4w"
+                            value={formData.dividendYield4w}
+                            onChange={handleChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">% per 4w</p>
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Monthly Appreciation</label>
+                        <input
+                            type="number"
+                            name="monthlyAppreciation"
+                            value={formData.monthlyAppreciation}
+                            onChange={handleChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">%</p>
                     </div>
                 </div>
             </div>
@@ -413,41 +376,58 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, isCust
                     </div>
                 </div>
                 
-                <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${!formData.includeLoan ? 'opacity-50' : ''}`}>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Loan Amount</label>
-                        <input
-                            type="number"
-                            name="loanAmount"
-                            value={formData.loanAmount}
-                            onChange={handleChange}
-                            disabled={!formData.includeLoan}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Annual Interest Rate (%)</label>
-                        <input
-                            type="number"
-                            name="annualInterestRate"
-                            value={formData.annualInterestRate}
-                            onChange={handleChange}
-                            disabled={!formData.includeLoan}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Amortization Months</label>
-                        <input
-                            type="number"
-                            name="amortizationMonths"
-                            value={formData.amortizationMonths}
-                            onChange={handleChange}
-                            disabled={!formData.includeLoan}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        />
+                <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Loan Amount</label>
+                            <input
+                                type="number"
+                                name="loanAmount"
+                                value={formData.loanAmount}
+                                onChange={handleChange}
+                                disabled={!formData.includeLoan}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Annual Interest Rate</label>
+                            <input
+                                type="number"
+                                name="annualInterestRate"
+                                value={formData.annualInterestRate}
+                                onChange={handleChange}
+                                disabled={!formData.includeLoan}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">%</p>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Amortization</label>
+                            <input
+                                type="number"
+                                name="amortizationMonths"
+                                value={formData.amortizationMonths}
+                                onChange={handleChange}
+                                disabled={!formData.includeLoan}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">months</p>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">DRIP to Principal</label>
+                            <input
+                                type="number"
+                                name="surplusForDripPercent"
+                                value={formData.surplusForDripPercent}
+                                onChange={handleChange}
+                                disabled={!formData.includeLoan}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">%</p>
+                        </div>
                     </div>
                 </div>
             </div>

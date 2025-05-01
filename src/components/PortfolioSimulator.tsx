@@ -7,7 +7,7 @@ import AmortizationTable from "./AmortizationTable";
 import CalculatedSummaryDisplay from "./CalculatedSummary";
 import HelpModal from "./HelpModal";
 import VersionFooter from "./VersionFooter";
-import AssumptionsForm, { ProfileSelector, PortfolioFormData, INVESTOR_PROFILES, ProfileType } from "./AssumptionsForm";
+import AssumptionsForm, { PortfolioFormData, INVESTOR_PROFILES, ProfileType } from "./AssumptionsForm";
 
 // Default form data is mid-career
 const DEFAULT_FORM_DATA = INVESTOR_PROFILES.midCareer.data;
@@ -148,14 +148,24 @@ export function PortfolioSimulator() {
 
   // This function will be passed to AssumptionsForm to handle form data changes
   const handleFormChange = (newFormData: PortfolioFormData) => {
-    // Check if the form data has changed from the selected profile
+    // Check if the *investor profile fields* have changed from the selected profile
     if (selectedProfile !== "custom") {
       const profileData = INVESTOR_PROFILES[selectedProfile].data;
-      const hasChanged = Object.keys(profileData).some(key => {
+      
+      // Only check investor profile fields, not simulation parameters or loan settings
+      const investorProfileFields = [
+        'initialShareCount', 
+        'initialInvestment', 
+        'baseIncome', 
+        'withholdTaxes'
+      ];
+      
+      // Only check if investor profile fields have changed
+      const hasInvestorProfileChanged = investorProfileFields.some(key => {
         return profileData[key as keyof typeof profileData] !== newFormData[key as keyof typeof newFormData];
       });
       
-      if (hasChanged) {
+      if (hasInvestorProfileChanged) {
         setSelectedProfile("custom");
         setIsCustomized(true);
         setHasCustomProfile(true);
