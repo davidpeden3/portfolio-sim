@@ -1,7 +1,7 @@
 // This file can be automatically updated by CI/CD pipelines
 // For example, in GitHub Actions, you could use a script to rewrite this file
 
-// @ts-ignore - We've configured vite to handle this import
+// @ts-expect-error - We've configured vite to handle this import
 import packageJson from '@package';
 
 export interface VersionInfo {

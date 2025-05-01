@@ -7,53 +7,115 @@ import AmortizationTable from "./AmortizationTable";
 import CalculatedSummaryDisplay from "./CalculatedSummary";
 import HelpModal from "./HelpModal";
 import VersionFooter from "./VersionFooter";
+import AssumptionsForm, { ProfileSelector, PortfolioFormData, INVESTOR_PROFILES, ProfileType } from "./AssumptionsForm";
 
-// Default values if nothing is in localStorage
-const DEFAULT_FORM_DATA = {
-  initialShareCount: 0,
-  initialInvestment: 200000,
-  initialSharePrice: 24.33,
-  dividendYield4w: 5,
-  monthlyAppreciation: -1,
-  annualInterestRate: 7.5,
-  loanAmount: 200000,
-  amortizationMonths: 240,
-  baseIncome: 100000,
-  surplusForDripPercent: 75,
-  withholdTaxes: true,
-};
+// Default form data is mid-career
+const DEFAULT_FORM_DATA = INVESTOR_PROFILES.midCareer.data;
 
 // Local storage key
 const STORAGE_KEY = 'portfolio-simulator-settings';
 
 export function PortfolioSimulator() {
-  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+  // Get saved profile info from localStorage
+  const getInitialState = () => {
+    try {
+      const savedProfile = localStorage.getItem("selectedProfile") as ProfileType;
+      const savedCustomSettings = localStorage.getItem(STORAGE_KEY);
+      const savedCustomProfileData = localStorage.getItem("customProfileData");
+      
+      // Check if a custom profile exists
+      const hasCustom = !!savedCustomProfileData;
+      
+      // If there's no saved profile, default to midCareer
+      if (!savedProfile) {
+        return {
+          profile: "midCareer" as ProfileType,
+          isCustom: false,
+          formData: DEFAULT_FORM_DATA,
+          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : INVESTOR_PROFILES.custom.data,
+          hasCustomProfile: hasCustom
+        };
+      }
+      
+      // If it's a custom profile
+      if (savedProfile === "custom" && savedCustomSettings) {
+        const customData = JSON.parse(savedCustomSettings);
+        return {
+          profile: "custom" as ProfileType,
+          isCustom: true,
+          formData: customData,
+          customData,
+          hasCustomProfile: true
+        };
+      }
+      
+      // If it's a predefined profile
+      if (savedProfile in INVESTOR_PROFILES) {
+        return {
+          profile: savedProfile,
+          isCustom: false,
+          formData: INVESTOR_PROFILES[savedProfile].data,
+          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : INVESTOR_PROFILES.custom.data,
+          hasCustomProfile: hasCustom
+        };
+      }
+      
+      // Default fallback
+      return {
+        profile: "midCareer" as ProfileType,
+        isCustom: false,
+        formData: DEFAULT_FORM_DATA,
+        customData: INVESTOR_PROFILES.custom.data,
+        hasCustomProfile: false
+      };
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      return {
+        profile: "midCareer" as ProfileType,
+        isCustom: false,
+        formData: DEFAULT_FORM_DATA,
+        customData: INVESTOR_PROFILES.custom.data,
+        hasCustomProfile: false
+      };
+    }
+  };
+
+  const initialState = getInitialState();
+  const [formData, setFormData] = useState(initialState.formData);
+  const [customProfileData, setCustomProfileData] = useState<PortfolioFormData>(initialState.customData);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<ProfileType>(initialState.profile);
+  const [isCustomized, setIsCustomized] = useState(initialState.isCustom);
+  const [hasCustomProfile, setHasCustomProfile] = useState(initialState.hasCustomProfile);
   const [results, setResults] = useState<{
     summary: CalculatedSummary;
     amortization: AmortizationEntry[];
   } | null>(null);
 
-  // Load saved settings from localStorage on component mount
-  useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem(STORAGE_KEY);
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        setFormData(parsedSettings);
-      }
-    } catch (error) {
-      console.error('Failed to load settings from localStorage:', error);
-    }
-  }, []);
+  // No need for loading useEffect since we initialize state properly in getInitialState
 
-  // Save settings to localStorage when form data changes (with debounce)
+  // Save settings to localStorage when form data or profile changes (with debounce)
   useEffect(() => {
     const saveSettings = () => {
       try {
         setSaveStatus('saving');
+        
+        // Save the selected profile
+        localStorage.setItem("selectedProfile", selectedProfile);
+        
+        // Save the current form data
         localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        
+        // If on custom profile, update customProfileData and save it
+        if (selectedProfile === "custom") {
+          setCustomProfileData(formData);
+          localStorage.setItem("customProfileData", JSON.stringify(formData));
+        } else {
+          // Otherwise, just save the customProfileData separately
+          localStorage.setItem("customProfileData", JSON.stringify(customProfileData));
+        }
+        
         setSaveStatus('saved');
       } catch (error) {
         console.error('Failed to save settings to localStorage:', error);
@@ -68,25 +130,45 @@ export function PortfolioSimulator() {
     const timerId = setTimeout(saveSettings, 1000);
     
     return () => clearTimeout(timerId); // Clean up timer on unmount or before next effect run
-  }, [formData]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  }, [formData, selectedProfile, customProfileData]);
+  
+  // Function to handle profile changes
+  const handleProfileChange = (profile: ProfileType) => {
+    setSelectedProfile(profile);
     
-    if (type === "checkbox") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: checked,
-      }));
+    if (profile !== "custom") {
+      setFormData(INVESTOR_PROFILES[profile].data);
+      setIsCustomized(false);
     } else {
-      // For numeric inputs, handle empty string and convert to number
-      // Default to 0 if parsing fails or input is empty
-      const numValue = value === "" ? 0 : parseFloat(value);
-      setFormData((prev) => ({
-        ...prev,
-        [name]: isNaN(numValue) ? 0 : numValue,
-      }));
+      // When switching to custom, use the saved customProfileData
+      setFormData(customProfileData);
+      setIsCustomized(true);
     }
+  };
+
+  // This function will be passed to AssumptionsForm to handle form data changes
+  const handleFormChange = (newFormData: PortfolioFormData) => {
+    // Check if the form data has changed from the selected profile
+    if (selectedProfile !== "custom") {
+      const profileData = INVESTOR_PROFILES[selectedProfile].data;
+      const hasChanged = Object.keys(profileData).some(key => {
+        return profileData[key as keyof typeof profileData] !== newFormData[key as keyof typeof newFormData];
+      });
+      
+      if (hasChanged) {
+        setSelectedProfile("custom");
+        setIsCustomized(true);
+        setHasCustomProfile(true);
+      }
+    } else {
+      // If already on custom profile, update customProfileData
+      setCustomProfileData(newFormData);
+      // Ensure the flags are set
+      setIsCustomized(true);
+      setHasCustomProfile(true);
+    }
+    
+    setFormData(newFormData);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -114,7 +196,10 @@ export function PortfolioSimulator() {
 
   const resetToDefaults = () => {
     if (window.confirm('Are you sure you want to reset all values to default settings?')) {
-      setFormData(DEFAULT_FORM_DATA);
+      setFormData(INVESTOR_PROFILES.midCareer.data);
+      setSelectedProfile("midCareer");
+      setIsCustomized(false);
+      // Don't reset hasCustomProfile - keep the custom option visible if it was there before
     }
   };
 
@@ -154,153 +239,34 @@ export function PortfolioSimulator() {
           {saveStatus === 'unsaved' && <span className="ml-2 text-yellow-600">Unsaved changes</span>}
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Initial Share Count</label>
-              <input
-                type="number"
-                name="initialShareCount"
-                value={formData.initialShareCount}
-                onChange={handleChange}
-                step="0.01"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Initial Investment</label>
-              <input
-                type="number"
-                name="initialInvestment"
-                value={formData.initialInvestment}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+        {/* Profile Selector */}
+        <ProfileSelector 
+          selectedProfile={selectedProfile}
+          isCustomized={isCustomized}
+          hasCustomProfile={hasCustomProfile}
+          onProfileChange={handleProfileChange}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Dividend Yield per 4w (%)</label>
-              <input
-                type="number"
-                name="dividendYield4w"
-                value={formData.dividendYield4w}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Loan Amount</label>
-              <input
-                type="number"
-                name="loanAmount"
-                value={formData.loanAmount}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Amortization Months</label>
-              <input
-                type="number"
-                name="amortizationMonths"
-                value={formData.amortizationMonths}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Surplus for DRIP to Principal (%)</label>
-              <input
-                type="number"
-                name="surplusForDripPercent"
-                value={formData.surplusForDripPercent}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+        {/* Form with input fields */}
+        <div className="flex justify-between mb-4">
+          <div className="text-center text-sm text-gray-500">
+            Your inputs are automatically saved to your browser's local storage.
           </div>
+          <button
+            type="button"
+            onClick={resetToDefaults}
+            className="text-sm text-indigo-600 hover:text-indigo-800"
+          >
+            Reset to Defaults
+          </button>
+        </div>
 
-          {/* Right column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Initial Share Price</label>
-              <input
-                type="number"
-                name="initialSharePrice"
-                value={formData.initialSharePrice}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Monthly Appreciation (%)</label>
-              <input
-                type="number"
-                name="monthlyAppreciation"
-                value={formData.monthlyAppreciation}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Annual Interest Rate (%)</label>
-              <input
-                type="number"
-                name="annualInterestRate"
-                value={formData.annualInterestRate}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Base Income</label>
-              <input
-                type="number"
-                name="baseIncome"
-                value={formData.baseIncome}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex items-center mt-2">
-              <input
-                id="withholdTaxes"
-                name="withholdTaxes"
-                type="checkbox"
-                checked={formData.withholdTaxes}
-                onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="withholdTaxes" className="ml-2 block text-sm text-gray-700">
-                Withhold Taxes
-              </label>
-            </div>
-          </div>
-
-          <div className="col-span-1 md:col-span-2 flex justify-center mt-6 space-x-4">
-            <button
-              type="submit"
-              className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition"
-            >
-              Calculate
-            </button>
-            <button
-              type="button"
-              onClick={resetToDefaults}
-              className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition"
-            >
-              Reset to Defaults
-            </button>
-          </div>
-        </form>
+        <AssumptionsForm 
+          formData={formData}
+          onChange={handleFormChange}
+          onSubmit={handleSubmit}
+          saveStatus={saveStatus}
+        />
 
         {results && (
           <div className="mt-8">
