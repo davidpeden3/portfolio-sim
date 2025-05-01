@@ -141,7 +141,7 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 }
 
 // Main form component
-const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, isCustomized, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
+const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         

@@ -83,7 +83,8 @@ export function PortfolioSimulator() {
   const initialState = getInitialState();
   const [formData, setFormData] = useState(initialState.formData);
   const [customProfileData, setCustomProfileData] = useState<PortfolioFormData>(initialState.customData);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
+  // We still use setSaveStatus in localStorage operations but don't display it anymore
+  const [, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<ProfileType>(initialState.profile);
   const [isCustomized, setIsCustomized] = useState(initialState.isCustom);
@@ -211,14 +212,7 @@ export function PortfolioSimulator() {
     setResults(calculationResults);
   };
 
-  const resetToDefaults = () => {
-    if (window.confirm('Are you sure you want to reset all values to default settings?')) {
-      setFormData(INVESTOR_PROFILES.midCareer.data);
-      setSelectedProfile("midCareer");
-      setIsCustomized(false);
-      // Don't reset hasCustomProfile - keep the custom option visible if it was there before
-    }
-  };
+  // Reset functionality removed as it's no longer used in the UI
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
