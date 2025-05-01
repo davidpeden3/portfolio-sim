@@ -10,17 +10,24 @@ function round2(value: number): number {
 describe('portfolioCalculator', () => {
   it('should correctly calculate amortization schedule and summary for sample data', () => {
     const assumptions: Assumptions = {
+      // Investor Profile
       initialShareCount: 0,
       initialInvestment: 200000,
+      baseIncome: 100000,
+      surplusForDripToPrincipalPercent: 75,
+      withholdTaxes: true,
+      
+      // Simulation Parameters
+      simulationMonths: 240, // Same as amortization months
       initialSharePrice: 22.50,
       dividendYieldPer4wPercent: 5.0,
       monthlyAppreciationPercent: -1.0,
+      
+      // Loan Settings
+      includeLoan: true, // Important: Include the loan in the calculation
       loanAmount: 200000,
       annualInterestRatePercent: 7.5,
-      amortizationMonths: 240,
-      baseIncome: 100000,
-      surplusForDripToPrincipalPercent: 75,
-      withholdTaxes: true
+      amortizationMonths: 240
     };
 
     const { summary, amortization } = calculatePortfolio(assumptions);
