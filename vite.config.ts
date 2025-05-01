@@ -5,20 +5,13 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    // Ensure proper MIME types for JavaScript modules
-    rollupOptions: {
-      output: {
-        // Ensure proper file extensions
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
-      }
-    }
+    // Ensure the build is optimized
+    minify: 'terser',
+    sourcemap: false
   },
-  base: '/', // Use absolute paths
+  base: '/', // Use absolute paths for production
   resolve: {
     alias: {
-      // Allow importing package.json directly
       '@package': '/package.json',
     },
   },
