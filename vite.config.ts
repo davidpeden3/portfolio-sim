@@ -6,7 +6,7 @@ export default defineConfig({
   build: {
     outDir: 'dist'
   },
-  base: './', // Use relative paths
+  base: '/', // Use absolute paths
   resolve: {
     alias: {
       // Allow importing package.json directly
