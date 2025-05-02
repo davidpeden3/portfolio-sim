@@ -354,14 +354,15 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             
             {/* Loan Settings Section */}
             <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <div>
+                <div className="relative mb-4">
+                    {/* Centered header and subtext */}
+                    <div className="text-center">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white transition-colors duration-200">Loan Settings</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-300 mt-1 transition-colors duration-200">Optional settings for modeling loan-based financing.</p>
                     </div>
                     
-                    {/* Explicit toggle for loan inclusion */}
-                    <div className="flex items-center">
+                    {/* Explicit toggle for loan inclusion - positioned absolutely at top right */}
+                    <div className="absolute top-0 right-0 flex items-center">
                         <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Include Loan:</span>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input 
