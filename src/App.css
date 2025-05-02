@@ -40,3 +40,21 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Ensure input field text is visible in light mode */
+input {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+.dark input {
+  color: white !important;
+}
+
+/* Ensure section headers are visible in light mode */
+h3 {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+.dark h3 {
+  color: white !important;
+}
