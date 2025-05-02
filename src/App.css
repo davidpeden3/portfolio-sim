@@ -58,3 +58,21 @@ h3 {
 .dark h3 {
   color: white !important;
 }
+
+/* Make help guide button text and icon explicitly visible */
+.help-guide-text {
+  color: #4338ca !important; /* indigo-700 */
+}
+
+.dark .help-guide-text {
+  color: white !important;
+}
+
+/* Help icon specific fix */
+.help-icon {
+  stroke: #4338ca !important; /* indigo-700 */
+}
+
+.dark .help-icon {
+  stroke: white !important;
+}

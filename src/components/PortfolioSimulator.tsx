@@ -226,10 +226,10 @@ export function PortfolioSimulator() {
               onClick={() => setIsHelpModalOpen(true)}
               className="inline-flex items-center px-4 py-2 border border-indigo-300 dark:border-basshead-blue-600 rounded-md shadow-sm text-sm font-medium text-indigo-700 dark:text-white bg-white dark:bg-darkBlue-700 hover:bg-indigo-50 dark:hover:bg-darkBlue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 transition-colors duration-200"
             >
-              <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="h-5 w-5 mr-2 help-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              Help Guide
+              <span className="help-guide-text">Help Guide</span>
             </button>
             <a 
               href="https://github.com/davidpeden3/portfolio-sim" 
