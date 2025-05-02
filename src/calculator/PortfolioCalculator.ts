@@ -3,6 +3,11 @@ import { CalculatedSummary } from "../models/CalculatedSummary";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 
 function calculatePmt(rate: number, nper: number, pv: number): number {
+    // Handle 0% interest rate - just divide principal by number of periods
+    if (rate === 0 || rate < 0.0000001) {
+        return pv / nper;
+    }
+    // Standard payment calculation for non-zero interest rates
     return (rate * pv) / (1 - Math.pow(1 + rate, -nper));
 }
 
