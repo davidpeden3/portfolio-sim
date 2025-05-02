@@ -281,16 +281,16 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         </div>
                         
                         <div className="flex items-center mt-6">
-                            <input
-                                id="withholdTaxes"
-                                name="withholdTaxes"
-                                type="checkbox"
-                                checked={formData.withholdTaxes}
-                                onChange={handleChange}
-                                className="h-4 w-4 text-indigo-600 dark:text-basshead-blue-500 focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 border-gray-300 dark:border-darkBlue-600 rounded transition-colors duration-200"
-                            />
-                            <label htmlFor="withholdTaxes" className="ml-2 block text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200">
-                                Withhold Taxes
+                            <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Withhold Taxes:</span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                    type="checkbox"
+                                    name="withholdTaxes"
+                                    checked={formData.withholdTaxes}
+                                    onChange={handleChange}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 dark:bg-darkBlue-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 dark:peer-checked:bg-basshead-blue-600 transition-colors duration-200"></div>
                             </label>
                         </div>
                     </div>
