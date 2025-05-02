@@ -36,7 +36,7 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     // CSS class helpers for highlighting
     const getHeaderCellClass = (colIndex: number) => {
         // Base styling without background
-        let className = "px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+        let className = "px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider transition-colors duration-200";
         
         // Add sticky class for the first column
         if (colIndex === 0) {
@@ -46,17 +46,17 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         // Add background last to ensure it's not overridden
         if (colIndex === hoveredColumn) {
             // Column is highlighted
-            className += " bg-green-100";
+            className += " bg-green-100 dark:bg-darkBlue-700";
         } else {
             // Normal header background
-            className += " bg-gray-50";
+            className += " bg-gray-50 dark:bg-darkBlue-800";
         }
         
         return className;
     };
     
     const getDataCellClass = (rowIndex: number, colIndex: number, isEvenRow: boolean) => {
-        const baseClass = "px-3 py-2 whitespace-nowrap text-sm text-gray-900";
+        const baseClass = "px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 transition-colors duration-200";
         
         // Start with base styling
         let className = baseClass;
@@ -70,16 +70,16 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         // First determine if this cell needs highlighting
         if (rowIndex === hoveredRow && colIndex === hoveredColumn) {
             // Intersection highlight (strongest)
-            className += " bg-green-300";
+            className += " bg-green-300 dark:bg-darkBlue-600";
         } else if (rowIndex === hoveredRow) {
             // Row highlight
-            className += " bg-green-100";
+            className += " bg-green-100 dark:bg-darkBlue-700";
         } else if (colIndex === hoveredColumn) {
             // Column highlight
-            className += " bg-green-100";
+            className += " bg-green-100 dark:bg-darkBlue-700";
         } else {
             // No highlighting, apply normal row striping
-            className += isEvenRow ? " bg-white" : " bg-gray-50";
+            className += isEvenRow ? " bg-white dark:bg-darkBlue-800" : " bg-gray-50 dark:bg-darkBlue-700";
         }
         
         return className;
@@ -89,8 +89,8 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     const renderAmortizationTable = (entries: AmortizationEntry[]) => (
         <div className="max-h-[500px] overflow-auto">
             <div className="relative">
-                <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                    <thead className="bg-gray-50 sticky top-0 z-30">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-darkBlue-700 table-fixed transition-colors duration-200">
+                    <thead className="bg-gray-50 dark:bg-darkBlue-800 sticky top-0 z-30 transition-colors duration-200">
                         <tr>
                             {columns.map((column, colIndex) => (
                                 <th 
@@ -104,11 +104,11 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-darkBlue-800 divide-y divide-gray-200 dark:divide-darkBlue-700 transition-colors duration-200">
                         {entries.map((entry, rowIndex) => (
                             <tr 
                                 key={entry.month} 
-                                className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                                className={rowIndex % 2 === 0 ? 'bg-white dark:bg-darkBlue-800' : 'bg-gray-50 dark:bg-darkBlue-700'}
                                 onMouseEnter={() => setHoveredRow(rowIndex)}
                                 onMouseLeave={() => setHoveredRow(null)}
                             >
@@ -134,25 +134,25 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
 
     return (
         <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Amortization Data</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white transition-colors duration-200">Amortization Data</h2>
             
             {/* Tabs */}
-            <div className="flex border-b mb-4">
+            <div className="flex border-b dark:border-darkBlue-700 mb-4 transition-colors duration-200">
                 <button
-                    className={`py-2 px-4 font-medium ${
+                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
                         activeTab === "summary"
-                            ? "text-blue-600 border-b-2 border-blue-600"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     }`}
                     onClick={() => setActiveTab("summary")}
                 >
                     Yearly Summary
                 </button>
                 <button
-                    className={`py-2 px-4 font-medium ${
+                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
                         activeTab === "detail"
-                            ? "text-blue-600 border-b-2 border-blue-600"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     }`}
                     onClick={() => setActiveTab("detail")}
                 >

@@ -40,25 +40,25 @@ const PortfolioChart = ({ amortization }: PortfolioChartProps) => {
 
     return (
         <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Portfolio Value Over Time</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white transition-colors duration-200">Portfolio Value Over Time</h2>
             
             {/* Tabs */}
-            <div className="flex border-b mb-4">
+            <div className="flex border-b dark:border-darkBlue-700 mb-4 transition-colors duration-200">
                 <button
-                    className={`py-2 px-4 font-medium ${
+                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
                         activeTab === "payoff"
-                            ? "text-blue-600 border-b-2 border-blue-600"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     }`}
                     onClick={() => setActiveTab("payoff")}
                 >
                     Until Loan Payoff
                 </button>
                 <button
-                    className={`py-2 px-4 font-medium ${
+                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
                         activeTab === "full"
-                            ? "text-blue-600 border-b-2 border-blue-600"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     }`}
                     onClick={() => setActiveTab("full")}
                 >

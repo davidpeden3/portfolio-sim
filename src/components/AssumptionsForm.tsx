@@ -163,120 +163,120 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
     return (
         <form onSubmit={onSubmit} className="space-y-8">
             {/* Investor Profile Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Investor Profile</h3>
+            <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Investor Profile</h3>
                 
                 {/* Profile Selector */}
                 <div className="mb-6">
-                    <p className="text-sm text-gray-500 mb-3">Select a predefined profile or customize your own:</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-3 transition-colors duration-200">Select a predefined profile or customize your own:</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div 
                             onClick={() => onProfileChange("earlyCareer")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                                 selectedProfile === "earlyCareer" 
-                                    ? "border-indigo-500 bg-indigo-50" 
-                                    : "border-gray-200 hover:border-indigo-300"
+                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
+                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
                             }`}
                         >
                             <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "earlyCareer" ? "text-indigo-500" : "text-gray-500"}`}>
+                                <div className={`mr-2 ${selectedProfile === "earlyCareer" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
                                     <EarlyCareerIcon />
                                 </div>
-                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.earlyCareer.name}</h4>
+                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.earlyCareer.name}</h4>
                             </div>
-                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.earlyCareer.description}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.earlyCareer.description}</p>
                         </div>
                         
                         <div 
                             onClick={() => onProfileChange("midCareer")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                                 selectedProfile === "midCareer" 
-                                    ? "border-indigo-500 bg-indigo-50" 
-                                    : "border-gray-200 hover:border-indigo-300"
+                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
+                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
                             }`}
                         >
                             <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "midCareer" ? "text-indigo-500" : "text-gray-500"}`}>
+                                <div className={`mr-2 ${selectedProfile === "midCareer" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
                                     <MidCareerIcon />
                                 </div>
-                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.midCareer.name}</h4>
+                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.midCareer.name}</h4>
                             </div>
-                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.midCareer.description}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.midCareer.description}</p>
                         </div>
                         
                         <div 
                             onClick={() => onProfileChange("retirement")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                                 selectedProfile === "retirement" 
-                                    ? "border-indigo-500 bg-indigo-50" 
-                                    : "border-gray-200 hover:border-indigo-300"
+                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
+                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
                             }`}
                         >
                             <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "retirement" ? "text-indigo-500" : "text-gray-500"}`}>
+                                <div className={`mr-2 ${selectedProfile === "retirement" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
                                     <RetirementIcon />
                                 </div>
-                                <h4 className="font-medium text-sm">{INVESTOR_PROFILES.retirement.name}</h4>
+                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.retirement.name}</h4>
                             </div>
-                            <p className="text-xs text-gray-600">{INVESTOR_PROFILES.retirement.description}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.retirement.description}</p>
                         </div>
                         
                         {hasCustomProfile && (
                             <div 
                                 onClick={() => onProfileChange("custom")}
-                                className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
                                     selectedProfile === "custom" 
-                                        ? "border-indigo-500 bg-indigo-50" 
-                                        : "border-gray-200 hover:border-indigo-300"
+                                        ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
+                                        : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
                                 }`}
                             >
                                 <div className="flex items-center mb-1">
-                                    <div className={`mr-2 ${selectedProfile === "custom" ? "text-indigo-500" : "text-gray-500"}`}>
+                                    <div className={`mr-2 ${selectedProfile === "custom" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
                                         <CustomIcon />
                                     </div>
-                                    <h4 className="font-medium text-sm">{INVESTOR_PROFILES.custom.name}</h4>
+                                    <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.custom.name}</h4>
                                 </div>
-                                <p className="text-xs text-gray-600">{INVESTOR_PROFILES.custom.description}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.custom.description}</p>
                             </div>
                         )}
                     </div>
                 </div>
                 
                 {/* Profile Settings */}
-                <div className="pt-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-500 mb-4">Core settings that define your investment approach:</p>
+                <div className="pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Core settings that define your investment approach:</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Initial Share Count</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Count</label>
                             <input
                                 type="number"
                                 name="initialShareCount"
                                 value={formData.initialShareCount}
                                 onChange={handleChange}
                                 step="0.01"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Initial Investment</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Investment</label>
                             <input
                                 type="number"
                                 name="initialInvestment"
                                 value={formData.initialInvestment}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Base Income</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Base Income</label>
                             <input
                                 type="number"
                                 name="baseIncome"
                                 value={formData.baseIncome}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
                         
@@ -287,9 +287,9 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 type="checkbox"
                                 checked={formData.withholdTaxes}
                                 onChange={handleChange}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-indigo-600 dark:text-basshead-blue-500 focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 border-gray-300 dark:border-darkBlue-600 rounded transition-colors duration-200"
                             />
-                            <label htmlFor="withholdTaxes" className="ml-2 block text-sm text-gray-700">
+                            <label htmlFor="withholdTaxes" className="ml-2 block text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200">
                                 Withhold Taxes
                             </label>
                         </div>
@@ -298,71 +298,71 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             </div>
             
             {/* Simulation Parameters Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Simulation Parameters</h3>
-                <p className="text-sm text-gray-500 mb-4">Settings that control how the portfolio simulation runs.</p>
+            <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Simulation Parameters</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that control how the portfolio simulation runs.</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Simulation Duration</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Simulation Duration</label>
                         <input
                             type="number"
                             name="simulationMonths"
                             value={formData.simulationMonths}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500">months</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">months</p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Initial Share Price</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Price</label>
                         <input
                             type="number"
                             name="initialSharePrice"
                             value={formData.initialSharePrice}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Dividend Yield</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Dividend Yield</label>
                         <input
                             type="number"
                             name="dividendYield4w"
                             value={formData.dividendYield4w}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500">% per 4w</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">% per 4w</p>
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Monthly Appreciation</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Monthly Appreciation</label>
                         <input
                             type="number"
                             name="monthlyAppreciation"
                             value={formData.monthlyAppreciation}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500">%</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                     </div>
                 </div>
             </div>
             
             {/* Loan Settings Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900">Loan Settings</h3>
-                        <p className="text-sm text-gray-500 mt-1">Optional settings for modeling loan-based financing.</p>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white transition-colors duration-200">Loan Settings</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1 transition-colors duration-200">Optional settings for modeling loan-based financing.</p>
                     </div>
                     
                     {/* Explicit toggle for loan inclusion */}
                     <div className="flex items-center">
-                        <span className="mr-3 text-sm text-gray-700">Include Loan:</span>
+                        <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Include Loan:</span>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input 
                                 type="checkbox"
@@ -371,7 +371,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 onChange={handleChange}
                                 className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <div className="w-11 h-6 bg-gray-200 dark:bg-darkBlue-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 dark:peer-checked:bg-basshead-blue-600 transition-colors duration-200"></div>
                         </label>
                     </div>
                 </div>
@@ -379,54 +379,54 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Loan Amount</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Loan Amount</label>
                             <input
                                 type="number"
                                 name="loanAmount"
                                 value={formData.loanAmount}
                                 onChange={handleChange}
                                 disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Annual Interest Rate</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Annual Interest Rate</label>
                             <input
                                 type="number"
                                 name="annualInterestRate"
                                 value={formData.annualInterestRate}
                                 onChange={handleChange}
                                 disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500">%</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Amortization</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Amortization</label>
                             <input
                                 type="number"
                                 name="amortizationMonths"
                                 value={formData.amortizationMonths}
                                 onChange={handleChange}
                                 disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500">months</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">months</p>
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">DRIP to Principal</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">DRIP to Principal</label>
                             <input
                                 type="number"
                                 name="surplusForDripPercent"
                                 value={formData.surplusForDripPercent}
                                 onChange={handleChange}
                                 disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500">%</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                         </div>
                     </div>
                 </div>
@@ -436,7 +436,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             <div className="flex justify-end pt-4">
                 <button
                     type="submit"
-                    className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition"
+                    className="px-6 py-3 bg-indigo-600 dark:bg-basshead-blue-600 text-white font-bold rounded-md hover:bg-indigo-700 dark:hover:bg-basshead-blue-700 transition-colors duration-200"
                 >
                     Calculate
                 </button>

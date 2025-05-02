@@ -10,6 +10,53 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>MSTY Portfolio Simulator</title>
+    <!-- Script to handle theme modes before React loads -->
+    <script>
+      // IIFE for theme mode
+      (function() {
+        // Check localStorage first
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          // No saved preference, check system
+          document.documentElement.classList.add('dark');
+        }
+        
+        // Style priorities for both light and dark mode
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Dark mode overrides */
+          .dark .dark\\:bg-darkBlue-900 { background-color: #0f172a !important; }
+          .dark .dark\\:bg-darkBlue-800 { background-color: #1e293b !important; }
+          .dark .dark\\:bg-darkBlue-700 { background-color: #334155 !important; }
+          .dark .dark\\:bg-darkBlue-600 { background-color: #475569 !important; }
+          .dark .dark\\:text-white { color: #ffffff !important; }
+          .dark .dark\\:text-gray-200 { color: #e5e7eb !important; }
+          .dark .dark\\:text-gray-300 { color: #d1d5db !important; }
+          .dark .dark\\:border-darkBlue-600 { border-color: #475569 !important; }
+          .dark .dark\\:border-darkBlue-700 { border-color: #334155 !important; }
+          .dark .dark\\:border-basshead-blue-500 { border-color: #3b82f6 !important; }
+          .dark .dark\\:text-basshead-blue-500 { color: #3b82f6 !important; }
+          
+          /* Light mode overrides */
+          html:not(.dark) .bg-white { background-color: #ffffff !important; }
+          html:not(.dark) .bg-gray-100 { background-color: #f3f4f6 !important; }
+          html:not(.dark) .text-gray-800 { color: #1f2937 !important; }
+          html:not(.dark) .text-gray-700 { color: #374151 !important; }
+          html:not(.dark) .text-gray-600 { color: #4b5563 !important; }
+          html:not(.dark) .border-gray-200 { border-color: #e5e7eb !important; }
+          html:not(.dark) .border-gray-300 { border-color: #d1d5db !important; }
+          html:not(.dark) .text-indigo-600 { color: #4f46e5 !important; }
+          html:not(.dark) .bg-indigo-600 { background-color: #4f46e5 !important; }
+          html:not(.dark) .bg-indigo-50 { background-color: #eef2ff !important; }
+        `;
+        document.head.appendChild(style);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
