@@ -186,26 +186,33 @@ export function PortfolioSimulator() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Map form data to assumptions
+    // Helper function to convert form values to numbers (empty string → 0)
+    const toNumber = (value: any): number => {
+      if (value === "" || value === undefined) return 0;
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+    
+    // Map form data to assumptions with proper type conversion
     const assumptions = {
       // Investor Profile
-      initialShareCount: formData.initialShareCount,
-      initialInvestment: formData.initialInvestment,
-      baseIncome: formData.baseIncome,
-      surplusForDripToPrincipalPercent: formData.surplusForDripPercent,
-      withholdTaxes: formData.withholdTaxes,
+      initialShareCount: toNumber(formData.initialShareCount),
+      initialInvestment: toNumber(formData.initialInvestment),
+      baseIncome: toNumber(formData.baseIncome),
+      surplusForDripToPrincipalPercent: toNumber(formData.surplusForDripPercent),
+      withholdTaxes: Boolean(formData.withholdTaxes),
       
       // Simulation Parameters
-      simulationMonths: formData.simulationMonths,
-      initialSharePrice: formData.initialSharePrice,
-      dividendYieldPer4wPercent: formData.dividendYield4w,
-      monthlyAppreciationPercent: formData.monthlyAppreciation,
+      simulationMonths: toNumber(formData.simulationMonths),
+      initialSharePrice: toNumber(formData.initialSharePrice),
+      dividendYieldPer4wPercent: toNumber(formData.dividendYield4w),
+      monthlyAppreciationPercent: toNumber(formData.monthlyAppreciation),
       
       // Loan Settings
-      includeLoan: formData.includeLoan,
-      loanAmount: formData.loanAmount,
-      annualInterestRatePercent: formData.annualInterestRate,
-      amortizationMonths: formData.amortizationMonths,
+      includeLoan: Boolean(formData.includeLoan),
+      loanAmount: toNumber(formData.loanAmount),
+      annualInterestRatePercent: toNumber(formData.annualInterestRate),
+      amortizationMonths: toNumber(formData.amortizationMonths),
     };
     
     // Calculate results

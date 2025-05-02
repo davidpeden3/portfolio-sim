@@ -5,23 +5,23 @@ export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 // Form data type for PortfolioSimulator
 export interface PortfolioFormData {
     // Investor Profile
-    initialShareCount: number;
-    initialInvestment: number;
-    baseIncome: number;
-    surplusForDripPercent: number;
+    initialShareCount: number | string;
+    initialInvestment: number | string;
+    baseIncome: number | string;
+    surplusForDripPercent: number | string;
     withholdTaxes: boolean;
     
     // Simulation Parameters
-    simulationMonths: number;
-    initialSharePrice: number;
-    dividendYield4w: number;
-    monthlyAppreciation: number;
+    simulationMonths: number | string;
+    initialSharePrice: number | string;
+    dividendYield4w: number | string;
+    monthlyAppreciation: number | string;
     
     // Loan Settings
     includeLoan: boolean;
-    loanAmount: number;
-    annualInterestRate: number;
-    amortizationMonths: number;
+    loanAmount: number | string;
+    annualInterestRate: number | string;
+    amortizationMonths: number | string;
 }
 
 interface AssumptionsFormProps {
@@ -151,12 +151,28 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: checked,
             });
         } else {
-            // For numeric inputs, handle empty string and convert to number
-            const numValue = value === "" ? 0 : parseFloat(value);
-            onChange({
-                ...formData,
-                [name]: isNaN(numValue) ? 0 : numValue,
-            });
+            // Keep empty strings as empty strings, don't convert to 0 immediately
+            if (value === "") {
+                onChange({
+                    ...formData,
+                    [name]: value,
+                });
+            } else {
+                // Convert valid numbers
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                    onChange({
+                        ...formData,
+                        [name]: numValue,
+                    });
+                } else {
+                    // For invalid input, just keep the value as is
+                    onChange({
+                        ...formData,
+                        [name]: value,
+                    });
+                }
+            }
         }
     };
 
