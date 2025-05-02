@@ -76,3 +76,12 @@ h3 {
 .dark .help-icon {
   stroke: white !important;
 }
+
+/* Toggle switch improvements for dark mode */
+.dark .toggle-switch-on {
+  background-color: #3b82f6 !important; /* basshead-blue-500 */
+}
+
+.dark .toggle-switch-off {
+  background-color: #475569 !important; /* darkBlue-600 */
+}
