@@ -38,8 +38,14 @@ export function downloadCSV<T>(
         // Escape quotes in strings
         return `"${value.replace(/"/g, '""')}"`;
       } else if (typeof value === 'number') {
-        // Truncate decimal values to 4 significant digits
-        return Number.isInteger(value) ? value : Number(value.toFixed(4));
+        // Truncate decimal values to 4 decimal places
+        if (Number.isInteger(value)) {
+          return value;
+        } else {
+          // Handle floating point numbers
+          const formattedValue = value.toFixed(4);
+          return parseFloat(formattedValue);
+        }
       } else {
         return `"${String(value)}"`;
       }
