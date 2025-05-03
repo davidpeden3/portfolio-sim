@@ -5,9 +5,14 @@ import { downloadCSV } from "../utils/csvExport";
 interface AmortizationTableProps {
     amortization: AmortizationEntry[];
     includeLoan?: boolean;
+    includeTaxes?: boolean;
 }
 
-const AmortizationTable = ({ amortization, includeLoan = true }: AmortizationTableProps) => {
+const AmortizationTable = ({ 
+    amortization, 
+    includeLoan = true, 
+    includeTaxes = true 
+}: AmortizationTableProps) => {
     const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
     const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
@@ -26,9 +31,10 @@ const AmortizationTable = ({ amortization, includeLoan = true }: AmortizationTab
             header: col.label
         }));
         
-        // Generate filename based on the active tab and loan inclusion
+        // Generate filename based on the active tab, loan, and tax inclusion
         const loanStatus = includeLoan ? "with-loan" : "no-loan";
-        const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}-${loanStatus}`;
+        const taxStatus = includeTaxes ? "with-taxes" : "no-taxes";
+        const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}-${loanStatus}-${taxStatus}`;
         
         // Trigger the download
         downloadCSV(dataToExport, filename, csvColumns);
@@ -36,26 +42,32 @@ const AmortizationTable = ({ amortization, includeLoan = true }: AmortizationTab
 
     // Define all columns
     const allColumns = [
-        { key: "month", label: "Month", sticky: true, loanRelated: false },
-        { key: "shareCount", label: "Share Count", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "dividend", label: "Dividend", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "distribution", label: "Distribution", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "ytdDistribution", label: "YTD Distribution", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "marginalTaxesWithheld", label: "Taxes Withheld", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "loanPayment", label: "Loan Payment", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "surplusForDrip", label: "Surplus for DRIP", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "additionalPrincipal", label: "Additional Principal", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "actualDrip", label: "Actual DRIP", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "sharePrice", label: "Share Price", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "newSharesFromDrip", label: "New Shares", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "totalShares", label: "Total Shares", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "portfolioValue", label: "Portfolio Value", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "loanPrincipal", label: "Loan Principal", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "netPortfolioValue", label: "Net Portfolio Value", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }
+        { key: "month", label: "Month", sticky: true, loanRelated: false, taxRelated: false },
+        { key: "shareCount", label: "Share Count", loanRelated: false, taxRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "dividend", label: "Dividend", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "distribution", label: "Distribution", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "ytdDistribution", label: "YTD Distribution", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "marginalTaxesWithheld", label: "Taxes Withheld", loanRelated: false, taxRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPayment", label: "Loan Payment", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "surplusForDrip", label: "Surplus for DRIP", loanRelated: false, taxRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "additionalPrincipal", label: "Additional Principal", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "actualDrip", label: "Actual DRIP", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "sharePrice", label: "Share Price", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "newSharesFromDrip", label: "New Shares", loanRelated: false, taxRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "totalShares", label: "Total Shares", loanRelated: false, taxRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "portfolioValue", label: "Portfolio Value", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPrincipal", label: "Loan Principal", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "netPortfolioValue", label: "Net Portfolio Value", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }
     ];
     
-    // Filter columns based on includeLoan prop
-    const columns = includeLoan ? allColumns : allColumns.filter(col => !col.loanRelated);
+    // Filter columns based on includeLoan and includeTaxes props
+    const filteredColumns = allColumns.filter(col => {
+        if (!includeLoan && col.loanRelated) return false;
+        if (!includeTaxes && col.taxRelated) return false;
+        return true;
+    });
+    
+    const columns = filteredColumns;
     
     // CSS class helpers for highlighting
     const getHeaderCellClass = (colIndex: number) => {

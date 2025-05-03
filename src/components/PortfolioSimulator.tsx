@@ -294,7 +294,8 @@ export function PortfolioSimulator() {
               <PortfolioChart amortization={results.amortization} />
               <AmortizationTable 
                 amortization={results.amortization} 
-                includeLoan={Boolean(formData.includeLoan)} 
+                includeLoan={Boolean(formData.includeLoan)}
+                includeTaxes={Boolean(formData.withholdTaxes)}
               />
             </div>
           </div>
