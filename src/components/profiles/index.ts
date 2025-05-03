@@ -15,8 +15,7 @@ export { retirementProfile } from './RetirementProfile';
 export { customProfile } from './CustomProfile';
 
 // Export shared types and constants
-export {PROFILE_EARLY_CAREER, PROFILE_MID_CAREER, PROFILE_RETIREMENT, PROFILE_CUSTOM} from './profileConstants';
-export type { ProfileType } from './profileConstants';
+export type { ProfileType } from './types';
 export {CURRENT_SHARE_PRICE} from './ProfileData';
 export type { InvestorProfileData } from './ProfileData';
 

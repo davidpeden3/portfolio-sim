@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProfileType } from './profiles/profileConstants';
+import { ProfileType } from './profiles/types';
 
 interface ProfileCardProps {
   profileType: ProfileType;

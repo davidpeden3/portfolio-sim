@@ -2,7 +2,7 @@ import React from 'react';
 import ProfileCard from '../ProfileCard';
 import { MidCareerIcon } from '../ProfileIcons';
 import { InvestorProfileData, CURRENT_SHARE_PRICE, DEFAULT_DIVIDEND_YIELD, DEFAULT_MONTHLY_APPRECIATION } from './ProfileData';
-import { ProfileType } from './profileConstants';
+import { ProfileType } from './types';
 
 // Mid-Career profile data
 export const midCareerProfile: InvestorProfileData = {

@@ -2,7 +2,7 @@
  * Shared data structures for investor profiles
  */
 import { PortfolioFormData } from '../AssumptionsForm';
-import { ProfileType } from './profileConstants';
+import { ProfileType } from './types';
 
 // Re-export the ProfileType
 export type { ProfileType };

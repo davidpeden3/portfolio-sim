@@ -1,9 +1,8 @@
 import React from 'react';
-import { PortfolioFormData } from '../AssumptionsForm';
 import ProfileCard from '../ProfileCard';
 import { EarlyCareerIcon } from '../ProfileIcons';
 import { InvestorProfileData, CURRENT_SHARE_PRICE, DEFAULT_DIVIDEND_YIELD, DEFAULT_MONTHLY_APPRECIATION } from './ProfileData';
-import { ProfileType } from './profileConstants';
+import { ProfileType } from './types';
 
 // Early Career profile data
 export const earlyCareerProfile: InvestorProfileData = {

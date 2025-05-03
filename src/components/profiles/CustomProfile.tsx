@@ -2,7 +2,7 @@ import React from 'react';
 import ProfileCard from '../ProfileCard';
 import { CustomIcon } from '../ProfileIcons';
 import { InvestorProfileData, CURRENT_SHARE_PRICE, DEFAULT_DIVIDEND_YIELD, DEFAULT_MONTHLY_APPRECIATION } from './ProfileData';
-import { ProfileType } from './profileConstants';
+import { ProfileType } from './types';
 
 // Custom profile metadata only - data values will be set by user
 export const customProfile: InvestorProfileData = {
