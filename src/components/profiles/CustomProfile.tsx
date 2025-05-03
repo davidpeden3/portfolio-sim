@@ -16,7 +16,12 @@ export const customProfile: InvestorProfileData = {
     initialInvestment: 0,
     baseIncome: 0,
     surplusForDripPercent: 0,
-    withholdTaxes: true,
+    withholdTaxes: true, // For backward compatibility
+    taxWithholdingStrategy: 'none',
+    taxWithholdingMethod: 'taxBracket',
+    taxFilingType: 'single',
+    taxFixedAmount: 0,
+    taxFixedPercent: 0,
     simulationMonths: 0,
     initialSharePrice: CURRENT_SHARE_PRICE,
     dividendYield4w: DEFAULT_DIVIDEND_YIELD,

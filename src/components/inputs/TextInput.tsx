@@ -31,8 +31,8 @@ const TextInput: React.FC<TextInputProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   
   // Format display value if formatWithCommas is true and the field is not being edited
-  const displayValue = formatWithCommas && !isEditing && (typeof value === 'number' || value === '') 
-    ? formatNumber(value) 
+  const displayValue = formatWithCommas && !isEditing 
+    ? formatNumber(typeof value === 'number' ? value : parseFloat(value?.toString() || '0') || 0) 
     : value;
   
   // Custom change handler

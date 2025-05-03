@@ -14,7 +14,12 @@ export const earlyCareerProfile: InvestorProfileData = {
     initialInvestment: 10000,
     baseIncome: 60000,
     surplusForDripPercent: 25, // pay loan down faster
-    withholdTaxes: true,
+    withholdTaxes: true, // For backward compatibility
+    taxWithholdingStrategy: 'monthly',
+    taxWithholdingMethod: 'taxBracket',
+    taxFilingType: 'single',
+    taxFixedAmount: 0,
+    taxFixedPercent: 0,
     
     // Simulation Parameters
     simulationMonths: 300, // 25 years

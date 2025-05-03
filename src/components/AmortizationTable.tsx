@@ -2,16 +2,20 @@ import { useState } from "react";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 import { downloadCSV } from "../utils/csvExport";
 
+import { TaxWithholdingStrategy } from "../models/Assumptions";
+
 interface AmortizationTableProps {
     amortization: AmortizationEntry[];
     includeLoan?: boolean;
     includeTaxes?: boolean;
+    taxStrategy?: TaxWithholdingStrategy;
 }
 
 const AmortizationTable = ({ 
     amortization, 
     includeLoan = true, 
-    includeTaxes = true 
+    includeTaxes = true,
+    taxStrategy = 'monthly'
 }: AmortizationTableProps) => {
     const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -33,7 +37,7 @@ const AmortizationTable = ({
         
         // Generate filename based on the active tab, loan, and tax inclusion
         const loanStatus = includeLoan ? "with-loan" : "no-loan";
-        const taxStatus = includeTaxes ? "with-taxes" : "no-taxes";
+        const taxStatus = includeTaxes ? `with-taxes-${taxStrategy}` : "no-taxes";
         const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}-${loanStatus}-${taxStatus}`;
         
         // Trigger the download
@@ -48,6 +52,7 @@ const AmortizationTable = ({
         { key: "distribution", label: "Distribution", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "ytdDistribution", label: "YTD Distribution", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "marginalTaxesWithheld", label: "Taxes Withheld", loanRelated: false, taxRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "effectiveTaxRate", label: "Effective Tax Rate", loanRelated: false, taxRelated: true, format: (val: number) => val?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + "%" },
         { key: "loanPayment", label: "Loan Payment", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "surplusForDrip", label: "Surplus for DRIP", loanRelated: false, taxRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "additionalPrincipal", label: "Additional Principal", loanRelated: true, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
@@ -157,7 +162,9 @@ const AmortizationTable = ({
                                     >
                                         {column.key === 'month' 
                                             ? entry.month 
-                                            : column.format ? column.format(entry[column.key as keyof AmortizationEntry] as number) : entry[column.key as keyof AmortizationEntry]}
+                                            : column.format && entry[column.key as keyof AmortizationEntry] !== undefined 
+                                              ? column.format(entry[column.key as keyof AmortizationEntry] as number) 
+                                              : entry[column.key as keyof AmortizationEntry]}
                                     </td>
                                 ))}
                             </tr>

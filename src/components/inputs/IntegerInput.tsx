@@ -27,8 +27,8 @@ const IntegerInput: React.FC<IntegerInputProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   
   // Format for display when not editing
-  const displayValue = !isEditing && (typeof value === 'number' || value === '') 
-    ? formatMonthValue(typeof value === 'number' ? value : parseFloat(value) || 0) 
+  const displayValue = !isEditing 
+    ? formatMonthValue(typeof value === 'number' ? value : parseFloat(value?.toString() || '0') || 0) 
     : value;
   
   // Custom change handler to ensure integers only

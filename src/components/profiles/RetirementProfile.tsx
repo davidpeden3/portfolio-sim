@@ -14,7 +14,12 @@ export const retirementProfile: InvestorProfileData = {
     initialInvestment: 0,
     baseIncome: 0, // Minimal external income
     surplusForDripPercent: 90, // focus on income
-    withholdTaxes: true,
+    withholdTaxes: true, // For backward compatibility
+    taxWithholdingStrategy: 'monthly',
+    taxWithholdingMethod: 'taxBracket',
+    taxFilingType: 'married',
+    taxFixedAmount: 0,
+    taxFixedPercent: 0,
     
     // Simulation Parameters
     simulationMonths: 120, // 10 years

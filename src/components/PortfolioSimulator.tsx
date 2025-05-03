@@ -46,10 +46,20 @@ export function PortfolioSimulator() {
       
       // If there's no saved profile, default to midCareer
       if (!savedProfile) {
+        // Ensure DEFAULT_FORM_DATA has tax withholding settings with default to 'none'
+        const formDataWithDefaults = {
+          ...DEFAULT_FORM_DATA,
+          taxWithholdingStrategy: DEFAULT_FORM_DATA.taxWithholdingStrategy || 'none',
+          taxWithholdingMethod: DEFAULT_FORM_DATA.taxWithholdingMethod || 'taxBracket',
+          taxFilingType: DEFAULT_FORM_DATA.taxFilingType || 'single',
+          taxFixedAmount: DEFAULT_FORM_DATA.taxFixedAmount || 0,
+          taxFixedPercent: DEFAULT_FORM_DATA.taxFixedPercent || 0
+        };
+        
         return {
           profile: "midCareer" as ProfileType,
           isCustom: false,
-          formData: DEFAULT_FORM_DATA,
+          formData: formDataWithDefaults,
           customData: hasCustom ? JSON.parse(savedCustomProfileData!) : customProfile.data,
           hasCustomProfile: hasCustom
         };
@@ -58,21 +68,44 @@ export function PortfolioSimulator() {
       // If it's a custom profile
       if (savedProfile === "custom" && savedCustomSettings) {
         const customData = JSON.parse(savedCustomSettings);
+        
+        // Ensure customData has tax withholding settings with defaults
+        const dataWithDefaults = {
+          ...customData,
+          taxWithholdingStrategy: customData.taxWithholdingStrategy || 'none',
+          taxWithholdingMethod: customData.taxWithholdingMethod || 'taxBracket',
+          taxFilingType: customData.taxFilingType || 'single',
+          taxFixedAmount: customData.taxFixedAmount || 0,
+          taxFixedPercent: customData.taxFixedPercent || 0
+        };
+        
         return {
           profile: "custom" as ProfileType,
           isCustom: true,
-          formData: customData,
-          customData,
+          formData: dataWithDefaults,
+          customData: dataWithDefaults,
           hasCustomProfile: true
         };
       }
       
       // If it's a predefined profile
       if (savedProfile === "earlyCareer" || savedProfile === "midCareer" || savedProfile === "retirement" || savedProfile === "custom") {
+        const profileData = getProfileData(savedProfile);
+        
+        // Ensure profile data has tax withholding settings with defaults
+        const dataWithDefaults = {
+          ...profileData,
+          taxWithholdingStrategy: profileData.taxWithholdingStrategy || 'none',
+          taxWithholdingMethod: profileData.taxWithholdingMethod || 'taxBracket',
+          taxFilingType: profileData.taxFilingType || 'single',
+          taxFixedAmount: profileData.taxFixedAmount || 0,
+          taxFixedPercent: profileData.taxFixedPercent || 0
+        };
+        
         return {
           profile: savedProfile,
           isCustom: false,
-          formData: getProfileData(savedProfile),
+          formData: dataWithDefaults,
           customData: hasCustom ? JSON.parse(savedCustomProfileData!) : customProfile.data,
           hasCustomProfile: hasCustom
         };
@@ -82,7 +115,14 @@ export function PortfolioSimulator() {
       return {
         profile: "midCareer" as ProfileType,
         isCustom: false,
-        formData: DEFAULT_FORM_DATA,
+        formData: {
+          ...DEFAULT_FORM_DATA,
+          taxWithholdingStrategy: 'none',
+          taxWithholdingMethod: 'taxBracket',
+          taxFilingType: 'single',
+          taxFixedAmount: 0,
+          taxFixedPercent: 0
+        },
         customData: customProfile.data,
         hasCustomProfile: false
       };
@@ -91,7 +131,14 @@ export function PortfolioSimulator() {
       return {
         profile: "midCareer" as ProfileType,
         isCustom: false,
-        formData: DEFAULT_FORM_DATA,
+        formData: {
+          ...DEFAULT_FORM_DATA,
+          taxWithholdingStrategy: 'none',
+          taxWithholdingMethod: 'taxBracket',
+          taxFilingType: 'single',
+          taxFixedAmount: 0,
+          taxFixedPercent: 0
+        },
         customData: customProfile.data,
         hasCustomProfile: false
       };
@@ -224,7 +271,16 @@ export function PortfolioSimulator() {
       initialInvestment: toNumber(formData.initialInvestment),
       baseIncome: toNumber(formData.baseIncome),
       surplusForDripToPrincipalPercent: toNumber(formData.surplusForDripPercent),
-      withholdTaxes: Boolean(formData.withholdTaxes),
+      
+      // Set withholdTaxes based on the new taxWithholdingStrategy
+      withholdTaxes: formData.taxWithholdingStrategy !== 'none',
+      
+      // New tax withholding settings
+      taxWithholdingStrategy: formData.taxWithholdingStrategy,
+      taxWithholdingMethod: formData.taxWithholdingMethod,
+      taxFilingType: formData.taxFilingType,
+      taxFixedAmount: toNumber(formData.taxFixedAmount),
+      taxFixedPercent: toNumber(formData.taxFixedPercent),
       
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
@@ -295,7 +351,8 @@ export function PortfolioSimulator() {
               <AmortizationTable 
                 amortization={results.amortization} 
                 includeLoan={Boolean(formData.includeLoan)}
-                includeTaxes={Boolean(formData.withholdTaxes)}
+                includeTaxes={formData.taxWithholdingStrategy !== 'none'}
+                taxStrategy={formData.taxWithholdingStrategy}
               />
             </div>
           </div>

@@ -5,6 +5,7 @@ export interface AmortizationEntry {
     distribution: number;
     ytdDistribution: number;
     marginalTaxesWithheld: number;
+    effectiveTaxRate?: number; // Calculated effective tax rate for all distributions so far
     loanPayment: number;
     surplusForDrip: number;
     additionalPrincipal: number;

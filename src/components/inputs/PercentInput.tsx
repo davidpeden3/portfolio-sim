@@ -8,6 +8,7 @@ interface PercentInputProps {
   label?: string;
   className?: string;
   disabled?: boolean;
+  small?: boolean; // New prop to make the input smaller
 }
 
 /**
@@ -23,12 +24,13 @@ const PercentInput: React.FC<PercentInputProps> = ({
   label,
   className = '',
   disabled = false,
+  small = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   
   // Format for display when not editing
-  const displayValue = !isEditing && (typeof value === 'number' || value === '') 
-    ? formatPercentValue(typeof value === 'number' ? value : parseFloat(value) || 0) 
+  const displayValue = !isEditing 
+    ? formatPercentValue(typeof value === 'number' ? value : parseFloat(value?.toString() || '0') || 0) 
     : value;
   
   // Custom change handler to strip % and commas
@@ -138,6 +140,7 @@ const PercentInput: React.FC<PercentInputProps> = ({
         onBlur={handleBlur}
         disabled={disabled}
         className={`${defaultClasses} ${disabled ? disabledClasses : ''} ${className}`}
+        style={small ? { maxWidth: '150px' } : undefined}
       />
     </div>
   );

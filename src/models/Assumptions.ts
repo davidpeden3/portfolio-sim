@@ -1,10 +1,22 @@
+// Tax withholding strategy and method types
+export type TaxWithholdingStrategy = 'none' | 'monthly' | 'quarterly';
+export type TaxWithholdingMethod = 'taxBracket' | 'fixedAmount' | 'fixedPercent';
+export type FilingType = 'single' | 'married' | 'headOfHousehold';
+
 export interface Assumptions {
     // Investor Profile
     initialShareCount: number;
     initialInvestment: number;
     baseIncome: number;
     surplusForDripToPrincipalPercent: number;
-    withholdTaxes: boolean;
+    
+    // Tax Settings
+    withholdTaxes: boolean; // Kept for backward compatibility
+    taxWithholdingStrategy?: TaxWithholdingStrategy;
+    taxWithholdingMethod?: TaxWithholdingMethod;
+    taxFilingType?: FilingType;
+    taxFixedAmount?: number;
+    taxFixedPercent?: number;
     
     // Simulation Parameters
     simulationMonths: number;

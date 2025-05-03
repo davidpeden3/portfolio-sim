@@ -80,10 +80,19 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <li>• <span className="font-semibold">Surplus for DRIP to Principal (%)</span>: Percentage of dividend income (after taxes) that goes to paying down loan principal rather than purchasing more shares</li>
             </ul>
 
-            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Tax Parameters</h3>
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Tax Withholding Parameters</h3>
             <ul className="list-none space-y-2 my-4 text-center">
+              <li>• <span className="font-semibold">Withholding Strategy</span>: Choose between no withholding, monthly withholding, or quarterly withholding</li>
+              <li>• <span className="font-semibold">Withholding Method</span>: Select how tax amounts are calculated:
+                <ul className="list-none space-y-1 mt-1">
+                  <li>- <em>Tax Bracket Based</em>: Calculates taxes based on your income tax bracket</li>
+                  <li>- <em>Fixed Amount</em>: Withholds a specific dollar amount each period</li>
+                  <li>- <em>Fixed Percentage</em>: Withholds a fixed percentage of dividend income</li>
+                </ul>
+              </li>
               <li>• <span className="font-semibold">Base Income</span>: Your annual income (used for tax bracket calculations)</li>
-              <li>• <span className="font-semibold">Withhold Taxes</span>: Toggle to include or exclude tax withholding from dividends</li>
+              <li>• <span className="font-semibold">Fixed Amount</span>: Dollar amount withheld per period when using the fixed amount method</li>
+              <li>• <span className="font-semibold">Fixed Percentage</span>: Percentage of dividends withheld when using the fixed percentage method</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-indigo-800 border-b pb-2 mt-8 mb-4">How to Use the Simulator</h2>

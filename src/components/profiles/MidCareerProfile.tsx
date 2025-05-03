@@ -14,7 +14,12 @@ export const midCareerProfile: InvestorProfileData = {
     initialInvestment: 50000,
     baseIncome: 120000,
     surplusForDripPercent: 50, // balanced approach
-    withholdTaxes: true,
+    withholdTaxes: true, // For backward compatibility
+    taxWithholdingStrategy: 'monthly',
+    taxWithholdingMethod: 'taxBracket',
+    taxFilingType: 'married',
+    taxFixedAmount: 0,
+    taxFixedPercent: 0,
     
     // Simulation Parameters
     simulationMonths: 240, // 20 years

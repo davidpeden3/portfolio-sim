@@ -1,10 +1,22 @@
 import React from 'react';
-import { DollarInput, PercentInput, IntegerInput, TextInput } from "./inputs";
+import { 
+  DollarInput, 
+  PercentInput, 
+  IntegerInput, 
+  TextInput, 
+  SelectInput
+} from "./inputs";
 import ProfileSelector from './ProfileSelector';
 import { ProfileType } from './profiles';
+import TaxBracketTable from './TaxBracketTable';
 // Re-export icons for backward compatibility
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
+
+// Tax withholding strategy and method types
+export type TaxWithholdingStrategy = 'none' | 'monthly' | 'quarterly';
+export type TaxWithholdingMethod = 'taxBracket' | 'fixedAmount' | 'fixedPercent';
+export type FilingType = 'single' | 'married' | 'headOfHousehold';
 
 // Form data type for PortfolioSimulator
 export interface PortfolioFormData {
@@ -13,7 +25,14 @@ export interface PortfolioFormData {
     initialInvestment: number | string;
     baseIncome: number | string;
     surplusForDripPercent: number | string;
-    withholdTaxes: boolean;
+    
+    // Tax Settings
+    withholdTaxes: boolean; // Kept for backward compatibility
+    taxWithholdingStrategy: TaxWithholdingStrategy;
+    taxWithholdingMethod: TaxWithholdingMethod;
+    taxFilingType: FilingType;
+    taxFixedAmount: number | string;
+    taxFixedPercent: number | string;
     
     // Simulation Parameters
     simulationMonths: number | string;
@@ -45,8 +64,10 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 // Main form component
 const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
     // Simplified change handler
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const target = e.target as HTMLInputElement | HTMLSelectElement;
+        const { name, value, type } = target;
+        const checked = (target as HTMLInputElement).checked;
         
         if (type === "checkbox") {
             onChange({
@@ -100,20 +121,88 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             onChange={handleChange}
                             label="Base Income ($)"
                         />
-                        
-                        <div className="flex items-center mt-6">
-                            <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Withhold Taxes:</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox"
-                                    name="withholdTaxes"
-                                    checked={formData.withholdTaxes}
-                                    onChange={handleChange}
-                                    className="sr-only peer"
-                                />
-                                <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 transition-colors duration-200 ${formData.withholdTaxes ? 'toggle-switch-on' : 'toggle-switch-off'}`}></div>
-                            </label>
+                        <div>
+                            <SelectInput
+                                name="taxWithholdingStrategy"
+                                value={formData.taxWithholdingStrategy}
+                                onChange={handleChange}
+                                label="Tax Withholding"
+                                options={[
+                                    { value: 'none', label: 'No Withholding' },
+                                    { value: 'monthly', label: 'Withhold Monthly' },
+                                    { value: 'quarterly', label: 'Withhold Quarterly' }
+                                ]}
+                            />
                         </div>
+                        
+                        {/* Only show the withholding details if a strategy other than 'none' is selected */}
+                        {formData.taxWithholdingStrategy !== 'none' && (
+                            <div className="col-span-2 md:col-span-4 mt-4 pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3 transition-colors duration-200">Tax Withholding Settings</h4>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                    <div>
+                                        <SelectInput
+                                            name="taxWithholdingMethod"
+                                            value={formData.taxWithholdingMethod}
+                                            onChange={handleChange}
+                                            label="Withholding Method"
+                                            options={[
+                                                { value: 'taxBracket', label: 'Tax Bracket Based' },
+                                                { value: 'fixedAmount', label: 'Fixed Amount ($)' },
+                                                { value: 'fixedPercent', label: 'Fixed Percentage (%)' }
+                                            ]}
+                                        />
+                                    </div>
+
+                                    {/* For Tax Bracket method, show the filing type selector */}
+                                    {formData.taxWithholdingMethod === 'taxBracket' && (
+                                        <div>
+                                            <SelectInput
+                                                name="taxFilingType"
+                                                value={formData.taxFilingType}
+                                                onChange={handleChange}
+                                                label="Filing Status"
+                                                options={[
+                                                    { value: 'single', label: 'Single' },
+                                                    { value: 'married', label: 'Married Filing Jointly' },
+                                                    { value: 'headOfHousehold', label: 'Head of Household' }
+                                                ]}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {formData.taxWithholdingMethod === 'fixedAmount' && (
+                                        <div>
+                                            <DollarInput
+                                                name="taxFixedAmount"
+                                                value={formData.taxFixedAmount}
+                                                onChange={handleChange}
+                                                label={`Amount per ${formData.taxWithholdingStrategy === 'monthly' ? 'Month' : 'Quarter'}`}
+                                                small={true}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {formData.taxWithholdingMethod === 'fixedPercent' && (
+                                        <div>
+                                            <PercentInput
+                                                name="taxFixedPercent"
+                                                value={formData.taxFixedPercent}
+                                                onChange={handleChange}
+                                                label="Percentage"
+                                                small={true}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Add Tax Bracket Table for the tax bracket method */}
+                                {formData.taxWithholdingMethod === 'taxBracket' && (
+                                    <TaxBracketTable currentFilingType={formData.taxFilingType} />
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
