@@ -104,6 +104,15 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             </ul>
 
             <h2 className="text-2xl font-bold text-indigo-800 border-b pb-2 mt-8 mb-4 text-center">Understanding the Results</h2>
+            
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Dynamic Display</h3>
+            <p className="text-gray-700 leading-relaxed text-center">
+              The results adapt to your settings:
+            </p>
+            <ul className="list-none space-y-2 my-4 text-center">
+              <li>• Loan-related columns are hidden when "Include Loan" is turned off</li>
+              <li>• Tax-related columns are hidden when "Withhold Taxes" is turned off</li>
+            </ul>
 
             <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Summary Tab</h3>
             <p className="text-gray-700 leading-relaxed text-center">The summary shows your initial share count, annualized dividend yield, monthly loan payment, and when the loan will be paid off.</p>
@@ -126,6 +135,16 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             </ul>
 
             <p className="text-gray-700 leading-relaxed text-center">Hover over rows and columns in the table to highlight data and track values more easily.</p>
+            
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Data Export</h3>
+            <p className="text-gray-700 leading-relaxed text-center">
+              You can export the amortization data to CSV format for further analysis:
+            </p>
+            <ul className="list-none space-y-2 my-4 text-center">
+              <li>• Click the "Export CSV" button in the top-right corner of the table</li>
+              <li>• The exported file will reflect the current tab selection (Yearly Summary or Full Detail)</li>
+              <li>• Only visible columns will be included in the export (based on Loan and Tax settings)</li>
+            </ul>
 
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-8 mx-auto max-w-3xl">
               <h2 className="text-lg font-bold text-yellow-800 text-center">Disclaimer</h2>
