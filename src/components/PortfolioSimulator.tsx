@@ -186,11 +186,18 @@ export function PortfolioSimulator() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Helper function to convert form values to numbers (empty string → 0)
+    // Helper functions to convert form values to appropriate numeric types
     const toNumber = (value: any): number => {
       if (value === "" || value === undefined) return 0;
       const parsed = parseFloat(value);
       return isNaN(parsed) ? 0 : parsed;
+    };
+    
+    // Convert to integer for month fields
+    const toInteger = (value: any): number => {
+      if (value === "" || value === undefined) return 0;
+      const parsed = parseFloat(value);
+      return isNaN(parsed) ? 0 : Math.round(parsed);
     };
     
     // Map form data to assumptions with proper type conversion
@@ -203,7 +210,7 @@ export function PortfolioSimulator() {
       withholdTaxes: Boolean(formData.withholdTaxes),
       
       // Simulation Parameters
-      simulationMonths: toNumber(formData.simulationMonths),
+      simulationMonths: toInteger(formData.simulationMonths),
       initialSharePrice: toNumber(formData.initialSharePrice),
       dividendYieldPer4wPercent: toNumber(formData.dividendYield4w),
       monthlyAppreciationPercent: toNumber(formData.monthlyAppreciation),
@@ -212,7 +219,7 @@ export function PortfolioSimulator() {
       includeLoan: Boolean(formData.includeLoan),
       loanAmount: toNumber(formData.loanAmount),
       annualInterestRatePercent: toNumber(formData.annualInterestRate),
-      amortizationMonths: toNumber(formData.amortizationMonths),
+      amortizationMonths: toInteger(formData.amortizationMonths),
     };
     
     // Calculate results

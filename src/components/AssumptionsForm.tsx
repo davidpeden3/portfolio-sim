@@ -1,4 +1,6 @@
+import React, { useState } from 'react';
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
+import { formatDisplayValue } from "../utils/formatUtils";
 // Re-export these icons for use in other components
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
@@ -142,8 +144,12 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 
 // Main form component
 const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
+    // Track which fields are currently being edited
+    const [editingFields, setEditingFields] = useState<{[key: string]: boolean}>({});
+    
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
+        const monthFields = ['simulationMonths', 'amortizationMonths'];
         
         if (type === "checkbox") {
             onChange({
@@ -151,15 +157,81 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: checked,
             });
         } else {
-            // Keep empty strings as empty strings, don't convert to 0 immediately
-            if (value === "") {
+            // Special handling for month fields - always round to integers
+            if (monthFields.includes(name)) {
+                const processedValue = value.replace(/,/g, '');
+                
+                // Handle empty strings
+                if (processedValue === "") {
+                    onChange({
+                        ...formData,
+                        [name]: processedValue,
+                    });
+                    return;
+                }
+                
+                // If it's a valid number, immediately round to integer
+                const numValue = parseFloat(processedValue);
+                if (!isNaN(numValue)) {
+                    // For month fields, never keep decimals, instantly convert to integer
+                    onChange({
+                        ...formData,
+                        [name]: Math.round(numValue),
+                    });
+                } else {
+                    onChange({
+                        ...formData,
+                        [name]: processedValue,
+                    });
+                }
+                return;
+            }
+            
+            // For non-month fields, we need to handle decimal points specially
+            
+            // If the last character is a decimal point, preserve it as a string
+            // This ensures the user can type a decimal point
+            if (value.endsWith('.')) {
                 onChange({
                     ...formData,
-                    [name]: value,
+                    [name]: value.replace(/,/g, ''),
+                });
+                return;
+            }
+            
+            // If the value contains a decimal point followed by digits
+            // Ensure we preserve the exact string format during editing
+            if (value.includes('.')) {
+                const processedValue = value.replace(/,/g, '');
+                
+                // If it's a valid number, we'll convert it, otherwise keep as is
+                const numValue = parseFloat(processedValue);
+                if (!isNaN(numValue)) {
+                    onChange({
+                        ...formData,
+                        [name]: processedValue, // Keep as string during editing to preserve decimals
+                    });
+                } else {
+                    onChange({
+                        ...formData,
+                        [name]: processedValue,
+                    });
+                }
+                return;
+            }
+            
+            // Standard processing for non-decimal values
+            const processedValue = value.replace(/,/g, '');
+            
+            // Keep empty strings as empty strings, don't convert to 0 immediately
+            if (processedValue === "") {
+                onChange({
+                    ...formData,
+                    [name]: processedValue,
                 });
             } else {
                 // Convert valid numbers
-                const numValue = parseFloat(value);
+                const numValue = parseFloat(processedValue);
                 if (!isNaN(numValue)) {
                     onChange({
                         ...formData,
@@ -169,7 +241,47 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     // For invalid input, just keep the value as is
                     onChange({
                         ...formData,
-                        [name]: value,
+                        [name]: processedValue,
+                    });
+                }
+            }
+        }
+    };
+    
+    // Handle focus on input fields
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name } = e.target;
+        setEditingFields({...editingFields, [name]: true});
+    };
+    
+    // Handle blur on input fields
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name } = e.target;
+        setEditingFields({...editingFields, [name]: false});
+        
+        // Convert string values back to numbers on blur
+        const currentValue = formData[name as keyof typeof formData];
+        
+        if (typeof currentValue === 'string' && currentValue !== '') {
+            // Check if this is a month field that should be rounded to integer
+            const monthFields = ['simulationMonths', 'amortizationMonths'];
+            
+            if (monthFields.includes(name)) {
+                // For month fields, convert to integer (rounded)
+                const numValue = parseFloat(currentValue);
+                if (!isNaN(numValue)) {
+                    onChange({
+                        ...formData,
+                        [name]: Math.round(numValue)
+                    });
+                }
+            } else {
+                // For other numeric fields, keep decimal precision
+                const numValue = parseFloat(currentValue);
+                if (!isNaN(numValue)) {
+                    onChange({
+                        ...formData,
+                        [name]: numValue
                     });
                 }
             }
@@ -265,11 +377,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Count</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="initialShareCount"
-                                value={formData.initialShareCount}
+                                value={!editingFields.initialShareCount && (typeof formData.initialShareCount === 'number' || formData.initialShareCount === '') 
+                                    ? formatDisplayValue("initialShareCount", formData.initialShareCount) 
+                                    : formData.initialShareCount}
                                 onChange={handleChange}
-                                step="0.01"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
@@ -277,10 +392,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Investment</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="initialInvestment"
-                                value={formData.initialInvestment}
+                                value={!editingFields.initialInvestment && (typeof formData.initialInvestment === 'number' || formData.initialInvestment === '') 
+                                    ? formatDisplayValue("initialInvestment", formData.initialInvestment) 
+                                    : formData.initialInvestment}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
@@ -288,10 +407,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Base Income</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="baseIncome"
-                                value={formData.baseIncome}
+                                value={!editingFields.baseIncome && (typeof formData.baseIncome === 'number' || formData.baseIncome === '') 
+                                    ? formatDisplayValue("baseIncome", formData.baseIncome) 
+                                    : formData.baseIncome}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                             />
                         </div>
@@ -322,10 +445,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Simulation Duration</label>
                         <input
-                            type="number"
+                            type="text"
                             name="simulationMonths"
-                            value={formData.simulationMonths}
+                            value={!editingFields.simulationMonths && (typeof formData.simulationMonths === 'number' || formData.simulationMonths === '') 
+                                ? formatDisplayValue("simulationMonths", formData.simulationMonths) 
+                                : formData.simulationMonths}
                             onChange={handleChange}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">months</p>
@@ -334,10 +461,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Price</label>
                         <input
-                            type="number"
+                            type="text"
                             name="initialSharePrice"
-                            value={formData.initialSharePrice}
+                            value={!editingFields.initialSharePrice && (typeof formData.initialSharePrice === 'number' || formData.initialSharePrice === '') 
+                                ? formatDisplayValue("initialSharePrice", formData.initialSharePrice) 
+                                : formData.initialSharePrice}
                             onChange={handleChange}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
                     </div>
@@ -345,10 +476,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Dividend Yield</label>
                         <input
-                            type="number"
+                            type="text"
                             name="dividendYield4w"
-                            value={formData.dividendYield4w}
+                            value={!editingFields.dividendYield4w && (typeof formData.dividendYield4w === 'number' || formData.dividendYield4w === '') 
+                                ? formatDisplayValue("dividendYield4w", formData.dividendYield4w) 
+                                : formData.dividendYield4w}
                             onChange={handleChange}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">% per 4w</p>
@@ -357,10 +492,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Monthly Appreciation</label>
                         <input
-                            type="number"
+                            type="text"
                             name="monthlyAppreciation"
-                            value={formData.monthlyAppreciation}
+                            value={!editingFields.monthlyAppreciation && (typeof formData.monthlyAppreciation === 'number' || formData.monthlyAppreciation === '') 
+                                ? formatDisplayValue("monthlyAppreciation", formData.monthlyAppreciation) 
+                                : formData.monthlyAppreciation}
                             onChange={handleChange}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
@@ -398,10 +537,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Loan Amount</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="loanAmount"
-                                value={formData.loanAmount}
+                                value={!editingFields.loanAmount && (typeof formData.loanAmount === 'number' || formData.loanAmount === '') 
+                                    ? formatDisplayValue("loanAmount", formData.loanAmount) 
+                                    : formData.loanAmount}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
@@ -410,10 +553,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Annual Interest Rate</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="annualInterestRate"
-                                value={formData.annualInterestRate}
+                                value={!editingFields.annualInterestRate && (typeof formData.annualInterestRate === 'number' || formData.annualInterestRate === '') 
+                                    ? formatDisplayValue("annualInterestRate", formData.annualInterestRate) 
+                                    : formData.annualInterestRate}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
@@ -423,10 +570,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Amortization</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="amortizationMonths"
-                                value={formData.amortizationMonths}
+                                value={!editingFields.amortizationMonths && (typeof formData.amortizationMonths === 'number' || formData.amortizationMonths === '') 
+                                    ? formatDisplayValue("amortizationMonths", formData.amortizationMonths) 
+                                    : formData.amortizationMonths}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
@@ -436,10 +587,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">DRIP to Principal</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="surplusForDripPercent"
-                                value={formData.surplusForDripPercent}
+                                value={!editingFields.surplusForDripPercent && (typeof formData.surplusForDripPercent === 'number' || formData.surplusForDripPercent === '') 
+                                    ? formatDisplayValue("surplusForDripPercent", formData.surplusForDripPercent) 
+                                    : formData.surplusForDripPercent}
                                 onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
