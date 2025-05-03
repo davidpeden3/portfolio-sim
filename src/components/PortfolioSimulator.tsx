@@ -8,10 +8,27 @@ import CalculatedSummaryDisplay from "./CalculatedSummary";
 import HelpModal from "./HelpModal";
 import VersionFooter from "./VersionFooter";
 import ThemeToggle from "./ThemeToggle";
-import AssumptionsForm, { PortfolioFormData, INVESTOR_PROFILES, ProfileType } from "./AssumptionsForm";
+import AssumptionsForm, { PortfolioFormData } from "./AssumptionsForm";
+import { ProfileType, earlyCareerProfile, midCareerProfile, retirementProfile, customProfile } from "./profiles";
 
 // Default form data is mid-career
-const DEFAULT_FORM_DATA = INVESTOR_PROFILES.midCareer.data;
+const DEFAULT_FORM_DATA = midCareerProfile.data;
+
+// Helper function to get profile data by type
+function getProfileData(profileType: ProfileType) {
+  switch (profileType) {
+    case 'earlyCareer':
+      return earlyCareerProfile.data;
+    case 'midCareer':
+      return midCareerProfile.data;
+    case 'retirement':
+      return retirementProfile.data;
+    case 'custom':
+      return customProfile.data;
+    default:
+      return midCareerProfile.data;
+  }
+}
 
 // Local storage key
 const STORAGE_KEY = 'portfolio-simulator-settings';
@@ -33,7 +50,7 @@ export function PortfolioSimulator() {
           profile: "midCareer" as ProfileType,
           isCustom: false,
           formData: DEFAULT_FORM_DATA,
-          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : INVESTOR_PROFILES.custom.data,
+          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : customProfile.data,
           hasCustomProfile: hasCustom
         };
       }
@@ -51,12 +68,12 @@ export function PortfolioSimulator() {
       }
       
       // If it's a predefined profile
-      if (savedProfile in INVESTOR_PROFILES) {
+      if (savedProfile === "earlyCareer" || savedProfile === "midCareer" || savedProfile === "retirement" || savedProfile === "custom") {
         return {
           profile: savedProfile,
           isCustom: false,
-          formData: INVESTOR_PROFILES[savedProfile].data,
-          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : INVESTOR_PROFILES.custom.data,
+          formData: getProfileData(savedProfile),
+          customData: hasCustom ? JSON.parse(savedCustomProfileData!) : customProfile.data,
           hasCustomProfile: hasCustom
         };
       }
@@ -66,7 +83,7 @@ export function PortfolioSimulator() {
         profile: "midCareer" as ProfileType,
         isCustom: false,
         formData: DEFAULT_FORM_DATA,
-        customData: INVESTOR_PROFILES.custom.data,
+        customData: customProfile.data,
         hasCustomProfile: false
       };
     } catch (error) {
@@ -75,7 +92,7 @@ export function PortfolioSimulator() {
         profile: "midCareer" as ProfileType,
         isCustom: false,
         formData: DEFAULT_FORM_DATA,
-        customData: INVESTOR_PROFILES.custom.data,
+        customData: customProfile.data,
         hasCustomProfile: false
       };
     }
@@ -139,7 +156,7 @@ export function PortfolioSimulator() {
     setSelectedProfile(profile);
     
     if (profile !== "custom") {
-      setFormData(INVESTOR_PROFILES[profile].data);
+      setFormData(getProfileData(profile));
       setIsCustomized(false);
     } else {
       // When switching to custom, use the saved customProfileData
@@ -152,7 +169,7 @@ export function PortfolioSimulator() {
   const handleFormChange = (newFormData: PortfolioFormData) => {
     // Check if the *investor profile fields* have changed from the selected profile
     if (selectedProfile !== "custom") {
-      const profileData = INVESTOR_PROFILES[selectedProfile].data;
+      const profileData = getProfileData(selectedProfile);
       
       // Only check investor profile fields, not simulation parameters or loan settings
       const investorProfileFields = [

@@ -1,7 +1,9 @@
 import React from 'react';
-import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 import { DollarInput, PercentInput, IntegerInput, TextInput } from "./inputs";
-// Re-export these icons for use in other components
+import ProfileSelector from './ProfileSelector';
+import { ProfileType } from './profiles';
+// Re-export icons for backward compatibility
+import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
 // Form data type for PortfolioSimulator
@@ -32,109 +34,7 @@ interface AssumptionsFormProps {
     onSubmit: (e: React.FormEvent) => void;
 }
 
-// Predefined profiles for different investor demographics
-export const INVESTOR_PROFILES = {
-    earlyCareer: {
-        name: "Early Career (20s-30s)",
-        description: "For young investors focusing on growth with moderate income",
-        data: {
-            // Investor Profile
-            initialShareCount: 0,
-            initialInvestment: 20000,
-            baseIncome: 60000,
-            surplusForDripPercent: 100, // All to DRIP for growth
-            withholdTaxes: true,
-            
-            // Simulation Parameters
-            simulationMonths: 300, // 25 years
-            initialSharePrice: 24.33,
-            dividendYield4w: 5,
-            monthlyAppreciation: -1,
-            
-            // Loan Settings
-            includeLoan: true,
-            loanAmount: 15000,
-            annualInterestRate: 7.0,
-            amortizationMonths: 300 // 25 years
-        }
-    },
-    midCareer: {
-        name: "Mid-Career Professional (40s-50s)",
-        description: "For established professionals with higher income and existing position",
-        data: {
-            // Investor Profile
-            initialShareCount: 7500,
-            initialInvestment: 100000,
-            baseIncome: 180000,
-            surplusForDripPercent: 70, // Balanced approach
-            withholdTaxes: true,
-            
-            // Simulation Parameters
-            simulationMonths: 240, // 20 years
-            initialSharePrice: 24.33,
-            dividendYield4w: 5,
-            monthlyAppreciation: -1,
-            
-            // Loan Settings
-            includeLoan: true,
-            loanAmount: 75000,
-            annualInterestRate: 7.5,
-            amortizationMonths: 240 // 20 years
-        }
-    },
-    retirement: {
-        name: "Near/In Retirement (60+)",
-        description: "For income-focused investors with substantial holdings",
-        data: {
-            // Investor Profile
-            initialShareCount: 25000,
-            initialInvestment: 50000,
-            baseIncome: 10000, // Minimal external income
-            surplusForDripPercent: 30, // Focus on income
-            withholdTaxes: true,
-            
-            // Simulation Parameters
-            simulationMonths: 120, // 10 years
-            initialSharePrice: 24.33,
-            dividendYield4w: 5,
-            monthlyAppreciation: -1,
-            
-            // Loan Settings
-            includeLoan: false,
-            loanAmount: 0,
-            annualInterestRate: 0,
-            amortizationMonths: 120 // 10 years but loan is excluded
-        }
-    },
-    custom: {
-        name: "Custom Profile",
-        description: "Your personalized settings",
-        data: {
-            // Investor Profile
-            initialShareCount: 0,
-            initialInvestment: 200000,
-            baseIncome: 100000,
-            surplusForDripPercent: 75,
-            withholdTaxes: true,
-            
-            // Simulation Parameters
-            simulationMonths: 240, // 20 years
-            initialSharePrice: 24.33,
-            dividendYield4w: 5,
-            monthlyAppreciation: -1,
-            
-            // Loan Settings
-            includeLoan: true,
-            loanAmount: 200000,
-            annualInterestRate: 7.5,
-            amortizationMonths: 240 // 20 years
-        }
-    }
-};
-
-export type ProfileType = "earlyCareer" | "midCareer" | "retirement" | "custom";
-
-
+// Profiles are now imported from the profiles directory
 interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
     selectedProfile: ProfileType;
     isCustomized: boolean;
@@ -169,80 +69,11 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Investor Profile</h3>
                 
                 {/* Profile Selector */}
-                <div className="mb-6">
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-3 transition-colors duration-200">Select a predefined profile or customize your own:</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div 
-                            onClick={() => onProfileChange("earlyCareer")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                                selectedProfile === "earlyCareer" 
-                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
-                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
-                            }`}
-                        >
-                            <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "earlyCareer" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
-                                    <EarlyCareerIcon />
-                                </div>
-                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.earlyCareer.name}</h4>
-                            </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.earlyCareer.description}</p>
-                        </div>
-                        
-                        <div 
-                            onClick={() => onProfileChange("midCareer")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                                selectedProfile === "midCareer" 
-                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
-                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
-                            }`}
-                        >
-                            <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "midCareer" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
-                                    <MidCareerIcon />
-                                </div>
-                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.midCareer.name}</h4>
-                            </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.midCareer.description}</p>
-                        </div>
-                        
-                        <div 
-                            onClick={() => onProfileChange("retirement")}
-                            className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                                selectedProfile === "retirement" 
-                                    ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
-                                    : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
-                            }`}
-                        >
-                            <div className="flex items-center mb-1">
-                                <div className={`mr-2 ${selectedProfile === "retirement" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
-                                    <RetirementIcon />
-                                </div>
-                                <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.retirement.name}</h4>
-                            </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.retirement.description}</p>
-                        </div>
-                        
-                        {hasCustomProfile && (
-                            <div 
-                                onClick={() => onProfileChange("custom")}
-                                className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-                                    selectedProfile === "custom" 
-                                        ? "border-indigo-500 dark:border-basshead-blue-500 bg-indigo-50 dark:bg-darkBlue-700 shadow-sm" 
-                                        : "border-gray-200 dark:border-darkBlue-600 hover:border-indigo-300 dark:hover:border-basshead-blue-600 hover:shadow-sm"
-                                }`}
-                            >
-                                <div className="flex items-center mb-1">
-                                    <div className={`mr-2 ${selectedProfile === "custom" ? "text-indigo-600 dark:text-basshead-blue-500" : "text-gray-500 dark:text-gray-400"} transition-colors duration-200`}>
-                                        <CustomIcon />
-                                    </div>
-                                    <h4 className="font-medium text-sm text-gray-900 dark:text-white transition-colors duration-200">{INVESTOR_PROFILES.custom.name}</h4>
-                                </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-300 transition-colors duration-200">{INVESTOR_PROFILES.custom.description}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <ProfileSelector
+                    selectedProfile={selectedProfile}
+                    onProfileChange={onProfileChange}
+                    hasCustomProfile={hasCustomProfile}
+                />
                 
                 {/* Profile Settings */}
                 <div className="pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
