@@ -57,23 +57,23 @@ export function formatDisplayValue(fieldName: string, value: number | string): s
 }
 
 /**
- * Format a value as currency with two decimal places
+ * Format a value as currency with two decimal places and $ symbol
  */
 export function formatDollarValue(value: number): string {
-  return value.toLocaleString('en-US', {
+  return '$' + value.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
 }
 
 /**
- * Format a value as a percentage with two decimal places
+ * Format a value as a percentage with two decimal places and % symbol
  */
 export function formatPercentValue(value: number): string {
   return value.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  });
+  }) + '%';
 }
 
 /**

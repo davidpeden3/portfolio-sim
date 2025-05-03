@@ -150,6 +150,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         const monthFields = ['simulationMonths', 'amortizationMonths'];
+        const dollarFields = ['initialInvestment', 'baseIncome', 'loanAmount', 'initialSharePrice'];
+        const percentFields = ['dividendYield4w', 'monthlyAppreciation', 'annualInterestRate', 'surplusForDripPercent'];
         
         if (type === "checkbox") {
             onChange({
@@ -157,21 +159,30 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: checked,
             });
         } else {
+            // First clean the input by removing currency and percentage symbols
+            let cleanValue = value;
+            if (dollarFields.includes(name)) {
+                cleanValue = cleanValue.replace(/\$/g, ''); // Remove $ symbol
+            }
+            if (percentFields.includes(name)) {
+                cleanValue = cleanValue.replace(/%/g, ''); // Remove % symbol
+            }
+            // Then remove commas
+            cleanValue = cleanValue.replace(/,/g, '');
+            
             // Special handling for month fields - always round to integers
             if (monthFields.includes(name)) {
-                const processedValue = value.replace(/,/g, '');
-                
                 // Handle empty strings
-                if (processedValue === "") {
+                if (cleanValue === "") {
                     onChange({
                         ...formData,
-                        [name]: processedValue,
+                        [name]: cleanValue,
                     });
                     return;
                 }
                 
                 // If it's a valid number, immediately round to integer
-                const numValue = parseFloat(processedValue);
+                const numValue = parseFloat(cleanValue);
                 if (!isNaN(numValue)) {
                     // For month fields, never keep decimals, instantly convert to integer
                     onChange({
@@ -181,7 +192,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 } else {
                     onChange({
                         ...formData,
-                        [name]: processedValue,
+                        [name]: cleanValue,
                     });
                 }
                 return;
@@ -191,47 +202,42 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             
             // If the last character is a decimal point, preserve it as a string
             // This ensures the user can type a decimal point
-            if (value.endsWith('.')) {
+            if (cleanValue.endsWith('.')) {
                 onChange({
                     ...formData,
-                    [name]: value.replace(/,/g, ''),
+                    [name]: cleanValue,
                 });
                 return;
             }
             
             // If the value contains a decimal point followed by digits
             // Ensure we preserve the exact string format during editing
-            if (value.includes('.')) {
-                const processedValue = value.replace(/,/g, '');
-                
+            if (cleanValue.includes('.')) {
                 // If it's a valid number, we'll convert it, otherwise keep as is
-                const numValue = parseFloat(processedValue);
+                const numValue = parseFloat(cleanValue);
                 if (!isNaN(numValue)) {
                     onChange({
                         ...formData,
-                        [name]: processedValue, // Keep as string during editing to preserve decimals
+                        [name]: cleanValue, // Keep as string during editing to preserve decimals
                     });
                 } else {
                     onChange({
                         ...formData,
-                        [name]: processedValue,
+                        [name]: cleanValue,
                     });
                 }
                 return;
             }
             
-            // Standard processing for non-decimal values
-            const processedValue = value.replace(/,/g, '');
-            
             // Keep empty strings as empty strings, don't convert to 0 immediately
-            if (processedValue === "") {
+            if (cleanValue === "") {
                 onChange({
                     ...formData,
-                    [name]: processedValue,
+                    [name]: cleanValue,
                 });
             } else {
                 // Convert valid numbers
-                const numValue = parseFloat(processedValue);
+                const numValue = parseFloat(cleanValue);
                 if (!isNaN(numValue)) {
                     onChange({
                         ...formData,
@@ -241,7 +247,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     // For invalid input, just keep the value as is
                     onChange({
                         ...formData,
-                        [name]: processedValue,
+                        [name]: cleanValue,
                     });
                 }
             }
@@ -486,7 +492,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">% per 4w</p>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">every four weeks</p>
                     </div>
                     
                     <div>
@@ -502,7 +508,6 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                     </div>
                 </div>
             </div>
@@ -564,7 +569,6 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                         </div>
                         
                         <div>
@@ -598,7 +602,6 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">%</p>
                         </div>
                     </div>
                 </div>
