@@ -246,7 +246,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 
                 {/* Profile Settings */}
                 <div className="pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Core settings that define your investment approach:</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that define your investment approach.</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <TextInput
                             name="initialShareCount"

@@ -233,7 +233,7 @@ export function PortfolioSimulator() {
     <div className="min-h-screen bg-gray-100 dark:bg-darkBlue-900 p-4 md:p-8 transition-colors duration-200">
       <div className="max-w-5xl mx-auto bg-white dark:bg-darkBlue-800 shadow-lg rounded-lg p-6 md:p-8 transition-colors duration-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white transition-colors duration-200">Portfolio Simulator</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white transition-colors duration-200">MSTY Portfolio Simulator</h1>
           <div className="flex flex-wrap gap-3 items-center">
             <ThemeToggle />
             <button
