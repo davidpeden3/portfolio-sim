@@ -292,7 +292,10 @@ export function PortfolioSimulator() {
             <div className="border-t border-gray-200 dark:border-darkBlue-700 pt-8 transition-colors duration-200">
               <CalculatedSummaryDisplay summary={results.summary} />
               <PortfolioChart amortization={results.amortization} />
-              <AmortizationTable amortization={results.amortization} />
+              <AmortizationTable 
+                amortization={results.amortization} 
+                includeLoan={Boolean(formData.includeLoan)} 
+              />
             </div>
           </div>
         )}

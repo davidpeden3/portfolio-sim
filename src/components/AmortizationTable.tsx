@@ -4,9 +4,10 @@ import { downloadCSV } from "../utils/csvExport";
 
 interface AmortizationTableProps {
     amortization: AmortizationEntry[];
+    includeLoan?: boolean;
 }
 
-const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
+const AmortizationTable = ({ amortization, includeLoan = true }: AmortizationTableProps) => {
     const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
     const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
@@ -19,38 +20,42 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         // Determine which data to export based on the active tab
         const dataToExport = activeTab === "summary" ? yearlyAmortization : amortization;
         
-        // Create column definitions for the CSV
+        // Create column definitions for the CSV - only include visible columns
         const csvColumns = columns.map(col => ({
             key: col.key as keyof AmortizationEntry,
             header: col.label
         }));
         
-        // Generate filename based on the active tab
-        const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}`;
+        // Generate filename based on the active tab and loan inclusion
+        const loanStatus = includeLoan ? "with-loan" : "no-loan";
+        const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}-${loanStatus}`;
         
         // Trigger the download
         downloadCSV(dataToExport, filename, csvColumns);
     };
 
-    // Column definitions for more programmatic handling
-    const columns = [
-        { key: "month", label: "Month", sticky: true },
-        { key: "shareCount", label: "Share Count", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "dividend", label: "Dividend", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "distribution", label: "Distribution", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "ytdDistribution", label: "YTD Distribution", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "marginalTaxesWithheld", label: "Taxes Withheld", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "loanPayment", label: "Loan Payment", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "surplusForDrip", label: "Surplus for DRIP", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "additionalPrincipal", label: "Additional Principal", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "actualDrip", label: "Actual DRIP", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "sharePrice", label: "Share Price", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "newSharesFromDrip", label: "New Shares", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "totalShares", label: "Total Shares", format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "portfolioValue", label: "Portfolio Value", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "loanPrincipal", label: "Loan Principal", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "netPortfolioValue", label: "Net Portfolio Value", format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }
+    // Define all columns
+    const allColumns = [
+        { key: "month", label: "Month", sticky: true, loanRelated: false },
+        { key: "shareCount", label: "Share Count", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "dividend", label: "Dividend", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "distribution", label: "Distribution", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "ytdDistribution", label: "YTD Distribution", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "marginalTaxesWithheld", label: "Taxes Withheld", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPayment", label: "Loan Payment", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "surplusForDrip", label: "Surplus for DRIP", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "additionalPrincipal", label: "Additional Principal", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "actualDrip", label: "Actual DRIP", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "sharePrice", label: "Share Price", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "newSharesFromDrip", label: "New Shares", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "totalShares", label: "Total Shares", loanRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "portfolioValue", label: "Portfolio Value", loanRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "loanPrincipal", label: "Loan Principal", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "netPortfolioValue", label: "Net Portfolio Value", loanRelated: true, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }
     ];
+    
+    // Filter columns based on includeLoan prop
+    const columns = includeLoan ? allColumns : allColumns.filter(col => !col.loanRelated);
     
     // CSS class helpers for highlighting
     const getHeaderCellClass = (colIndex: number) => {
