@@ -3,12 +3,22 @@
  */
 
 /**
+ * Formats a number to have at most 4 decimal places
+ */
+function formatNumber(value: number): string {
+  if (Number.isInteger(value)) {
+    return value.toString();
+  }
+  return value.toFixed(4);
+}
+
+/**
  * Converts data to CSV format and triggers download
  * @param data Array of objects to convert to CSV
  * @param filename Name of the file to download
  * @param columns Optional array of column definitions with keys and headers
  */
-export function downloadCSV<T>(
+export function downloadCSV<T extends object>(
   data: T[], 
   filename: string, 
   columns?: { key: keyof T; header: string }[]
@@ -19,7 +29,7 @@ export function downloadCSV<T>(
   }
 
   // If columns are not specified, generate them from the first data item
-  const cols = columns || Object.keys(data[0]).map(key => ({
+  const cols = columns || Object.keys(data[0] as object).map(key => ({
     key: key as keyof T,
     header: key as string
   }));
@@ -31,24 +41,29 @@ export function downloadCSV<T>(
   const csvRows = data.map(item => {
     return cols.map(col => {
       const value = item[col.key];
+      
       // Handle different types of values
       if (value === null || value === undefined) {
         return '""';
-      } else if (typeof value === 'string') {
-        // Escape quotes in strings
-        return `"${value.replace(/"/g, '""')}"`;
-      } else if (typeof value === 'number') {
-        // Truncate decimal values to 4 decimal places
-        if (Number.isInteger(value)) {
-          return value;
-        } else {
-          // Handle floating point numbers
-          const formattedValue = value.toFixed(4);
-          return parseFloat(formattedValue);
-        }
-      } else {
-        return `"${String(value)}"`;
-      }
+      } 
+      
+      // Use type assertions to silence warnings while preserving type safety
+      const valueType = typeof value;
+      
+      if (valueType === 'string') {
+        // Escape quotes in strings with proper type handling
+        const strValue = value as string;
+        return `"${strValue.replace(/"/g, '""')}"`;
+      } 
+      
+      if (valueType === 'number') {
+        // Format numbers with limited decimal places
+        const numValue = value as number;
+        return formatNumber(numValue);
+      } 
+      
+      // Handle any other type by converting to string
+      return `"${String(value)}"`;
     }).join(',');
   });
 
