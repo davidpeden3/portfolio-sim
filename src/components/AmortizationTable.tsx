@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AmortizationEntry } from "../models/AmortizationEntry";
+import { downloadCSV } from "../utils/csvExport";
 
 interface AmortizationTableProps {
     amortization: AmortizationEntry[];
@@ -12,6 +13,24 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
     
     // Filter yearly entries for summary tab (months where n % 12 === 0)
     const yearlyAmortization = amortization.filter(entry => entry.month > 0 && entry.month % 12 === 0);
+    
+    // Function to handle CSV export
+    const handleExportCSV = () => {
+        // Determine which data to export based on the active tab
+        const dataToExport = activeTab === "summary" ? yearlyAmortization : amortization;
+        
+        // Create column definitions for the CSV
+        const csvColumns = columns.map(col => ({
+            key: col.key as keyof AmortizationEntry,
+            header: col.label
+        }));
+        
+        // Generate filename based on the active tab
+        const filename = `portfolio-amortization-${activeTab === "summary" ? "yearly" : "monthly"}`;
+        
+        // Trigger the download
+        downloadCSV(dataToExport, filename, csvColumns);
+    };
 
     // Column definitions for more programmatic handling
     const columns = [
@@ -136,28 +155,43 @@ const AmortizationTable = ({ amortization }: AmortizationTableProps) => {
         <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white transition-colors duration-200">Amortization Data</h2>
             
-            {/* Tabs */}
-            <div className="flex border-b dark:border-darkBlue-700 mb-4 transition-colors duration-200">
-                <button
-                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
-                        activeTab === "summary"
-                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
-                    onClick={() => setActiveTab("summary")}
-                >
-                    Yearly Summary
-                </button>
-                <button
-                    className={`py-2 px-4 font-medium transition-colors duration-200 ${
-                        activeTab === "detail"
-                            ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
-                    onClick={() => setActiveTab("detail")}
-                >
-                    Full Detail
-                </button>
+            {/* Tabs and Export Button */}
+            <div className="flex justify-between border-b dark:border-darkBlue-700 mb-4 transition-colors duration-200">
+                <div className="flex">
+                    <button
+                        className={`py-2 px-4 font-medium transition-colors duration-200 ${
+                            activeTab === "summary"
+                                ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                        onClick={() => setActiveTab("summary")}
+                    >
+                        Yearly Summary
+                    </button>
+                    <button
+                        className={`py-2 px-4 font-medium transition-colors duration-200 ${
+                            activeTab === "detail"
+                                ? "text-blue-600 dark:text-basshead-blue-500 border-b-2 border-blue-600 dark:border-basshead-blue-500"
+                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                        onClick={() => setActiveTab("detail")}
+                    >
+                        Full Detail
+                    </button>
+                </div>
+                
+                {/* CSV Export Button - right aligned with margin bottom */}
+                <div className="mb-4">
+                    <button
+                        className="inline-flex items-center px-4 py-2 border border-indigo-300 dark:border-basshead-blue-600 rounded-md shadow-sm text-sm font-medium text-indigo-700 dark:text-white bg-white dark:bg-darkBlue-700 hover:bg-indigo-50 dark:hover:bg-darkBlue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 transition-colors duration-200"
+                        onClick={handleExportCSV}
+                    >
+                        <svg className="h-5 w-5 mr-2 help-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span className="help-guide-text">Export CSV</span>
+                    </button>
+                </div>
             </div>
             
             <div className="overflow-hidden">
