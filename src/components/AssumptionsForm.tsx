@@ -396,7 +396,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Investment</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Investment ($)</label>
                             <input
                                 type="text"
                                 name="initialInvestment"
@@ -411,7 +411,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Base Income</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Base Income ($)</label>
                             <input
                                 type="text"
                                 name="baseIncome"
@@ -449,7 +449,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Simulation Duration</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Simulation Duration (months)</label>
                         <input
                             type="text"
                             name="simulationMonths"
@@ -461,11 +461,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">months</p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Price</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Price ($)</label>
                         <input
                             type="text"
                             name="initialSharePrice"
@@ -480,7 +479,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Dividend Yield</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Dividend Yield (% per 4w)</label>
                         <input
                             type="text"
                             name="dividendYield4w"
@@ -492,11 +491,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             onBlur={handleBlur}
                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
                         />
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">every four weeks</p>
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Monthly Appreciation</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Monthly Appreciation (%)</label>
                         <input
                             type="text"
                             name="monthlyAppreciation"
@@ -540,7 +538,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Loan Amount</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Loan Amount ($)</label>
                             <input
                                 type="text"
                                 name="loanAmount"
@@ -556,7 +554,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Annual Interest Rate</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Annual Interest Rate (%)</label>
                             <input
                                 type="text"
                                 name="annualInterestRate"
@@ -572,7 +570,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Amortization</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Amortization (months)</label>
                             <input
                                 type="text"
                                 name="amortizationMonths"
@@ -585,11 +583,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 disabled={!formData.includeLoan}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
                             />
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-200">months</p>
-                        </div>
+                            </div>
                         
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">DRIP to Principal</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">DRIP to Principal (%)</label>
                             <input
                                 type="text"
                                 name="surplusForDripPercent"
