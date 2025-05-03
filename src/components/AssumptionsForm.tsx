@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
-import { formatDisplayValue } from "../utils/formatUtils";
+import { DollarInput, PercentInput, IntegerInput, TextInput } from "./inputs";
 // Re-export these icons for use in other components
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
@@ -144,14 +144,9 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 
 // Main form component
 const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
-    // Track which fields are currently being edited
-    const [editingFields, setEditingFields] = useState<{[key: string]: boolean}>({});
-    
+    // Simplified change handler
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
-        const monthFields = ['simulationMonths', 'amortizationMonths'];
-        const dollarFields = ['initialInvestment', 'baseIncome', 'loanAmount', 'initialSharePrice'];
-        const percentFields = ['dividendYield4w', 'monthlyAppreciation', 'annualInterestRate', 'surplusForDripPercent'];
         
         if (type === "checkbox") {
             onChange({
@@ -159,138 +154,11 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: checked,
             });
         } else {
-            // First clean the input by removing currency and percentage symbols
-            let cleanValue = value;
-            if (dollarFields.includes(name)) {
-                cleanValue = cleanValue.replace(/\$/g, ''); // Remove $ symbol
-            }
-            if (percentFields.includes(name)) {
-                cleanValue = cleanValue.replace(/%/g, ''); // Remove % symbol
-            }
-            // Then remove commas
-            cleanValue = cleanValue.replace(/,/g, '');
-            
-            // Special handling for month fields - always round to integers
-            if (monthFields.includes(name)) {
-                // Handle empty strings
-                if (cleanValue === "") {
-                    onChange({
-                        ...formData,
-                        [name]: cleanValue,
-                    });
-                    return;
-                }
-                
-                // If it's a valid number, immediately round to integer
-                const numValue = parseFloat(cleanValue);
-                if (!isNaN(numValue)) {
-                    // For month fields, never keep decimals, instantly convert to integer
-                    onChange({
-                        ...formData,
-                        [name]: Math.round(numValue),
-                    });
-                } else {
-                    onChange({
-                        ...formData,
-                        [name]: cleanValue,
-                    });
-                }
-                return;
-            }
-            
-            // For non-month fields, we need to handle decimal points specially
-            
-            // If the last character is a decimal point, preserve it as a string
-            // This ensures the user can type a decimal point
-            if (cleanValue.endsWith('.')) {
-                onChange({
-                    ...formData,
-                    [name]: cleanValue,
-                });
-                return;
-            }
-            
-            // If the value contains a decimal point followed by digits
-            // Ensure we preserve the exact string format during editing
-            if (cleanValue.includes('.')) {
-                // If it's a valid number, we'll convert it, otherwise keep as is
-                const numValue = parseFloat(cleanValue);
-                if (!isNaN(numValue)) {
-                    onChange({
-                        ...formData,
-                        [name]: cleanValue, // Keep as string during editing to preserve decimals
-                    });
-                } else {
-                    onChange({
-                        ...formData,
-                        [name]: cleanValue,
-                    });
-                }
-                return;
-            }
-            
-            // Keep empty strings as empty strings, don't convert to 0 immediately
-            if (cleanValue === "") {
-                onChange({
-                    ...formData,
-                    [name]: cleanValue,
-                });
-            } else {
-                // Convert valid numbers
-                const numValue = parseFloat(cleanValue);
-                if (!isNaN(numValue)) {
-                    onChange({
-                        ...formData,
-                        [name]: numValue,
-                    });
-                } else {
-                    // For invalid input, just keep the value as is
-                    onChange({
-                        ...formData,
-                        [name]: cleanValue,
-                    });
-                }
-            }
-        }
-    };
-    
-    // Handle focus on input fields
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name } = e.target;
-        setEditingFields({...editingFields, [name]: true});
-    };
-    
-    // Handle blur on input fields
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name } = e.target;
-        setEditingFields({...editingFields, [name]: false});
-        
-        // Convert string values back to numbers on blur
-        const currentValue = formData[name as keyof typeof formData];
-        
-        if (typeof currentValue === 'string' && currentValue !== '') {
-            // Check if this is a month field that should be rounded to integer
-            const monthFields = ['simulationMonths', 'amortizationMonths'];
-            
-            if (monthFields.includes(name)) {
-                // For month fields, convert to integer (rounded)
-                const numValue = parseFloat(currentValue);
-                if (!isNaN(numValue)) {
-                    onChange({
-                        ...formData,
-                        [name]: Math.round(numValue)
-                    });
-                }
-            } else {
-                // For other numeric fields, keep decimal precision
-                const numValue = parseFloat(currentValue);
-                if (!isNaN(numValue)) {
-                    onChange({
-                        ...formData,
-                        [name]: numValue
-                    });
-                }
-            }
+            // Handle input changes - specialized components handle formatting
+            onChange({
+                ...formData,
+                [name]: value,
+            });
         }
     };
 
@@ -380,50 +248,27 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <div className="pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
                     <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Core settings that define your investment approach:</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Count</label>
-                            <input
-                                type="text"
-                                name="initialShareCount"
-                                value={!editingFields.initialShareCount && (typeof formData.initialShareCount === 'number' || formData.initialShareCount === '') 
-                                    ? formatDisplayValue("initialShareCount", formData.initialShareCount) 
-                                    : formData.initialShareCount}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                            />
-                        </div>
+                        <TextInput
+                            name="initialShareCount"
+                            value={formData.initialShareCount}
+                            onChange={handleChange}
+                            label="Initial Share Count"
+                            formatWithCommas={true}
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Investment ($)</label>
-                            <input
-                                type="text"
-                                name="initialInvestment"
-                                value={!editingFields.initialInvestment && (typeof formData.initialInvestment === 'number' || formData.initialInvestment === '') 
-                                    ? formatDisplayValue("initialInvestment", formData.initialInvestment) 
-                                    : formData.initialInvestment}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                            />
-                        </div>
+                        <DollarInput
+                            name="initialInvestment"
+                            value={formData.initialInvestment}
+                            onChange={handleChange}
+                            label="Initial Investment ($)"
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Base Income ($)</label>
-                            <input
-                                type="text"
-                                name="baseIncome"
-                                value={!editingFields.baseIncome && (typeof formData.baseIncome === 'number' || formData.baseIncome === '') 
-                                    ? formatDisplayValue("baseIncome", formData.baseIncome) 
-                                    : formData.baseIncome}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                            />
-                        </div>
+                        <DollarInput
+                            name="baseIncome"
+                            value={formData.baseIncome}
+                            onChange={handleChange}
+                            label="Base Income ($)"
+                        />
                         
                         <div className="flex items-center mt-6">
                             <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Withhold Taxes:</span>
@@ -448,65 +293,33 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that control how the portfolio simulation runs.</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Simulation Duration (months)</label>
-                        <input
-                            type="text"
-                            name="simulationMonths"
-                            value={!editingFields.simulationMonths && (typeof formData.simulationMonths === 'number' || formData.simulationMonths === '') 
-                                ? formatDisplayValue("simulationMonths", formData.simulationMonths) 
-                                : formData.simulationMonths}
-                            onChange={handleChange}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                        />
-                    </div>
+                    <IntegerInput
+                        name="simulationMonths"
+                        value={formData.simulationMonths}
+                        onChange={handleChange}
+                        label="Simulation Duration (months)"
+                    />
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Initial Share Price ($)</label>
-                        <input
-                            type="text"
-                            name="initialSharePrice"
-                            value={!editingFields.initialSharePrice && (typeof formData.initialSharePrice === 'number' || formData.initialSharePrice === '') 
-                                ? formatDisplayValue("initialSharePrice", formData.initialSharePrice) 
-                                : formData.initialSharePrice}
-                            onChange={handleChange}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                        />
-                    </div>
+                    <DollarInput
+                        name="initialSharePrice"
+                        value={formData.initialSharePrice}
+                        onChange={handleChange}
+                        label="Initial Share Price ($)"
+                    />
                     
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Dividend Yield (% per 4w)</label>
-                        <input
-                            type="text"
-                            name="dividendYield4w"
-                            value={!editingFields.dividendYield4w && (typeof formData.dividendYield4w === 'number' || formData.dividendYield4w === '') 
-                                ? formatDisplayValue("dividendYield4w", formData.dividendYield4w) 
-                                : formData.dividendYield4w}
-                            onChange={handleChange}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                        />
-                    </div>
+                    <PercentInput
+                        name="dividendYield4w"
+                        value={formData.dividendYield4w}
+                        onChange={handleChange}
+                        label="Dividend Yield (% per 4w)"
+                    />
                     
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Monthly Appreciation (%)</label>
-                        <input
-                            type="text"
-                            name="monthlyAppreciation"
-                            value={!editingFields.monthlyAppreciation && (typeof formData.monthlyAppreciation === 'number' || formData.monthlyAppreciation === '') 
-                                ? formatDisplayValue("monthlyAppreciation", formData.monthlyAppreciation) 
-                                : formData.monthlyAppreciation}
-                            onChange={handleChange}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-700 dark:text-white shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 transition-colors duration-200"
-                        />
-                    </div>
+                    <PercentInput
+                        name="monthlyAppreciation"
+                        value={formData.monthlyAppreciation}
+                        onChange={handleChange}
+                        label="Monthly Appreciation (%)"
+                    />
                 </div>
             </div>
             
@@ -537,69 +350,37 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 
                 <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Loan Amount ($)</label>
-                            <input
-                                type="text"
-                                name="loanAmount"
-                                value={!editingFields.loanAmount && (typeof formData.loanAmount === 'number' || formData.loanAmount === '') 
-                                    ? formatDisplayValue("loanAmount", formData.loanAmount) 
-                                    : formData.loanAmount}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
-                            />
-                        </div>
+                        <DollarInput
+                            name="loanAmount"
+                            value={formData.loanAmount}
+                            onChange={handleChange}
+                            label="Loan Amount ($)"
+                            disabled={!formData.includeLoan}
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Annual Interest Rate (%)</label>
-                            <input
-                                type="text"
-                                name="annualInterestRate"
-                                value={!editingFields.annualInterestRate && (typeof formData.annualInterestRate === 'number' || formData.annualInterestRate === '') 
-                                    ? formatDisplayValue("annualInterestRate", formData.annualInterestRate) 
-                                    : formData.annualInterestRate}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
-                            />
-                        </div>
+                        <PercentInput
+                            name="annualInterestRate"
+                            value={formData.annualInterestRate}
+                            onChange={handleChange}
+                            label="Annual Interest Rate (%)"
+                            disabled={!formData.includeLoan}
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">Amortization (months)</label>
-                            <input
-                                type="text"
-                                name="amortizationMonths"
-                                value={!editingFields.amortizationMonths && (typeof formData.amortizationMonths === 'number' || formData.amortizationMonths === '') 
-                                    ? formatDisplayValue("amortizationMonths", formData.amortizationMonths) 
-                                    : formData.amortizationMonths}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
-                            />
-                            </div>
+                        <IntegerInput
+                            name="amortizationMonths"
+                            value={formData.amortizationMonths}
+                            onChange={handleChange}
+                            label="Amortization (months)"
+                            disabled={!formData.includeLoan}
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors duration-200">DRIP to Principal (%)</label>
-                            <input
-                                type="text"
-                                name="surplusForDripPercent"
-                                value={!editingFields.surplusForDripPercent && (typeof formData.surplusForDripPercent === 'number' || formData.surplusForDripPercent === '') 
-                                    ? formatDisplayValue("surplusForDripPercent", formData.surplusForDripPercent) 
-                                    : formData.surplusForDripPercent}
-                                onChange={handleChange}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                disabled={!formData.includeLoan}
-                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-darkBlue-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-basshead-blue-500 focus:border-indigo-500 dark:focus:border-basshead-blue-500 disabled:bg-gray-100 dark:disabled:bg-darkBlue-600 disabled:cursor-not-allowed dark:text-white dark:bg-darkBlue-700 transition-colors duration-200"
-                            />
-                        </div>
+                        <PercentInput
+                            name="surplusForDripPercent"
+                            value={formData.surplusForDripPercent}
+                            onChange={handleChange}
+                            label="DRIP to Principal (%)"
+                            disabled={!formData.includeLoan}
+                        />
                     </div>
                 </div>
             </div>
