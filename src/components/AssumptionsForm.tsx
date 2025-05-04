@@ -83,24 +83,23 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: checked,
             });
         } else if (name === "dripStrategy") {
-            if (value === "percentage") {
+            // The value coming from an input could be of any string type, so we need to check
+            // if it's a valid DripStrategy value. If not, default to 'percentage'
+            const dripValue = (value === 'none' || value === 'percentage' || value === 'fixedAmount') 
+                ? value as 'none' | 'percentage' | 'fixedAmount'
+                : 'percentage';
+                
+            if (dripValue === 'percentage') {
                 // Set default percentage to 100% when selecting percentage strategy
                 onChange({
                     ...formData,
-                    [name]: value,
-                    dripPercentage: formData.dripPercentage || 100,
-                });
-            } else if (value === "") {
-                // If no value is selected, default to percentage
-                onChange({
-                    ...formData,
-                    [name]: "percentage",
+                    [name]: dripValue,
                     dripPercentage: formData.dripPercentage || 100,
                 });
             } else {
                 onChange({
                     ...formData,
-                    [name]: value,
+                    [name]: dripValue,
                 });
             }
         } else {
