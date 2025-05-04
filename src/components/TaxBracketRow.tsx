@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilingType } from './AssumptionsForm';
+import { FilingType } from '../models/Assumptions';
 import TaxBracketCell from './TaxBracketCell';
 
 interface TaxBracketRowProps {

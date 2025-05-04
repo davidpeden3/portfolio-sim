@@ -3,6 +3,9 @@ export type TaxWithholdingStrategy = 'none' | 'monthly' | 'quarterly';
 export type TaxWithholdingMethod = 'taxBracket' | 'fixedAmount' | 'fixedPercent';
 export type FilingType = 'single' | 'married' | 'headOfHousehold';
 
+// DRIP strategy types
+export type DripStrategy = 'none' | 'percentage' | 'fixedAmount';
+
 export interface Assumptions {
     // Investor Profile
     initialShareCount: number;
@@ -17,6 +20,11 @@ export interface Assumptions {
     taxFilingType?: FilingType;
     taxFixedAmount?: number;
     taxFixedPercent?: number;
+    
+    // DRIP Settings
+    dripStrategy?: DripStrategy;
+    dripPercentage?: number;
+    dripFixedAmount?: number;
     
     // Simulation Parameters
     simulationMonths: number;

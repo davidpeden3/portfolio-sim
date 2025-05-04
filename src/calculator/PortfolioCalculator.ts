@@ -105,6 +105,11 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         taxFixedAmount = 0,
         taxFixedPercent = 0,
         
+        // DRIP Settings
+        dripStrategy = 'percentage', // Default to percentage for backward compatibility
+        dripPercentage = 100, // Default to reinvest 100% for backward compatibility
+        dripFixedAmount = 0,
+        
         // Simulation Parameters
         simulationMonths,
         initialSharePrice,
@@ -280,7 +285,24 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             ? Math.min(surplusForDrip * (surplusForDripToPrincipalPercent / 100), prev.loanPrincipal) 
             : 0;
 
-        const actualDrip = surplusForDrip - additionalPrincipal;
+        // Calculate actualDrip based on dripStrategy
+        let actualDrip = 0;
+        
+        if (dripStrategy === 'none') {
+            // No DRIP - all surplus after principal payment goes as income, not reinvested
+            actualDrip = 0;
+        } else if (dripStrategy === 'percentage') {
+            // Percentage-based DRIP - reinvest a percentage of the surplus after principal payment
+            const availableForDrip = surplusForDrip - additionalPrincipal;
+            actualDrip = availableForDrip * (dripPercentage / 100);
+        } else if (dripStrategy === 'fixedAmount') {
+            // Fixed amount DRIP - reinvest a fixed dollar amount if available
+            const availableForDrip = surplusForDrip - additionalPrincipal;
+            actualDrip = Math.min(dripFixedAmount, availableForDrip);
+        } else {
+            // Default to historical behavior
+            actualDrip = surplusForDrip - additionalPrincipal;
+        }
 
         const newSharesFromDrip = (actualDrip > 0 && updatedSharePrice > 0) ? actualDrip / updatedSharePrice : 0;
         const totalShares = prev.totalShares + newSharesFromDrip;

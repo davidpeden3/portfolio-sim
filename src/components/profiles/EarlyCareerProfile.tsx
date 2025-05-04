@@ -20,6 +20,9 @@ export const earlyCareerProfile: InvestorProfileData = {
     taxFilingType: 'single',
     taxFixedAmount: 0,
     taxFixedPercent: 0,
+    dripStrategy: 'percentage',
+    dripPercentage: 100,
+    dripFixedAmount: 0,
     
     // Simulation Parameters
     simulationMonths: 300, // 25 years

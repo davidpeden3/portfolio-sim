@@ -53,7 +53,10 @@ export function PortfolioSimulator() {
           taxWithholdingMethod: DEFAULT_FORM_DATA.taxWithholdingMethod || 'taxBracket',
           taxFilingType: DEFAULT_FORM_DATA.taxFilingType || 'single',
           taxFixedAmount: DEFAULT_FORM_DATA.taxFixedAmount || 0,
-          taxFixedPercent: DEFAULT_FORM_DATA.taxFixedPercent || 0
+          taxFixedPercent: DEFAULT_FORM_DATA.taxFixedPercent || 0,
+          dripStrategy: DEFAULT_FORM_DATA.dripStrategy || 'percentage',
+          dripPercentage: DEFAULT_FORM_DATA.dripPercentage || 100,
+          dripFixedAmount: DEFAULT_FORM_DATA.dripFixedAmount || 0
         };
         
         return {
@@ -76,7 +79,10 @@ export function PortfolioSimulator() {
           taxWithholdingMethod: customData.taxWithholdingMethod || 'taxBracket',
           taxFilingType: customData.taxFilingType || 'single',
           taxFixedAmount: customData.taxFixedAmount || 0,
-          taxFixedPercent: customData.taxFixedPercent || 0
+          taxFixedPercent: customData.taxFixedPercent || 0,
+          dripStrategy: customData.dripStrategy || 'percentage',
+          dripPercentage: customData.dripPercentage || 100,
+          dripFixedAmount: customData.dripFixedAmount || 0
         };
         
         return {
@@ -99,7 +105,10 @@ export function PortfolioSimulator() {
           taxWithholdingMethod: profileData.taxWithholdingMethod || 'taxBracket',
           taxFilingType: profileData.taxFilingType || 'single',
           taxFixedAmount: profileData.taxFixedAmount || 0,
-          taxFixedPercent: profileData.taxFixedPercent || 0
+          taxFixedPercent: profileData.taxFixedPercent || 0,
+          dripStrategy: profileData.dripStrategy || 'percentage',
+          dripPercentage: profileData.dripPercentage || 100,
+          dripFixedAmount: profileData.dripFixedAmount || 0
         };
         
         return {
@@ -121,7 +130,10 @@ export function PortfolioSimulator() {
           taxWithholdingMethod: 'taxBracket',
           taxFilingType: 'single',
           taxFixedAmount: 0,
-          taxFixedPercent: 0
+          taxFixedPercent: 0,
+          dripStrategy: 'percentage',
+          dripPercentage: 100,
+          dripFixedAmount: 0
         },
         customData: customProfile.data,
         hasCustomProfile: false
@@ -137,7 +149,10 @@ export function PortfolioSimulator() {
           taxWithholdingMethod: 'taxBracket',
           taxFilingType: 'single',
           taxFixedAmount: 0,
-          taxFixedPercent: 0
+          taxFixedPercent: 0,
+          dripStrategy: 'percentage',
+          dripPercentage: 100,
+          dripFixedAmount: 0
         },
         customData: customProfile.data,
         hasCustomProfile: false
@@ -281,6 +296,11 @@ export function PortfolioSimulator() {
       taxFilingType: formData.taxFilingType,
       taxFixedAmount: toNumber(formData.taxFixedAmount),
       taxFixedPercent: toNumber(formData.taxFixedPercent),
+      
+      // DRIP strategy settings
+      dripStrategy: formData.dripStrategy,
+      dripPercentage: toNumber(formData.dripPercentage),
+      dripFixedAmount: toNumber(formData.dripFixedAmount),
       
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),

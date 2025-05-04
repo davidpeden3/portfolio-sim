@@ -13,10 +13,13 @@ import TaxBracketTable from './TaxBracketTable';
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
-// Tax withholding strategy and method types
-export type TaxWithholdingStrategy = 'none' | 'monthly' | 'quarterly';
-export type TaxWithholdingMethod = 'taxBracket' | 'fixedAmount' | 'fixedPercent';
-export type FilingType = 'single' | 'married' | 'headOfHousehold';
+// Import types from models
+import { 
+  TaxWithholdingStrategy, 
+  TaxWithholdingMethod, 
+  FilingType,
+  DripStrategy 
+} from '../models/Assumptions';
 
 // Form data type for PortfolioSimulator
 export interface PortfolioFormData {
@@ -33,6 +36,11 @@ export interface PortfolioFormData {
     taxFilingType: FilingType;
     taxFixedAmount: number | string;
     taxFixedPercent: number | string;
+    
+    // DRIP Settings
+    dripStrategy: DripStrategy;
+    dripPercentage: number | string;
+    dripFixedAmount: number | string;
     
     // Simulation Parameters
     simulationMonths: number | string;
@@ -74,6 +82,27 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 ...formData,
                 [name]: checked,
             });
+        } else if (name === "dripStrategy") {
+            if (value === "percentage") {
+                // Set default percentage to 100% when selecting percentage strategy
+                onChange({
+                    ...formData,
+                    [name]: value,
+                    dripPercentage: formData.dripPercentage || 100,
+                });
+            } else if (value === "") {
+                // If no value is selected, default to percentage
+                onChange({
+                    ...formData,
+                    [name]: "percentage",
+                    dripPercentage: formData.dripPercentage || 100,
+                });
+            } else {
+                onChange({
+                    ...formData,
+                    [name]: value,
+                });
+            }
         } else {
             // Handle input changes - specialized components handle formatting
             onChange({
@@ -240,6 +269,42 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         onChange={handleChange}
                         label="Monthly Appreciation (%)"
                     />
+                    
+                    <div>
+                        <SelectInput
+                            name="dripStrategy"
+                            value={formData.dripStrategy || 'percentage'}
+                            onChange={handleChange}
+                            label="DRIP Strategy"
+                            options={[
+                                { value: 'none', label: 'No DRIP' },
+                                { value: 'percentage', label: 'DRIP Percentage (%)' },
+                                { value: 'fixedAmount', label: 'DRIP Fixed Amount ($)' }
+                            ]}
+                        />
+                    </div>
+                    
+                    {(formData.dripStrategy === 'percentage' || !formData.dripStrategy) && (
+                        <div>
+                            <PercentInput
+                                name="dripPercentage"
+                                value={formData.dripPercentage || 100}
+                                onChange={handleChange}
+                                label="DRIP Percentage"
+                            />
+                        </div>
+                    )}
+                    
+                    {formData.dripStrategy === 'fixedAmount' && (
+                        <div>
+                            <DollarInput
+                                name="dripFixedAmount"
+                                value={formData.dripFixedAmount}
+                                onChange={handleChange}
+                                label="DRIP Fixed Amount"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
             
