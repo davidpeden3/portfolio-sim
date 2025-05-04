@@ -25,6 +25,7 @@ export const customProfile: InvestorProfileData = {
     dripStrategy: 'percentage',
     dripPercentage: 100,
     dripFixedAmount: 0,
+    fixedIncomeAmount: 0,
     simulationMonths: 0,
     startMonth: 1, // January
     initialSharePrice: CURRENT_SHARE_PRICE,

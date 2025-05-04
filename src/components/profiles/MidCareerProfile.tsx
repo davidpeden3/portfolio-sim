@@ -23,6 +23,7 @@ export const midCareerProfile: InvestorProfileData = {
     dripStrategy: 'percentage',
     dripPercentage: 100,
     dripFixedAmount: 0,
+    fixedIncomeAmount: 0,
     
     // Simulation Parameters
     simulationMonths: 240, // 20 years

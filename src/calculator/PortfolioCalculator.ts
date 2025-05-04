@@ -109,6 +109,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         dripStrategy = 'percentage', // Default to percentage for backward compatibility
         dripPercentage = 100, // Default to reinvest 100% for backward compatibility
         dripFixedAmount = 0,
+        fixedIncomeAmount = 0, // Monthly income amount for fixedIncome strategy
         
         // Simulation Parameters
         simulationMonths,
@@ -148,6 +149,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         loanPayment: 0,
         surplusForDrip: 0,
         additionalPrincipal: 0,
+        income: 0,
         actualDrip: 0,
         sharePrice: initialSharePrice,
         newSharesFromDrip: 0,
@@ -300,23 +302,39 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             ? Math.min(surplusForDrip * (surplusForDripToPrincipalPercent / 100), prev.loanPrincipal) 
             : 0;
 
-        // Calculate actualDrip based on dripStrategy
+        // Calculate income and actualDrip based on dripStrategy
         let actualDrip = 0;
+        let income = 0;
+        
+        const availableForDrip = surplusForDrip - additionalPrincipal;
         
         if (dripStrategy === 'none') {
             // No DRIP - all surplus after principal payment goes as income, not reinvested
+            income = availableForDrip;
             actualDrip = 0;
         } else if (dripStrategy === 'percentage') {
             // Percentage-based DRIP - reinvest a percentage of the surplus after principal payment
-            const availableForDrip = surplusForDrip - additionalPrincipal;
             actualDrip = availableForDrip * (dripPercentage / 100);
+            income = availableForDrip - actualDrip;
         } else if (dripStrategy === 'fixedAmount') {
             // Fixed amount DRIP - reinvest a fixed dollar amount if available
-            const availableForDrip = surplusForDrip - additionalPrincipal;
             actualDrip = Math.min(dripFixedAmount, availableForDrip);
+            income = availableForDrip - actualDrip;
+        } else if (dripStrategy === 'fixedIncome') {
+            // Fixed income amount - take fixed income first, then DRIP the remainder
+            // If we have enough for the fixed income amount, DRIP the remainder
+            if (availableForDrip >= fixedIncomeAmount) {
+                income = fixedIncomeAmount;
+                actualDrip = availableForDrip - fixedIncomeAmount;
+            } else {
+                // If we don't have enough for the fixed income, take what's available
+                income = availableForDrip;
+                actualDrip = 0;
+            }
         } else {
             // Default to historical behavior
-            actualDrip = surplusForDrip - additionalPrincipal;
+            actualDrip = availableForDrip;
+            income = 0;
         }
 
         const newSharesFromDrip = (actualDrip > 0 && updatedSharePrice > 0) ? actualDrip / updatedSharePrice : 0;
@@ -430,6 +448,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             loanPayment,
             surplusForDrip,
             additionalPrincipal,
+            income,
             actualDrip,
             sharePrice: updatedSharePrice,
             newSharesFromDrip,

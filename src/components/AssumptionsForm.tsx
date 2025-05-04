@@ -41,6 +41,7 @@ export interface PortfolioFormData {
     dripStrategy: DripStrategy;
     dripPercentage: number | string;
     dripFixedAmount: number | string;
+    fixedIncomeAmount: number | string; // Monthly income amount for fixedIncome strategy
     
     // Simulation Parameters
     simulationMonths: number | string;
@@ -86,8 +87,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
         } else if (name === "dripStrategy") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid DripStrategy value. If not, default to 'percentage'
-            const dripValue = (value === 'none' || value === 'percentage' || value === 'fixedAmount') 
-                ? value as 'none' | 'percentage' | 'fixedAmount'
+            const dripValue = (value === 'none' || value === 'percentage' || value === 'fixedAmount' || value === 'fixedIncome') 
+                ? value as DripStrategy
                 : 'percentage';
                 
             if (dripValue === 'percentage') {
@@ -96,6 +97,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     ...formData,
                     [name]: dripValue,
                     dripPercentage: formData.dripPercentage || 100,
+                });
+            } else if (dripValue === 'fixedIncome') {
+                // Set default fixed income amount to 0 when selecting fixed income strategy
+                onChange({
+                    ...formData,
+                    [name]: dripValue,
+                    fixedIncomeAmount: formData.fixedIncomeAmount || 0,
                 });
             } else {
                 onChange({
@@ -302,7 +310,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             options={[
                                 { value: 'none', label: 'No DRIP' },
                                 { value: 'percentage', label: 'DRIP Percentage (%)' },
-                                { value: 'fixedAmount', label: 'DRIP Fixed Amount ($)' }
+                                { value: 'fixedAmount', label: 'DRIP Fixed Amount ($)' },
+                                { value: 'fixedIncome', label: 'Fixed Income + DRIP Remainder' }
                             ]}
                         />
                     </div>
@@ -325,6 +334,17 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 value={formData.dripFixedAmount}
                                 onChange={handleChange}
                                 label="DRIP Fixed Amount"
+                            />
+                        </div>
+                    )}
+                    
+                    {formData.dripStrategy === 'fixedIncome' && (
+                        <div>
+                            <DollarInput
+                                name="fixedIncomeAmount"
+                                value={formData.fixedIncomeAmount || 0}
+                                onChange={handleChange}
+                                label="Monthly Income Amount"
                             />
                         </div>
                     )}

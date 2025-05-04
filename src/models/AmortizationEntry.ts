@@ -9,6 +9,7 @@ export interface AmortizationEntry {
     loanPayment: number;
     surplusForDrip: number;
     additionalPrincipal: number;
+    income: number; // Income taken before DRIP (for fixed income strategy)
     actualDrip: number;
     sharePrice: number;
     newSharesFromDrip: number;

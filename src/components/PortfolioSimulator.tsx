@@ -57,6 +57,7 @@ export function PortfolioSimulator() {
           dripStrategy: DEFAULT_FORM_DATA.dripStrategy || 'percentage',
           dripPercentage: DEFAULT_FORM_DATA.dripPercentage || 100,
           dripFixedAmount: DEFAULT_FORM_DATA.dripFixedAmount || 0,
+          fixedIncomeAmount: DEFAULT_FORM_DATA.fixedIncomeAmount || 0,
           startMonth: DEFAULT_FORM_DATA.startMonth || 1 // Default to January
         };
         
@@ -84,6 +85,7 @@ export function PortfolioSimulator() {
           dripStrategy: customData.dripStrategy || 'percentage',
           dripPercentage: customData.dripPercentage || 100,
           dripFixedAmount: customData.dripFixedAmount || 0,
+          fixedIncomeAmount: customData.fixedIncomeAmount || 0,
           startMonth: customData.startMonth || 1 // Default to January
         };
         
@@ -111,6 +113,7 @@ export function PortfolioSimulator() {
           dripStrategy: profileData.dripStrategy || 'percentage',
           dripPercentage: profileData.dripPercentage || 100,
           dripFixedAmount: profileData.dripFixedAmount || 0,
+          fixedIncomeAmount: profileData.fixedIncomeAmount || 0,
           startMonth: profileData.startMonth || 1 // Default to January
         };
         
@@ -137,6 +140,7 @@ export function PortfolioSimulator() {
           dripStrategy: 'percentage',
           dripPercentage: 100,
           dripFixedAmount: 0,
+          fixedIncomeAmount: 0,
           startMonth: 1 // Default to January
         },
         customData: customProfile.data,
@@ -157,6 +161,7 @@ export function PortfolioSimulator() {
           dripStrategy: 'percentage',
           dripPercentage: 100,
           dripFixedAmount: 0,
+          fixedIncomeAmount: 0,
           startMonth: 1 // Default to January
         },
         customData: customProfile.data,
@@ -306,6 +311,7 @@ export function PortfolioSimulator() {
       dripStrategy: formData.dripStrategy,
       dripPercentage: toNumber(formData.dripPercentage),
       dripFixedAmount: toNumber(formData.dripFixedAmount),
+      fixedIncomeAmount: toNumber(formData.fixedIncomeAmount),
       
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
