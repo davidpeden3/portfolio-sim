@@ -56,7 +56,8 @@ export function PortfolioSimulator() {
           taxFixedPercent: DEFAULT_FORM_DATA.taxFixedPercent || 0,
           dripStrategy: DEFAULT_FORM_DATA.dripStrategy || 'percentage',
           dripPercentage: DEFAULT_FORM_DATA.dripPercentage || 100,
-          dripFixedAmount: DEFAULT_FORM_DATA.dripFixedAmount || 0
+          dripFixedAmount: DEFAULT_FORM_DATA.dripFixedAmount || 0,
+          startMonth: DEFAULT_FORM_DATA.startMonth || 1 // Default to January
         };
         
         return {
@@ -82,7 +83,8 @@ export function PortfolioSimulator() {
           taxFixedPercent: customData.taxFixedPercent || 0,
           dripStrategy: customData.dripStrategy || 'percentage',
           dripPercentage: customData.dripPercentage || 100,
-          dripFixedAmount: customData.dripFixedAmount || 0
+          dripFixedAmount: customData.dripFixedAmount || 0,
+          startMonth: customData.startMonth || 1 // Default to January
         };
         
         return {
@@ -108,7 +110,8 @@ export function PortfolioSimulator() {
           taxFixedPercent: profileData.taxFixedPercent || 0,
           dripStrategy: profileData.dripStrategy || 'percentage',
           dripPercentage: profileData.dripPercentage || 100,
-          dripFixedAmount: profileData.dripFixedAmount || 0
+          dripFixedAmount: profileData.dripFixedAmount || 0,
+          startMonth: profileData.startMonth || 1 // Default to January
         };
         
         return {
@@ -133,7 +136,8 @@ export function PortfolioSimulator() {
           taxFixedPercent: 0,
           dripStrategy: 'percentage',
           dripPercentage: 100,
-          dripFixedAmount: 0
+          dripFixedAmount: 0,
+          startMonth: 1 // Default to January
         },
         customData: customProfile.data,
         hasCustomProfile: false
@@ -152,7 +156,8 @@ export function PortfolioSimulator() {
           taxFixedPercent: 0,
           dripStrategy: 'percentage',
           dripPercentage: 100,
-          dripFixedAmount: 0
+          dripFixedAmount: 0,
+          startMonth: 1 // Default to January
         },
         customData: customProfile.data,
         hasCustomProfile: false
@@ -304,6 +309,7 @@ export function PortfolioSimulator() {
       
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
+      startMonth: toInteger(formData.startMonth) || 1, // Default to January if not set
       initialSharePrice: toNumber(formData.initialSharePrice),
       dividendYieldPer4wPercent: toNumber(formData.dividendYield4w),
       monthlyAppreciationPercent: toNumber(formData.monthlyAppreciation),
@@ -373,6 +379,7 @@ export function PortfolioSimulator() {
                 includeLoan={Boolean(formData.includeLoan)}
                 includeTaxes={formData.taxWithholdingStrategy !== 'none'}
                 taxStrategy={formData.taxWithholdingStrategy}
+                startMonth={typeof formData.startMonth === 'string' ? parseInt(formData.startMonth) : (formData.startMonth || 1)}
               />
             </div>
           </div>

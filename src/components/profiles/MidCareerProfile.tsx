@@ -26,6 +26,7 @@ export const midCareerProfile: InvestorProfileData = {
     
     // Simulation Parameters
     simulationMonths: 240, // 20 years
+    startMonth: 1, // January
     initialSharePrice: CURRENT_SHARE_PRICE,
     dividendYield4w: DEFAULT_DIVIDEND_YIELD,
     monthlyAppreciation: DEFAULT_MONTHLY_APPRECIATION,

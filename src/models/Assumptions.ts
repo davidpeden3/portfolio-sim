@@ -28,6 +28,7 @@ export interface Assumptions {
     
     // Simulation Parameters
     simulationMonths: number;
+    startMonth?: number; // 1-12 representing January-December
     initialSharePrice: number;
     dividendYieldPer4wPercent: number;
     monthlyAppreciationPercent: number;

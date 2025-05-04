@@ -44,6 +44,7 @@ export interface PortfolioFormData {
     
     // Simulation Parameters
     simulationMonths: number | string;
+    startMonth: number | string; // 1-12 representing January-December
     initialSharePrice: number | string;
     dividendYield4w: number | string;
     monthlyAppreciation: number | string;
@@ -247,6 +248,29 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         onChange={handleChange}
                         label="Simulation Duration (months)"
                     />
+                    
+                    <div>
+                        <SelectInput
+                            name="startMonth"
+                            value={formData.startMonth ? formData.startMonth.toString() : '1'}
+                            onChange={handleChange}
+                            label="Start Month"
+                            options={[
+                                { value: '1', label: 'January' },
+                                { value: '2', label: 'February' },
+                                { value: '3', label: 'March' },
+                                { value: '4', label: 'April' },
+                                { value: '5', label: 'May' },
+                                { value: '6', label: 'June' },
+                                { value: '7', label: 'July' },
+                                { value: '8', label: 'August' },
+                                { value: '9', label: 'September' },
+                                { value: '10', label: 'October' },
+                                { value: '11', label: 'November' },
+                                { value: '12', label: 'December' }
+                            ]}
+                        />
+                    </div>
 
                     <DollarInput
                         name="initialSharePrice"

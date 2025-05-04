@@ -1,25 +1,44 @@
 import { useState } from "react";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 import { downloadCSV } from "../utils/csvExport";
-
 import { TaxWithholdingStrategy } from "../models/Assumptions";
+
+// Array of month names for calendar display
+const MONTH_NAMES = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
 
 interface AmortizationTableProps {
     amortization: AmortizationEntry[];
     includeLoan?: boolean;
     includeTaxes?: boolean;
     taxStrategy?: TaxWithholdingStrategy;
+    startMonth?: number; // The month to start the simulation (1-12 for Jan-Dec)
 }
 
 const AmortizationTable = ({ 
     amortization, 
     includeLoan = true, 
     includeTaxes = true,
-    taxStrategy = 'monthly'
+    taxStrategy = 'monthly',
+    startMonth = 1 // Default to January if not specified
 }: AmortizationTableProps) => {
     const [activeTab, setActiveTab] = useState<"summary" | "detail">("summary");
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
     const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
+    
+    // Format month display to show calendar month name and year
+    const formatFriendlyMonth = (monthIndex: number) => {
+        if (monthIndex === 0) return "Initial";
+        
+        // Calculate calendar month (1-12) for the given simulation month
+        const calendarMonth = ((startMonth - 1 + monthIndex - 1) % 12) + 1;
+        const year = Math.floor((startMonth - 1 + monthIndex - 1) / 12) + 1;
+        
+        // Display format: "Mon of Year X"
+        return `${MONTH_NAMES[calendarMonth-1]} of Year ${year}`;
+    };
     
     // Filter yearly entries for summary tab (months where n % 12 === 0)
     const yearlyAmortization = amortization.filter(entry => entry.month > 0 && entry.month % 12 === 0);
@@ -47,6 +66,7 @@ const AmortizationTable = ({
     // Define all columns
     const allColumns = [
         { key: "month", label: "Month", sticky: true, loanRelated: false, taxRelated: false },
+        { key: "friendlyMonth", label: "Month (Friendly)", sticky: false, loanRelated: false, taxRelated: false },
         { key: "shareCount", label: "Share Count", loanRelated: false, taxRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "dividend", label: "Dividend", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "distribution", label: "Distribution", loanRelated: false, taxRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
@@ -161,10 +181,12 @@ const AmortizationTable = ({
                                         onMouseLeave={() => setHoveredColumn(null)}
                                     >
                                         {column.key === 'month' 
-                                            ? entry.month 
-                                            : column.format && entry[column.key as keyof AmortizationEntry] !== undefined 
-                                              ? column.format(entry[column.key as keyof AmortizationEntry] as number) 
-                                              : entry[column.key as keyof AmortizationEntry]}
+                                            ? entry.month
+                                            : column.key === 'friendlyMonth'
+                                              ? formatFriendlyMonth(entry.month)
+                                              : column.format && entry[column.key as keyof AmortizationEntry] !== undefined 
+                                                ? column.format(entry[column.key as keyof AmortizationEntry] as number) 
+                                                : entry[column.key as keyof AmortizationEntry]}
                                     </td>
                                 ))}
                             </tr>

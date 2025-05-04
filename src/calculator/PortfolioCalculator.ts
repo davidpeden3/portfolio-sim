@@ -112,6 +112,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         
         // Simulation Parameters
         simulationMonths,
+        startMonth = 1, // Default to January if not set
         initialSharePrice,
         dividendYieldPer4wPercent,
         monthlyAppreciationPercent,
@@ -160,20 +161,26 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     for (let month = 1; month <= simulationMonths; month++) {
         const prev = amortization[month - 1];
 
+        // Calculate calendar month (1-12) for current simulation month
+        const calendarMonth = ((startMonth - 1 + month - 1) % 12) + 1;
+        
         const updatedSharePrice = prev.sharePrice * (1 + (monthlyAppreciationPercent / 100));
 
-        const dividendMultiplier = (month % 12 === 0) ? 2 : 1;
+        // December (month 12) typically has double dividends
+        const dividendMultiplier = (calendarMonth === 12) ? 2 : 1;
         const dividend = dividendMultiplier * (dividendYieldPer4wPercent / 100) * updatedSharePrice;
 
         const distribution = prev.totalShares * dividend;
 
-        const newYtdDistribution = (month % 12 === 1) ? distribution : (prev.ytdDistribution + distribution);
+        // Reset YTD distribution in January (month 1)
+        const newYtdDistribution = (calendarMonth === 1) ? distribution : (prev.ytdDistribution + distribution);
 
         // Determine if this is a tax withholding month based on the withholding strategy
+        // For quarterly, use calendar months: March (3), June (6), September (9), December (12)
         const isWithholdingMonth = 
             withholdTaxes && (
                 taxWithholdingStrategy === 'monthly' || 
-                (taxWithholdingStrategy === 'quarterly' && month % 3 === 0)
+                (taxWithholdingStrategy === 'quarterly' && (calendarMonth === 3 || calendarMonth === 6 || calendarMonth === 9 || calendarMonth === 12))
             );
         
         // Calculate tax amount based on the withholding method
@@ -181,11 +188,19 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         
         if (isWithholdingMonth) {
             // Determine accumulated distribution for tax calculation
-            const taxableDistribution = taxWithholdingStrategy === 'quarterly' 
-                ? (distribution + 
-                   (month > 1 ? amortization[month-2].distribution : 0) + 
-                   (month > 2 ? amortization[month-3].distribution : 0))
-                : distribution;
+            let taxableDistribution = distribution;
+            
+            // For quarterly, include previous months in the quarter
+            if (taxWithholdingStrategy === 'quarterly') {
+                let quarterlyTotal = distribution;
+                
+                // Add previous 2 months for quarterly calculation
+                // (potentially wrapping around to the previous year)
+                if (month > 1) quarterlyTotal += amortization[month-2].distribution;
+                if (month > 2) quarterlyTotal += amortization[month-3].distribution;
+                
+                taxableDistribution = quarterlyTotal;
+            }
                 
             if (taxWithholdingMethod === 'taxBracket') {
                 // For tax bracket method, we need to:
@@ -328,8 +343,10 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             // for the year to date, regardless of withholding strategy
             
             // Determine if this is the first month of a year (January)
-            const isFirstMonthOfYear = month % 12 === 1;
-            const yearStartMonthIndex = Math.floor((month - 1) / 12) * 12 + 1;
+            const isFirstMonthOfYear = calendarMonth === 1;
+            
+            // Calculate the index of January for the current year in the simulation
+            const yearStartMonthIndex = Math.max(1, month - (calendarMonth - 1));
             
             // For quarterly withholding, we need to track YTD tax impact, not just what's been withheld
             let yearTotalTaxes = 0;
@@ -368,10 +385,19 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             // If this is a withholding month and taxes are being withheld, show the effective rate
             // based on the entire quarter's distributions and taxes
             if (isWithholdingMonth && marginalTaxesWithheld > 0) {
-                // Calculate the distributions for this quarter only
-                const quarterDistribution = distribution + 
-                    (month > 1 ? amortization[month-2].distribution : 0) + 
-                    (month > 2 ? amortization[month-3].distribution : 0);
+                // Calculate the distributions for this quarter only based on calendar months
+                
+                // Determine how many months in the current quarter we have data for
+                let monthsInQuarter = (calendarMonth - 1) % 3 + 1; // 1, 2, or 3
+                monthsInQuarter = Math.min(monthsInQuarter, month);
+                
+                // Sum distributions for this quarter only
+                let quarterDistribution = distribution;
+                for (let i = 1; i < monthsInQuarter; i++) {
+                    if (month > i) {
+                        quarterDistribution += amortization[month - 1 - i].distribution;
+                    }
+                }
                 
                 // Calculate the effective tax rate based on just this quarter's distributions and taxes
                 effectiveTaxRate = quarterDistribution > 0 
