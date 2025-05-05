@@ -178,6 +178,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     setNameManuallySet(true);
   };
   
+  // Reset name to auto-generated value
+  const resetName = () => {
+    setName(generateName());
+    setNameManuallySet(false);
+  };
+  
   // Handle form submission - using useCallback to avoid circular dependencies
   const handleSubmit = useCallback(() => {
     // Validate required fields
@@ -396,20 +402,34 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
           Name *
         </label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={handleNameChange}
-          className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
-          placeholder="e.g., DCA: $100 (Monthly)"
-          required
-        />
-        {!nameManuallySet && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Auto-generated based on your selections
-          </p>
-        )}
+        <div>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={handleNameChange}
+            className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
+            placeholder="e.g., DCA: $100 (Monthly)"
+            required
+          />
+          <div className="flex justify-between items-center mt-1">
+            {!nameManuallySet ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Auto-generated based on your selections
+              </p>
+            ) : (
+              <div className="text-right w-full">
+                <button 
+                  type="button" 
+                  onClick={resetName}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  reset
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       
       {/* Date Range */}
