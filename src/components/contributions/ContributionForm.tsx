@@ -164,13 +164,17 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setFrequency('none');
     } else {
       setRecurring(true);
-      if (type === 'dca' && frequency === 'biweekly' || frequency === 'semimonthly') {
-        setFrequency('monthly');
-      } else if (type === 'salary' && (frequency === 'daily' || frequency === 'quarterly' || frequency === 'yearly')) {
-        setFrequency('monthly');
+      
+      // Only update the frequency when creating a new contribution (not when editing)
+      if (!contribution) {
+        if (type === 'dca' && (frequency === 'biweekly' || frequency === 'semimonthly')) {
+          setFrequency('monthly');
+        } else if (type === 'salary' && (frequency === 'daily' || frequency === 'quarterly' || frequency === 'yearly')) {
+          setFrequency('monthly');
+        }
       }
     }
-  }, [type]);
+  }, [type, contribution]);
   
   // Handle name input change
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
