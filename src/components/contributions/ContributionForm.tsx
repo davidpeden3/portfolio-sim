@@ -335,25 +335,27 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   };
   
   // Handle keyboard events
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       // Prevent Enter key from submitting if within an input or select element
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) {
         // Only if not in a textarea
         if (!(e.target instanceof HTMLTextAreaElement)) {
           e.preventDefault();
-          handleSubmit();
+          // Use setTimeout to ensure all state updates have completed
+          setTimeout(() => handleSubmit(), 0);
         }
       } else {
         // If not in an input field, always trigger submit
         e.preventDefault();
-        handleSubmit();
+        // Use setTimeout to ensure all state updates have completed
+        setTimeout(() => handleSubmit(), 0);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
       onCancel();
     }
-  };
+  }, [onCancel, name, amount, type, frequency, dayOfWeek, startDate, endDate]);
   
   // Add and remove keyboard event listeners
   useEffect(() => {
@@ -362,7 +364,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown as any);
     };
-  }, []);
+  }, [handleKeyDown]);
   
   return (
     <div className="space-y-4">
