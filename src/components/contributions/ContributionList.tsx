@@ -15,15 +15,37 @@ const ContributionList: React.FC<ContributionListProps> = ({
   onRemove,
   onToggle
 }) => {
-  // Helper to format the contribution frequency
+  // Helper to format the contribution frequency (lowercase for sentence format)
   const formatFrequency = (contribution: SupplementalContribution): string => {
-    if (!contribution.recurring) return 'One-time';
+    if (!contribution.recurring) return 'one-time';
     
-    // Apply proper hyphenation for display
+    // Apply proper hyphenation for display but keep lowercase for sentence format
+    let frequency = '';
     switch (contribution.frequency) {
-      case 'biweekly': return 'Bi-weekly';
-      case 'semimonthly': return 'Semi-monthly';
-      default: return contribution.frequency.charAt(0).toUpperCase() + contribution.frequency.slice(1);
+      case 'biweekly': 
+        frequency = 'bi-weekly';
+        // Add day of week for weekly/biweekly
+        if (contribution.dayOfWeek) {
+          const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+          const dayIndex = contribution.dayOfWeek - 1;
+          if (dayIndex >= 0 && dayIndex < weekDays.length) {
+            frequency += ` on ${weekDays[dayIndex]}`;
+          }
+        }
+        return frequency;
+      case 'weekly': 
+        frequency = 'weekly';
+        // Add day of week for weekly/biweekly
+        if (contribution.dayOfWeek) {
+          const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+          const dayIndex = contribution.dayOfWeek - 1;
+          if (dayIndex >= 0 && dayIndex < weekDays.length) {
+            frequency += ` on ${weekDays[dayIndex]}`;
+          }
+        }
+        return frequency;
+      case 'semimonthly': return 'semi-monthly';
+      default: return contribution.frequency; // Keep lowercase
     }
   };
   
@@ -37,21 +59,23 @@ const ContributionList: React.FC<ContributionListProps> = ({
     }
   };
   
-  // Helper to format the date range
+  // Helper to format the date range in a sentence format
   const formatDateRange = (contribution: SupplementalContribution): string => {
     const startDate = contribution.startDate ? new Date(contribution.startDate) : null;
     const endDate = contribution.endDate ? new Date(contribution.endDate) : null;
     
-    if (!startDate && !endDate) return 'Entire simulation';
-    if (startDate && !endDate) return `From ${startDate.toLocaleDateString()}`;
-    if (!startDate && endDate) return `Until ${endDate.toLocaleDateString()}`;
+    if (!startDate && !endDate) return 'for entire simulation';
+    
+    // For non-recurring (one-time) contributions
+    if (!contribution.recurring && startDate) {
+      return `on ${startDate.toLocaleDateString()}`;
+    }
+    
+    // For recurring contributions
+    if (startDate && !endDate) return `from ${startDate.toLocaleDateString()}`;
+    if (!startDate && endDate) return `until ${endDate.toLocaleDateString()}`;
     if (startDate && endDate) {
-      // For one-time contributions with same start and end date
-      if (!contribution.recurring && 
-          startDate.getTime() === endDate.getTime()) {
-        return `On ${startDate.toLocaleDateString()}`;
-      }
-      return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+      return `from ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
     }
     
     return '';
@@ -75,7 +99,7 @@ const ContributionList: React.FC<ContributionListProps> = ({
                 </span>
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-200">
-                <p>{formatUSD(contribution.amount)} • {formatFrequency(contribution)} • {formatDateRange(contribution)}</p>
+                <p>{formatUSD(contribution.amount)} {formatFrequency(contribution)} {formatDateRange(contribution)}</p>
               </div>
             </div>
             <div className="flex space-x-2">
