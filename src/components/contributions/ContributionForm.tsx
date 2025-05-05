@@ -49,7 +49,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [nameManuallySet, setNameManuallySet] = useState(false);
-  const [dayOfWeek, setDayOfWeek] = useState<WeekDay>(1); // Default to Monday
+  const [dayOfWeek, setDayOfWeek] = useState<WeekDay>(5); // Default to Friday
   
   // Calculate default simulation start and end dates
   const getDefaultStartDate = (): Date => {
@@ -86,8 +86,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setFrequency(contribution.frequency);
       
       // Always set dayOfWeek, even if undefined, to ensure proper initialization
-      console.log('Loading contribution with dayOfWeek:', contribution.dayOfWeek);
-      setDayOfWeek(contribution.dayOfWeek || 1); // Default to Monday if not set
+      setDayOfWeek(contribution.dayOfWeek || 5); // Default to Friday if not set
       
       try {
         // Format dates safely - handle both Date objects and strings
