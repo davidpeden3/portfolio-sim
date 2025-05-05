@@ -1,6 +1,11 @@
 import { Assumptions, FilingType } from "../models/Assumptions";
 import { CalculatedSummary } from "../models/CalculatedSummary";
 import { AmortizationEntry } from "../models/AmortizationEntry";
+import { 
+  materializeContributions, 
+  groupContributionsByMonth, 
+  getMonthContribution 
+} from "./ContributionCalculator";
 
 function calculatePmt(rate: number, nper: number, pv: number): number {
     // Handle 0% interest rate - just divide principal by number of periods
@@ -111,6 +116,9 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         dripFixedAmount = 0,
         fixedIncomeAmount = 0, // Monthly income amount for fixedIncome strategy
         
+        // Supplemental Contributions
+        supplementalContributions,
+        
         // Simulation Parameters
         simulationMonths,
         startMonth = 1, // Default to January if not set
@@ -135,6 +143,26 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     const monthlyLoanInterestRate = annualInterestRatePercent / 12 / 100;
     const monthlyLoanPayment = calculatePmt(monthlyLoanInterestRate, amortizationMonths, loanAmount);
 
+    // Process supplemental contributions
+    // Ensure supplementalContributions is an array for backwards compatibility
+    const contributionsToProcess = supplementalContributions || [];
+    
+    // Debug log for supplemental contributions
+    console.log("Processing supplemental contributions:", contributionsToProcess);
+    
+    const materializedContributions = materializeContributions(
+        contributionsToProcess,
+        simulationMonths,
+        startMonth
+    );
+    
+    // Group contributions by month
+    const monthlyContributions = groupContributionsByMonth(materializedContributions);
+    
+    // Debug logs for contributions
+    console.log("Materialized contributions:", materializedContributions);
+    console.log("Monthly contributions:", monthlyContributions);
+
     const amortization: AmortizationEntry[] = [];
 
     // --- Month 0: Initial state ---
@@ -150,9 +178,11 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         surplusForDrip: 0,
         additionalPrincipal: 0,
         income: 0,
+        supplementalContribution: 0,
         actualDrip: 0,
         sharePrice: initialSharePrice,
         newSharesFromDrip: 0,
+        newSharesFromContribution: 0, // Add this field for month 0
         totalShares: initialShareCount,
         portfolioValue: initialShareCount * initialSharePrice,
         loanPrincipal: loanAmount,
@@ -337,8 +367,20 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             income = 0;
         }
 
+        // Get the supplemental contribution for this month
+        const supplementalContribution = getMonthContribution(monthlyContributions, month, startMonth);
+        
+        // Log current month's contribution
+        console.log(`Month ${month} contribution: $${supplementalContribution}`);
+        
+        // Calculate new shares from DRIP and supplemental contributions
         const newSharesFromDrip = (actualDrip > 0 && updatedSharePrice > 0) ? actualDrip / updatedSharePrice : 0;
-        const totalShares = prev.totalShares + newSharesFromDrip;
+        const newSharesFromContribution = (supplementalContribution > 0 && updatedSharePrice > 0) 
+            ? supplementalContribution / updatedSharePrice 
+            : 0;
+        console.log(`Month ${month} new shares from contribution: ${newSharesFromContribution}, at price: ${updatedSharePrice}`);
+        
+        const totalShares = prev.totalShares + newSharesFromDrip + newSharesFromContribution;
 
         const portfolioValue = totalShares * updatedSharePrice;
 
@@ -437,9 +479,11 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         }
         }
 
-        amortization.push({
+        // Calculate the impact of supplemental contribution on shares and share count for display
+        // The share count should include all shares from previous month (base shares + DRIP + contributions)
+        const entry = {
             month,
-            shareCount: prev.totalShares,
+            shareCount: prev.totalShares, // This properly includes all shares from previous month
             dividend,
             distribution,
             ytdDistribution: newYtdDistribution,
@@ -449,14 +493,21 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             surplusForDrip,
             additionalPrincipal,
             income,
+            supplementalContribution,
             actualDrip,
             sharePrice: updatedSharePrice,
-            newSharesFromDrip,
-            totalShares,
+            newSharesFromDrip, // Shares from DRIP 
+            newSharesFromContribution, // Add this field to track contribution shares separately
+            totalShares, // Updated total including new DRIP shares and contribution shares
             portfolioValue,
             loanPrincipal: updatedLoanPrincipal,
             netPortfolioValue
-        });
+        };
+        
+        // Log the entry we're adding
+        console.log(`Adding amortization entry for month ${month} with supplementalContribution: ${entry.supplementalContribution}`);
+        
+        amortization.push(entry);
     }
 
     const loanPayoffEntry = amortization.find(entry => entry.loanPrincipal <= 0);

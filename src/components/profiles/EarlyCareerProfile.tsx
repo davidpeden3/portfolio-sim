@@ -24,6 +24,17 @@ export const earlyCareerProfile: InvestorProfileData = {
     dripPercentage: 100,
     dripFixedAmount: 0,
     fixedIncomeAmount: 0,
+    supplementalContributions: [
+      {
+        id: '6fd7e6c0-3e3e-4b3b-a4e2-691a7a7b9584',
+        name: 'Monthly DCA Investment',
+        amount: 250,
+        type: 'dca',
+        enabled: true,
+        recurring: true,
+        frequency: 'monthly'
+      }
+    ],
     
     // Simulation Parameters
     simulationMonths: 300, // 25 years

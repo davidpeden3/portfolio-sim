@@ -313,6 +313,9 @@ export function PortfolioSimulator() {
       dripFixedAmount: toNumber(formData.dripFixedAmount),
       fixedIncomeAmount: toNumber(formData.fixedIncomeAmount),
       
+      // Supplemental Contributions
+      supplementalContributions: formData.supplementalContributions || [],
+      
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
       startMonth: toInteger(formData.startMonth) || 1, // Default to January if not set

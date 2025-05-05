@@ -9,6 +9,7 @@ import {
 import ProfileSelector from './ProfileSelector';
 import { ProfileType } from './profiles';
 import TaxBracketTable from './TaxBracketTable';
+import { ContributionManager } from './contributions';
 // Re-export icons for backward compatibility
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
@@ -20,6 +21,7 @@ import {
   FilingType,
   DripStrategy 
 } from '../models/Assumptions';
+import { SupplementalContribution } from '../models/SupplementalContribution';
 
 // Form data type for PortfolioSimulator
 export interface PortfolioFormData {
@@ -42,6 +44,9 @@ export interface PortfolioFormData {
     dripPercentage: number | string;
     dripFixedAmount: number | string;
     fixedIncomeAmount: number | string; // Monthly income amount for fixedIncome strategy
+    
+    // Supplemental Contributions
+    supplementalContributions: SupplementalContribution[];
     
     // Simulation Parameters
     simulationMonths: number | string;
@@ -118,6 +123,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 [name]: value,
             });
         }
+    };
+    
+    // Handler for supplemental contributions changes
+    const handleContributionsChange = (contributions: SupplementalContribution[]) => {
+        onChange({
+            ...formData,
+            supplementalContributions: contributions
+        });
     };
 
     return (
@@ -241,6 +254,16 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             </div>
                         )}
                     </div>
+                </div>
+                
+                {/* Supplemental Contributions Section */}
+                <div className="pt-4 mt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                    <ContributionManager
+                        contributions={formData.supplementalContributions || []}
+                        onChange={handleContributionsChange}
+                        simulationStartMonth={Number(formData.startMonth)}
+                        simulationMonths={Number(formData.simulationMonths)}
+                    />
                 </div>
             </div>
             

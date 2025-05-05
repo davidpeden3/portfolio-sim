@@ -8,6 +8,64 @@ function round2(value: number): number {
 }
 
 describe('portfolioCalculator', () => {
+  it('should correctly add shares from supplemental contributions', () => {
+    // Create an assumption with supplemental contributions
+    const assumptions: Assumptions = {
+      // Investor Profile
+      initialShareCount: 100,
+      initialInvestment: 1000,
+      baseIncome: 50000,
+      surplusForDripToPrincipalPercent: 0,
+      withholdTaxes: false,
+      
+      // Simulation Parameters
+      simulationMonths: 12,
+      startMonth: 1, // January
+      initialSharePrice: 10,
+      dividendYieldPer4wPercent: 1.0,
+      monthlyAppreciationPercent: 0.0,
+      
+      // Loan Settings
+      includeLoan: false,
+      loanAmount: 0,
+      annualInterestRatePercent: 0,
+      amortizationMonths: 12,
+      
+      // Add a monthly $100 contribution
+      supplementalContributions: [
+        {
+          id: '1',
+          name: 'Monthly $100',
+          amount: 100,
+          type: 'dca',
+          enabled: true,
+          recurring: true,
+          frequency: 'monthly',
+          startDate: new Date(new Date().getFullYear(), 0, 1), // January 1 of current year
+          endDate: new Date(new Date().getFullYear() + 1, 0, 1) // January 1 of next year
+        }
+      ]
+    };
+    
+    const { amortization } = calculatePortfolio(assumptions);
+    
+    // Check that contributions are being processed
+    console.log("Testing supplemental contributions:");
+    
+    // Log first few months
+    for (let i = 0; i <= 3; i++) {
+      console.log(`Month ${i} - Contribution: $${amortization[i].supplementalContribution}, New Shares: ${amortization[i].newSharesFromContribution?.toFixed(2) || 'undefined'}, Total Shares: ${amortization[i].totalShares.toFixed(2)}`);
+    }
+    
+    // Verify contributions are being applied
+    expect(amortization[1].supplementalContribution).toBe(100);
+    expect(amortization[1].newSharesFromContribution).toBe(10); // $100 / $10 per share = 10 shares
+    
+    // Verify shares are properly accumulated over time
+    expect(amortization[0].totalShares).toBe(200); // Initial shares (100) + shares from investment (100)
+    expect(amortization[1].totalShares).toBe(amortization[0].totalShares + amortization[1].newSharesFromDrip + amortization[1].newSharesFromContribution!);
+    expect(amortization[2].totalShares).toBe(amortization[1].totalShares + amortization[2].newSharesFromDrip + amortization[2].newSharesFromContribution!);
+  });
   it('should correctly calculate amortization schedule and summary for sample data', () => {
     const assumptions: Assumptions = {
       // Investor Profile
