@@ -85,10 +85,9 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setRecurring(contribution.recurring);
       setFrequency(contribution.frequency);
       
-      // Set day of week if available (for weekly/biweekly)
-      if (contribution.dayOfWeek) {
-        setDayOfWeek(contribution.dayOfWeek);
-      }
+      // Always set dayOfWeek, even if undefined, to ensure proper initialization
+      console.log('Loading contribution with dayOfWeek:', contribution.dayOfWeek);
+      setDayOfWeek(contribution.dayOfWeek || 1); // Default to Monday if not set
       
       try {
         // Format dates safely - handle both Date objects and strings
@@ -150,12 +149,19 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     return displayName;
   };
   
+  // Function to update the name when form values change
+  const updateName = useCallback(() => {
+    if (!nameManuallySet && amount) {
+      const newName = generateName();
+      console.log('Updating name to:', newName);
+      setName(newName);
+    }
+  }, [amount, type, frequency, dayOfWeek, nameManuallySet, generateName]);
+  
   // Auto-update name when form values change
   useEffect(() => {
-    if (!nameManuallySet && amount) {
-      setName(generateName());
-    }
-  }, [amount, type, frequency, dayOfWeek, nameManuallySet]);
+    updateName();
+  }, [amount, type, frequency, dayOfWeek, nameManuallySet, updateName]);
   
   // Update recurring and frequency when type changes
   useEffect(() => {
@@ -188,19 +194,76 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     setNameManuallySet(false);
   };
   
-  // Handle form submission - using useCallback to avoid circular dependencies
-  const handleSubmit = useCallback(() => {
-    // Validate required fields
-    if (!name.trim() || !amount) {
+  // Handle form submission (not using useCallback to avoid dependency issues)
+  const handleSubmit = () => {
+    // Debug validation with full inspection of values
+    console.log("Validating form submission - DETAILED INSPECTION:");
+    console.log("- Name:", name);
+    console.log("  Type:", typeof name);
+    console.log("  Length:", name ? name.length : 0);
+    console.log("  Value as JSON:", JSON.stringify(name));
+    
+    console.log("- Amount:", amount);
+    console.log("  Type:", typeof amount);
+    console.log("  Value as JSON:", JSON.stringify(amount));
+    
+    console.log("- Type:", type);
+    console.log("- Frequency:", frequency);
+    console.log("- Day of Week:", dayOfWeek);
+    
+    // Get direct references to DOM elements for fallback validation
+    const nameInput = document.getElementById("name") as HTMLInputElement;
+    const amountInput = document.getElementsByName("amount")[0] as HTMLInputElement;
+    
+    console.log("DOM References:");
+    console.log("- Name DOM value:", nameInput ? nameInput.value : 'Not found');
+    console.log("- Amount DOM value:", amountInput ? amountInput.value : 'Not found');
+    
+    // Try to use DOM values if React state is failing
+    let actualName = nameInput?.value || name;
+    let actualAmount = amountInput?.value || amount;
+    
+    console.log("Using values:");
+    console.log("- Actual name:", actualName);
+    console.log("- Actual amount:", actualAmount);
+    
+    // Treat empty string values as empty
+    if (actualName === '') actualName = null;
+    if (actualAmount === '') actualAmount = null;
+    
+    // Simple validation with fallback values
+    if (!actualName || !actualAmount) {
+      console.log("VALIDATION FAILED: Using DOM references");
       alert('Please fill out all required fields');
       return;
     }
     
+    // Old validation:
+    // if (!name || name.trim() === '' || amount === undefined || amount === null || amount === '') {
+    //   console.log("VALIDATION FAILED: Required fields missing");
+    //   alert('Please fill out all required fields');
+    //   return;
+    // }
+    
     // Validate that dayOfWeek is selected for weekly/biweekly contributions
     if ((frequency === 'weekly' || frequency === 'biweekly') && !dayOfWeek) {
+      console.log("VALIDATION FAILED: Day of week missing for weekly/biweekly");
       alert('Please select a day of the week for weekly/biweekly contributions');
       return;
     }
+    
+    console.log("Form validation passed!");
+    
+    // Log submission details for debugging
+    console.log('----------------- FORM SUBMISSION -----------------');
+    console.log('Name:', name);
+    console.log('Amount:', amount);
+    console.log('Type:', type);
+    console.log('Frequency:', frequency);
+    console.log('Day of week:', dayOfWeek);
+    console.log('Start date:', startDate);
+    console.log('End date:', endDate);
+    console.log('Original contribution:', contribution);
     
     // Helper function to safely parse a date string into a Date object
     // Creates date without time zone issues by parsing the date parts directly
@@ -230,27 +293,68 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     };
 
     // Create the contribution object based on type
-    const baseContribution = {
-      id: contribution?.id || uuidv4(),
-      name: name.trim(),
-      amount: typeof amount === 'string' ? parseFloat(amount.replace(/[^0-9.]/g, '')) : amount,
+    // Make a deep copy of the original contribution to preserve all properties
+    const baseContribution = contribution ? { ...contribution } : {
+      id: uuidv4(),
+      enabled: true,
+    };
+    
+    // Get the actual input values for processing
+    // We already have these from validation, so we don't need to redeclare
+    const actualAmountRaw = amountInput?.value || amount;
+    
+    // Parse the actual amount value
+    let parsedAmount: number;
+    if (typeof actualAmountRaw === 'string') {
+      // Remove any non-numeric characters except decimals
+      const cleanedAmount = actualAmountRaw.replace(/[^0-9.]/g, '');
+      parsedAmount = parseFloat(cleanedAmount);
+      console.log("Parsed amount from string:", actualAmountRaw, "->", cleanedAmount, "->", parsedAmount);
+      // Ensure it's a valid number
+      if (isNaN(parsedAmount)) {
+        console.error("Amount parsing failed:", actualAmountRaw);
+        parsedAmount = 0;
+      }
+    } else if (typeof actualAmountRaw === 'number') {
+      parsedAmount = actualAmountRaw;
+    } else {
+      console.error("Invalid amount type:", typeof actualAmountRaw);
+      parsedAmount = 0;
+    }
+    
+    console.log("Final parsed amount:", parsedAmount);
+    
+    // Update the properties with values we know work
+    Object.assign(baseContribution, {
+      name: actualName.trim(),
+      amount: parsedAmount,
       type,
-      enabled: contribution?.enabled ?? true,
       recurring,
       frequency,
       ...(startDate ? { startDate: createDateFromString(startDate) } : {}),
       ...(endDate ? { endDate: createDateFromString(endDate) } : {}),
-      // Add dayOfWeek property only for weekly/biweekly contributions
-      ...(frequency === 'weekly' || frequency === 'biweekly' ? { dayOfWeek } : {})
-    };
+      // Always explicitly set dayOfWeek regardless of frequency
+      dayOfWeek
+    });
+    
+    // Log the object we're about to save for debugging
+    console.log('Saving contribution object:', baseContribution);
     
     // Make sure one-time contributions have both dates the same if provided
     if (type === 'oneTime' && startDate) {
       baseContribution.endDate = createDateFromString(startDate);
     }
     
-    onSave(baseContribution as SupplementalContribution);
-  }, [name, amount, contribution, type, recurring, frequency, startDate, endDate, onSave]);
+    // Ensure dayOfWeek is explicitly set in the contribution object
+    const finalContribution = {
+      ...baseContribution,
+      // Always include dayOfWeek explicitly, regardless of frequency
+      dayOfWeek
+    };
+    
+    console.log('Final contribution object to save:', finalContribution);
+    onSave(finalContribution as SupplementalContribution);
+  };
   
   // Filter frequency options based on the contribution type
   const getFrequencyOptions = () => {
@@ -285,8 +389,20 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     return weekdaysShort[day - 1];
   };
   
+  // Add function to handle day of week changes
+  const handleDayOfWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDayOfWeek = Number(e.target.value) as WeekDay;
+    console.log('Day of week changed to:', newDayOfWeek);
+    setDayOfWeek(newDayOfWeek);
+    
+    // If name is auto-generated, update it with the new day of week
+    if (!nameManuallySet) {
+      updateName();
+    }
+  };
+  
   // Handle keyboard events
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       // Prevent Enter key from submitting if within an input or select element
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) {
@@ -304,7 +420,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       e.preventDefault();
       onCancel();
     }
-  }, [onCancel, handleSubmit]);
+  };
   
   // Add and remove keyboard event listeners
   useEffect(() => {
@@ -313,7 +429,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown as any);
     };
-  }, [handleKeyDown]);
+  }, []);
   
   return (
     <div className="space-y-4">
@@ -387,7 +503,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
             <select
               id="dayOfWeek"
               value={dayOfWeek}
-              onChange={(e) => setDayOfWeek(Number(e.target.value) as WeekDay)}
+              onChange={handleDayOfWeekChange}
               className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
               required
             >
@@ -507,7 +623,10 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         </button>
         <button
           type="button"
-          onClick={handleSubmit}
+          onClick={() => {
+            console.log('Submit button clicked with dayOfWeek =', dayOfWeek);
+            handleSubmit();
+          }}
           className="px-4 py-2 bg-indigo-600 dark:bg-basshead-blue-600 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-basshead-blue-700 transition-colors duration-200"
         >
           {contribution ? 'Save Changes' : 'Add Contribution'}
