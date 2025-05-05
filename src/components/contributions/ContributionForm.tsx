@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   SupplementalContribution, 
   ContributionType,
-  ContributionFrequency
+  ContributionFrequency,
+  WeekDay
 } from '../../models/SupplementalContribution';
 import { DollarInput } from '../inputs';
 
@@ -48,6 +49,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [nameManuallySet, setNameManuallySet] = useState(false);
+  const [dayOfWeek, setDayOfWeek] = useState<WeekDay>(1); // Default to Monday
   
   // Calculate default simulation start and end dates
   const getDefaultStartDate = (): Date => {
@@ -82,6 +84,11 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       setType(contribution.type);
       setRecurring(contribution.recurring);
       setFrequency(contribution.frequency);
+      
+      // Set day of week if available (for weekly/biweekly)
+      if (contribution.dayOfWeek) {
+        setDayOfWeek(contribution.dayOfWeek);
+      }
       
       try {
         // Format dates safely - handle both Date objects and strings
@@ -120,13 +127,27 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       frequencyText = 'semi-monthly' as any; // Using 'as any' to bypass type checking for the display string
     }
     
+    // Add weekday for weekly/biweekly frequencies
+    let displayName = '';
     if (type === 'dca') {
-      return `DCA: ${amountFormatted} (${frequencyText})`;
+      displayName = `DCA: ${amountFormatted} (${frequencyText}`;
     } else if (type === 'salary') {
-      return `Salary: ${amountFormatted} (${frequencyText})`;
+      displayName = `Salary: ${amountFormatted} (${frequencyText}`;
     } else {
       return `One-time: ${amountFormatted}`;
     }
+    
+    // Add weekday for weekly/biweekly frequencies
+    if ((frequency === 'weekly' || frequency === 'biweekly') && dayOfWeek) {
+      displayName += ` on ${getWeekdayShortName(dayOfWeek)}`;
+    }
+    
+    // Close the parenthesis
+    if (type === 'dca' || type === 'salary') {
+      displayName += ')';
+    }
+    
+    return displayName;
   };
   
   // Auto-update name when form values change
@@ -134,7 +155,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     if (!nameManuallySet && amount) {
       setName(generateName());
     }
-  }, [amount, type, frequency, nameManuallySet]);
+  }, [amount, type, frequency, dayOfWeek, nameManuallySet]);
   
   // Update recurring and frequency when type changes
   useEffect(() => {
@@ -162,6 +183,12 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     // Validate required fields
     if (!name.trim() || !amount) {
       alert('Please fill out all required fields');
+      return;
+    }
+    
+    // Validate that dayOfWeek is selected for weekly/biweekly contributions
+    if ((frequency === 'weekly' || frequency === 'biweekly') && !dayOfWeek) {
+      alert('Please select a day of the week for weekly/biweekly contributions');
       return;
     }
     
@@ -202,7 +229,9 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       recurring,
       frequency,
       ...(startDate ? { startDate: createDateFromString(startDate) } : {}),
-      ...(endDate ? { endDate: createDateFromString(endDate) } : {})
+      ...(endDate ? { endDate: createDateFromString(endDate) } : {}),
+      // Add dayOfWeek property only for weekly/biweekly contributions
+      ...(frequency === 'weekly' || frequency === 'biweekly' ? { dayOfWeek } : {})
     };
     
     // Make sure one-time contributions have both dates the same if provided
@@ -232,6 +261,18 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       ];
     }
     return [];
+  };
+  
+  // Get full weekday name from number
+  const getWeekdayName = (day: WeekDay): string => {
+    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    return weekdays[day - 1];
+  };
+  
+  // Get short weekday name from number
+  const getWeekdayShortName = (day: WeekDay): string => {
+    const weekdaysShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return weekdaysShort[day - 1];
   };
   
   // Handle keyboard events
@@ -288,10 +329,10 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         </select>
       </div>
       
-      {/* Amount and Frequency in a two-column layout */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Amount */}
-        <div>
+      {/* Dynamic grid layout that changes based on weekly/biweekly selection */}
+      <div className={`grid ${(frequency === 'weekly' || frequency === 'biweekly') && recurring && type !== 'oneTime' ? 'grid-cols-12' : 'grid-cols-2'} gap-4`}>
+        {/* Amount - 4/12 width when three columns */}
+        <div className={`${(frequency === 'weekly' || frequency === 'biweekly') && recurring && type !== 'oneTime' ? 'col-span-4' : ''}`}>
           <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
             Amount ($) *
           </label>
@@ -304,9 +345,9 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
           </div>
         </div>
         
-        {/* Frequency (only for recurring contributions) */}
+        {/* Frequency (only for recurring contributions) - 5/12 width when three columns */}
         {recurring && type !== 'oneTime' ? (
-          <div>
+          <div className={`${(frequency === 'weekly' || frequency === 'biweekly') && recurring && type !== 'oneTime' ? 'col-span-5' : ''}`}>
             <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
               Frequency *
             </label>
@@ -324,6 +365,28 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
           </div>
         ) : (
           <div className="hidden md:block"> {/* Empty column for layout when frequency isn't shown */}
+          </div>
+        )}
+        
+        {/* Day of Week (only for weekly/biweekly) - 3/12 width in three-column layout */}
+        {(frequency === 'weekly' || frequency === 'biweekly') && recurring && type !== 'oneTime' && (
+          <div className="col-span-3">
+            <label htmlFor="dayOfWeek" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
+              Day *
+            </label>
+            <select
+              id="dayOfWeek"
+              value={dayOfWeek}
+              onChange={(e) => setDayOfWeek(Number(e.target.value) as WeekDay)}
+              className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
+              required
+            >
+              <option value={1}>Mon</option>
+              <option value={2}>Tue</option>
+              <option value={3}>Wed</option>
+              <option value={4}>Thu</option>
+              <option value={5}>Fri</option>
+            </select>
           </div>
         )}
       </div>

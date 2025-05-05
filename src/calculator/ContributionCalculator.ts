@@ -102,14 +102,34 @@ function shouldApplyContribution(
       return true; // Apply every day
       
     case 'weekly':
-      // Apply if the current date's day of week matches the start date's day of week
-      return currentDate.getDay() === startDate.getDay();
+      // If dayOfWeek is specified, use that as the weekday (1-5 for Mon-Fri)
+      if (contribution.dayOfWeek) {
+        // JavaScript getDay() returns 0-6 (Sun-Sat), where Sunday is 0, Monday is 1, etc.
+        // Our WeekDay type uses 1-5 (Mon-Fri), where Monday is 1, Tuesday is 2, etc.
+        // These align perfectly for weekdays, so we can compare directly
+        return currentDate.getDay() === contribution.dayOfWeek;
+      } else {
+        // Fall back to old behavior if no dayOfWeek is specified
+        return currentDate.getDay() === startDate.getDay();
+      }
       
     case 'biweekly':
       // Calculate weeks since the start date
       const msPerWeek = 7 * 24 * 60 * 60 * 1000;
       const weeksSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / msPerWeek);
-      return weeksSinceStart % 2 === 0 && currentDate.getDay() === startDate.getDay();
+      
+      // Check if this is an even number of weeks since start
+      const isEvenWeek = weeksSinceStart % 2 === 0;
+      
+      // If dayOfWeek is specified, use that as the weekday
+      if (contribution.dayOfWeek) {
+        // JavaScript getDay() returns 0-6 (Sun-Sat), where Sunday is 0, Monday is 1, etc.
+        // Our WeekDay type uses 1-5 (Mon-Fri), where Monday is 1, Tuesday is 2, etc.
+        return isEvenWeek && currentDate.getDay() === contribution.dayOfWeek;
+      } else {
+        // Fall back to old behavior if no dayOfWeek is specified
+        return isEvenWeek && currentDate.getDay() === startDate.getDay();
+      }
       
     case 'semimonthly':
       // Apply on the 1st and 15th of each month
@@ -203,6 +223,34 @@ export function materializeContributions(
             daysToCheck.add(d);
           }
           break;
+        
+        case 'weekly':
+        case 'biweekly':
+          // For weekly/biweekly, we need to check dates that correspond to the specified day of week
+          // Since these are based on day of week, we need to check all days in the month
+          // to find matching weekdays
+          const daysInMonthForWeekly = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+          
+          // Check all days for potential weekday matches
+          for (let d = 1; d <= daysInMonthForWeekly; d++) {
+            const specificDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+            
+            // If dayOfWeek is specified, check if this date matches the day of week
+            if (contribution.dayOfWeek) {
+              // JavaScript getDay() returns 0-6 (Sun-Sat), where Sunday is 0, Monday is 1, etc.
+              // Our WeekDay type uses 1-5 (Mon-Fri), where Monday is 1, Tuesday is 2, etc.
+              if (specificDate.getDay() === contribution.dayOfWeek) {
+                daysToCheck.add(d);
+              }
+            } else if (contribution.startDate) {
+              // Use the start date's day of week as fallback
+              const startDate = ensureDate(contribution.startDate);
+              if (startDate && specificDate.getDay() === startDate.getDay()) {
+                daysToCheck.add(d);
+              }
+            }
+          }
+          break;
           
         case 'semimonthly':
           // For semi-monthly, add both the 1st and 15th
@@ -221,8 +269,37 @@ export function materializeContributions(
           }
           break;
           
+        case 'quarterly':
+          // For quarterly, check if this is a quarter month (Jan, Apr, Jul, Oct)
+          const quarterMonths = [0, 3, 6, 9]; // 0-indexed months
+          if (quarterMonths.includes(currentDate.getMonth())) {
+            if (contribution.startDate) {
+              const startDate = ensureDate(contribution.startDate);
+              const day = startDate ? startDate.getDate() : 1;
+              daysToCheck.add(day);
+            } else {
+              daysToCheck.add(1);
+            }
+          }
+          break;
+          
+        case 'yearly':
+          // For yearly, check if this is the start month
+          if (contribution.startDate) {
+            const startDate = ensureDate(contribution.startDate);
+            if (startDate && startDate.getMonth() === currentDate.getMonth()) {
+              daysToCheck.add(startDate.getDate());
+            }
+          } else {
+            // Default to January 1st if no start date
+            if (currentDate.getMonth() === 0) { // January
+              daysToCheck.add(1);
+            }
+          }
+          break;
+          
         default:
-          // For other frequencies, add the start date's day
+          // For other frequencies or one-time, add the start date's day
           if (contribution.startDate) {
             const startDate = ensureDate(contribution.startDate);
             const day = startDate ? startDate.getDate() : 1;

@@ -8,6 +8,11 @@ export type ContributionType = 'dca' | 'salary' | 'oneTime';
 // Frequency options for all contributions
 export type ContributionFrequency = 'none' | 'daily' | 'weekly' | 'biweekly' | 'semimonthly' | 'monthly' | 'quarterly' | 'yearly';
 
+// Weekday type for weekly/biweekly contributions (Monday through Friday)
+// Note: JavaScript getDay() returns 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+// We use the same numbering as JavaScript for weekdays (1-5 for Mon-Fri)
+export type WeekDay = 1 | 2 | 3 | 4 | 5; // 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday
+
 // Base interface for all contribution types
 export interface BaseContribution {
   id: string; // Unique identifier
@@ -19,6 +24,7 @@ export interface BaseContribution {
   frequency: ContributionFrequency; // Frequency of contribution (none for one-time)
   startDate?: Date; // Optional start date, defaults to simulation start
   endDate?: Date; // Optional end date, defaults to simulation end
+  dayOfWeek?: WeekDay; // Optional day of week (1-5, Monday-Friday) for weekly/biweekly contributions
 }
 
 // Interface for dollar-cost averaging contributions
