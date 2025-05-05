@@ -74,16 +74,8 @@ function shouldApplyContribution(
   const startDate = ensureDate(contribution.startDate) || simulationStartDate;
   const endDate = ensureDate(contribution.endDate) || new Date(simulationStartDate.getFullYear() + 100, 0, 1); // Default to 100 years in the future
   
-  // Convert dates to ISO strings safely
-  const currentDateString = currentDate.toISOString();
-  const startDateString = startDate instanceof Date ? startDate.toISOString() : String(startDate);
-  const endDateString = endDate instanceof Date ? endDate.toISOString() : String(endDate);
-  
-  console.log(`Checking contribution: ${contribution.name}, current date: ${currentDateString}, start date: ${startDateString}, end date: ${endDateString}`);
-  
   // Check if current date is within the contribution period
   if (currentDate < startDate || currentDate > endDate) {
-    console.log(`Contribution ${contribution.name} not applied: outside date range`);
     return false;
   }
   
@@ -169,33 +161,10 @@ export function materializeContributions(
   simulationMonths: number,
   startMonth: number = 1
 ): MaterializedContribution[] {
-  console.log(`Materializing ${contributions.length} contributions for ${simulationMonths} months, starting from month ${startMonth}`);
-  
   if (!contributions || contributions.length === 0) {
-    console.log("No contributions to materialize");
     return [];
   }
   
-  // Map all contributions for debugging
-  const contributionsToLog = contributions.map(c => ({
-    id: c.id, 
-    name: c.name,
-    type: c.type,
-    amount: c.amount,
-    enabled: c.enabled,
-    recurring: c.recurring,
-    frequency: c.frequency,
-    startDate: c.startDate ? ensureDate(c.startDate)?.toISOString() : undefined,
-    endDate: c.endDate ? ensureDate(c.endDate)?.toISOString() : undefined
-  }));
-  
-  // Log all contributions
-  console.log("Contributions to evaluate:", contributionsToLog);
-  
-  // Log only enabled contributions that will be materialized
-  console.log("Contributions to materialize:", 
-    contributionsToLog.filter(c => c.enabled)
-  );
   
   const materializedContributions: MaterializedContribution[] = [];
   
@@ -206,7 +175,6 @@ export function materializeContributions(
     
     // Calculate the date for this month (we'll use the 1st by default)
     const currentDate = calculateContributionDate(month, calendarMonth, startMonth);
-    console.log(`Processing month ${month}, calendar month ${calendarMonth}, date: ${currentDate.toISOString()}`);
     
     // Determine which specific days of the month to check based on contribution types
     const daysToCheck = new Set<number>();
@@ -313,7 +281,6 @@ export function materializeContributions(
     
     // Convert to array and sort
     const daysArray = Array.from(daysToCheck).sort((a, b) => a - b);
-    console.log(`Month ${month}, checking days: ${daysArray.join(', ')}`);
     
     // Now process only the days we need to check
     for (const day of daysArray) {
@@ -325,7 +292,6 @@ export function materializeContributions(
         const specificDate = calculateContributionDate(month, calendarMonth, startMonth, day);
         
         if (shouldApplyContribution(contribution, specificDate, startMonth)) {
-          console.log(`Materializing contribution: ${contribution.name} for date: ${specificDate.toISOString()}, amount: ${contribution.amount}`);
           materializedContributions.push({
             amount: contribution.amount,
             date: new Date(specificDate), // Create a new date object to avoid references
@@ -338,10 +304,7 @@ export function materializeContributions(
   }
   
   // Sort by date
-  const sortedContributions = materializedContributions.sort((a, b) => a.date.getTime() - b.date.getTime());
-  console.log(`Materialized ${sortedContributions.length} contributions total`);
-  
-  return sortedContributions;
+  return materializedContributions.sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
 /**

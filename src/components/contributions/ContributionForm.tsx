@@ -152,9 +152,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   // Function to update the name when form values change
   const updateName = useCallback(() => {
     if (!nameManuallySet && amount) {
-      const newName = generateName();
-      console.log('Updating name to:', newName);
-      setName(newName);
+      setName(generateName());
     }
   }, [amount, type, frequency, dayOfWeek, nameManuallySet, generateName]);
   
@@ -194,38 +192,15 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     setNameManuallySet(false);
   };
   
-  // Handle form submission (not using useCallback to avoid dependency issues)
+  // Handle form submission
   const handleSubmit = () => {
-    // Debug validation with full inspection of values
-    console.log("Validating form submission - DETAILED INSPECTION:");
-    console.log("- Name:", name);
-    console.log("  Type:", typeof name);
-    console.log("  Length:", name ? name.length : 0);
-    console.log("  Value as JSON:", JSON.stringify(name));
-    
-    console.log("- Amount:", amount);
-    console.log("  Type:", typeof amount);
-    console.log("  Value as JSON:", JSON.stringify(amount));
-    
-    console.log("- Type:", type);
-    console.log("- Frequency:", frequency);
-    console.log("- Day of Week:", dayOfWeek);
-    
     // Get direct references to DOM elements for fallback validation
     const nameInput = document.getElementById("name") as HTMLInputElement;
     const amountInput = document.getElementsByName("amount")[0] as HTMLInputElement;
     
-    console.log("DOM References:");
-    console.log("- Name DOM value:", nameInput ? nameInput.value : 'Not found');
-    console.log("- Amount DOM value:", amountInput ? amountInput.value : 'Not found');
-    
     // Try to use DOM values if React state is failing
     let actualName = nameInput?.value || name;
     let actualAmount = amountInput?.value || amount;
-    
-    console.log("Using values:");
-    console.log("- Actual name:", actualName);
-    console.log("- Actual amount:", actualAmount);
     
     // Treat empty string values as empty
     if (actualName === '') actualName = null;
@@ -233,43 +208,20 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     
     // Simple validation with fallback values
     if (!actualName || !actualAmount) {
-      console.log("VALIDATION FAILED: Using DOM references");
       alert('Please fill out all required fields');
       return;
     }
     
-    // Old validation:
-    // if (!name || name.trim() === '' || amount === undefined || amount === null || amount === '') {
-    //   console.log("VALIDATION FAILED: Required fields missing");
-    //   alert('Please fill out all required fields');
-    //   return;
-    // }
-    
     // Validate that dayOfWeek is selected for weekly/biweekly contributions
     if ((frequency === 'weekly' || frequency === 'biweekly') && !dayOfWeek) {
-      console.log("VALIDATION FAILED: Day of week missing for weekly/biweekly");
       alert('Please select a day of the week for weekly/biweekly contributions');
       return;
     }
-    
-    console.log("Form validation passed!");
-    
-    // Log submission details for debugging
-    console.log('----------------- FORM SUBMISSION -----------------');
-    console.log('Name:', name);
-    console.log('Amount:', amount);
-    console.log('Type:', type);
-    console.log('Frequency:', frequency);
-    console.log('Day of week:', dayOfWeek);
-    console.log('Start date:', startDate);
-    console.log('End date:', endDate);
-    console.log('Original contribution:', contribution);
     
     // Helper function to safely parse a date string into a Date object
     // Creates date without time zone issues by parsing the date parts directly
     const createDateFromString = (dateString: string): Date => {
       if (!dateString) {
-        console.log('No date string provided, using current date');
         return new Date(); // Default to today if no date provided
       }
       
@@ -279,52 +231,38 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         
         // Validate the parts to ensure they're valid numbers
         if (isNaN(year) || isNaN(month) || isNaN(day)) {
-          throw new Error(`Invalid date parts: year=${year}, month=${month}, day=${day}`);
+          throw new Error(`Invalid date parts`);
         }
         
         // Create a new Date object (month is 0-indexed in JavaScript)
-        const date = new Date(year, month - 1, day);
-        console.log(`Created date: ${date.toISOString()} from string: ${dateString}`);
-        return date;
+        return new Date(year, month - 1, day);
       } catch (e) {
-        console.error('Error parsing date:', dateString, e);
         return new Date(); // Default to today if parsing fails
       }
     };
 
-    // Create the contribution object based on type
-    // Make a deep copy of the original contribution to preserve all properties
-    const baseContribution = contribution ? { ...contribution } : {
-      id: uuidv4(),
-      enabled: true,
+    // Create the contribution object
+    const baseContribution = {
+      id: contribution?.id || uuidv4(),
+      enabled: contribution?.enabled ?? true,
     };
     
-    // Get the actual input values for processing
-    // We already have these from validation, so we don't need to redeclare
-    const actualAmountRaw = amountInput?.value || amount;
-    
-    // Parse the actual amount value
+    // Parse the amount value
     let parsedAmount: number;
-    if (typeof actualAmountRaw === 'string') {
+    if (typeof actualAmount === 'string') {
       // Remove any non-numeric characters except decimals
-      const cleanedAmount = actualAmountRaw.replace(/[^0-9.]/g, '');
+      const cleanedAmount = actualAmount.replace(/[^0-9.]/g, '');
       parsedAmount = parseFloat(cleanedAmount);
-      console.log("Parsed amount from string:", actualAmountRaw, "->", cleanedAmount, "->", parsedAmount);
-      // Ensure it's a valid number
       if (isNaN(parsedAmount)) {
-        console.error("Amount parsing failed:", actualAmountRaw);
         parsedAmount = 0;
       }
-    } else if (typeof actualAmountRaw === 'number') {
-      parsedAmount = actualAmountRaw;
+    } else if (typeof actualAmount === 'number') {
+      parsedAmount = actualAmount;
     } else {
-      console.error("Invalid amount type:", typeof actualAmountRaw);
       parsedAmount = 0;
     }
     
-    console.log("Final parsed amount:", parsedAmount);
-    
-    // Update the properties with values we know work
+    // Set the properties
     Object.assign(baseContribution, {
       name: actualName.trim(),
       amount: parsedAmount,
@@ -345,15 +283,11 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       baseContribution.endDate = createDateFromString(startDate);
     }
     
-    // Ensure dayOfWeek is explicitly set in the contribution object
-    const finalContribution = {
-      ...baseContribution,
-      // Always include dayOfWeek explicitly, regardless of frequency
-      dayOfWeek
-    };
+    // Include dayOfWeek for all contribution types
+    baseContribution.dayOfWeek = dayOfWeek;
     
-    console.log('Final contribution object to save:', finalContribution);
-    onSave(finalContribution as SupplementalContribution);
+    // Save the contribution
+    onSave(baseContribution as SupplementalContribution);
   };
   
   // Filter frequency options based on the contribution type
@@ -392,7 +326,6 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   // Add function to handle day of week changes
   const handleDayOfWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newDayOfWeek = Number(e.target.value) as WeekDay;
-    console.log('Day of week changed to:', newDayOfWeek);
     setDayOfWeek(newDayOfWeek);
     
     // If name is auto-generated, update it with the new day of week
@@ -623,10 +556,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => {
-            console.log('Submit button clicked with dayOfWeek =', dayOfWeek);
-            handleSubmit();
-          }}
+          onClick={handleSubmit}
           className="px-4 py-2 bg-indigo-600 dark:bg-basshead-blue-600 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-basshead-blue-700 transition-colors duration-200"
         >
           {contribution ? 'Save Changes' : 'Add Contribution'}
