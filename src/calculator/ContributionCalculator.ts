@@ -22,7 +22,6 @@ function ensureDate(dateInput: Date | string | undefined): Date | undefined {
   try {
     return new Date(dateInput);
   } catch (e) {
-    console.error('Failed to parse date:', dateInput);
     return undefined;
   }
 }
@@ -41,7 +40,6 @@ export function dateToISOString(date: Date | undefined): string | undefined {
     try {
       date = new Date(date);
     } catch (e) {
-      console.error('Failed to convert to Date:', date);
       return undefined;
     }
   }
@@ -69,12 +67,8 @@ function calculateContributionDate(
   // Current year (we'll use the current year as the base year for simulation)
   const currentYear = new Date().getFullYear();
   
-  // Debug for date calculation
-  const date = new Date(currentYear + yearOffset, calendarMonth - 1, day);
-  console.log(`Date calc: simMonth=${simulationMonth}, calMonth=${calendarMonth}, startMonth=${startMonth}, day=${day} => ${date.toISOString()}`);
-  
   // Calculate the actual date
-  return date;
+  return new Date(currentYear + yearOffset, calendarMonth - 1, day);
 }
 
 /**
@@ -123,24 +117,9 @@ function shouldApplyContribution(
     if (contribution.type === 'oneTime' && contribution.startDate) {
       const contributionDate = new Date(contribution.startDate);
       
-      // Debug the dates we're comparing
-      // Debug log only if environment variable is set
-      if (process.env.NODE_ENV === 'development' && false) { // Set to true to enable logs when debugging
-        console.log('\n=== ONE-TIME DATE COMPARISON ===');
-        console.log('Contribution:', contribution.name);
-        console.log('Current date:', currentDate.toISOString());
-        console.log('Contribution date:', contributionDate.toISOString());
-        
-        const sameMonth = currentDate.getMonth() === contributionDate.getMonth();
-        const sameYear = currentDate.getFullYear() === contributionDate.getFullYear();
-        const sameDay = currentDate.getDate() === contributionDate.getDate();
-        
-        console.log('Same month:', sameMonth, '(', currentDate.getMonth(), 'vs', contributionDate.getMonth(), ')');
-        console.log('Same year:', sameYear, '(', currentDate.getFullYear(), 'vs', contributionDate.getFullYear(), ')');
-        console.log('Same day:', sameDay, '(', currentDate.getDate(), 'vs', contributionDate.getDate(), ')');
-        console.log('Result:', sameDay && sameMonth && sameYear);
-        console.log('=============================');
-      }
+      const sameMonth = currentDate.getMonth() === contributionDate.getMonth();
+      const sameYear = currentDate.getFullYear() === contributionDate.getFullYear();
+      const sameDay = currentDate.getDate() === contributionDate.getDate();
       
       // Only apply on the specific day, month, and year
       return sameDay && sameMonth && sameYear;
@@ -255,9 +234,6 @@ export function materializeContributions(
             sourceId: contribution.id,
             sourceName: contribution.name
           });
-          if (process.env.NODE_ENV === 'development' && false) { // Set to true to enable logs when debugging
-            console.log(`\n>>> APPLIED ONE-TIME WITH EXACT DATE: ${contribution.name} for ${contributionDate.toISOString()}`);
-          }
         }
       }
     }
@@ -419,17 +395,6 @@ export function materializeContributions(
         // Set the day for this specific check
         const specificDate = calculateContributionDate(month, calendarMonth, startMonth, day);
         
-        // Debug for one-time contributions (should never get here as they're filtered above)
-        if (process.env.NODE_ENV === 'development' && false) { // Set to true to enable logs when debugging
-          if (contribution.type === 'oneTime' && contribution.startDate) {
-            console.log(`\n=== CONTRIB CHECK Month ${month} Day ${day} ===`);
-            console.log('Contribution:', contribution.name);
-            console.log('Type:', contribution.type);
-            console.log('Specific date:', specificDate.toISOString());
-            console.log('Contribution start date:', new Date(contribution.startDate).toISOString());
-            console.log('Should apply?', shouldApplyContribution(contribution, specificDate, startMonth));
-          }
-        }
         
         if (shouldApplyContribution(contribution, specificDate, startMonth)) {
           materializedContributions.push({
@@ -439,10 +404,6 @@ export function materializeContributions(
             sourceName: contribution.name
           });
           
-          // Debug when a contribution is actually applied
-          if (process.env.NODE_ENV === 'development' && false) { // Set to true to enable logs when debugging
-            console.log(`\n>>> APPLIED: ${contribution.name} for ${specificDate.toISOString()}`);
-          }
         }
       }
     }

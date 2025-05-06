@@ -27,7 +27,6 @@ const formatDateForInput = (date: Date | string | undefined): string => {
     const day = String(dateObj.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   } catch (e) {
-    console.error('Error formatting date:', date);
     return '';
   }
 };
@@ -137,7 +136,6 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
           }
         }
       } catch (e) {
-        console.error('Error formatting dates when loading contribution:', e);
         // Fall back to default dates if there's a problem
         resetStartDate();
         resetEndDate();
