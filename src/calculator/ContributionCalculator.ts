@@ -217,15 +217,16 @@ export function materializeContributions(
     if (!contribution.enabled) continue;
     
     // Handle one-time contributions
-    if (contribution.type === 'oneTime' && contribution.startDate) {
+    if (contribution.type === 'oneTime' && contribution.startDate !== undefined) {
       const contributionDate = ensureDate(contribution.startDate);
       if (contributionDate) {
         // Check if the contribution date falls within the simulation period
-        const simulationStartDate = new Date(new Date().getFullYear(), startMonth - 1, 1);
+        const thisYear = new Date().getFullYear();
+        const simulationStartDate = new Date(thisYear, startMonth - 1, 1);
         const simulationEndMonth = startMonth - 1 + simulationMonths;
         const simulationEndYear = Math.floor(simulationEndMonth / 12);
         const simulationEndMonthInYear = (simulationEndMonth % 12);
-        const simulationEndDate = new Date(new Date().getFullYear() + simulationEndYear, simulationEndMonthInYear, 1);
+        const simulationEndDate = new Date(thisYear + simulationEndYear, simulationEndMonthInYear, 1);
         
         if (contributionDate >= simulationStartDate && contributionDate <= simulationEndDate) {
           materializedContributions.push({
@@ -244,9 +245,7 @@ export function materializeContributions(
     // Calculate the calendar month (1-12) for the current simulation month
     const calendarMonth = ((startMonth - 1 + month - 1) % 12) + 1;
     
-    // Calculate the year offset for the current simulation month
-    const yearOffset = Math.floor((startMonth - 1 + month - 1) / 12);
-    const currentYear = new Date().getFullYear() + yearOffset;
+    // Year and offset calculations are handled in calculateContributionDate
     
     // Calculate the date for this month (we'll use the 1st by default)
     const currentDate = calculateContributionDate(month, calendarMonth, startMonth);
@@ -286,7 +285,7 @@ export function materializeContributions(
             
             // Check if this day matches the weekday we're looking for
             if ((contribution.dayOfWeek && specificDate.getDay() === contribution.dayOfWeek) ||
-                (!contribution.dayOfWeek && contribution.startDate && 
+                (!contribution.dayOfWeek && contribution.startDate !== undefined && 
                  specificDate.getDay() === ensureDate(contribution.startDate)?.getDay())) {
               weekdayExists = true;
               break;
@@ -309,7 +308,7 @@ export function materializeContributions(
               if (specificDate.getDay() === contribution.dayOfWeek) {
                 daysToCheck.add(d);
               }
-            } else if (contribution.startDate) {
+            } else if (contribution.startDate !== undefined) {
               // Use the start date's day of week as fallback
               const startDate = ensureDate(contribution.startDate);
               if (startDate && specificDate.getDay() === startDate.getDay()) {
@@ -327,7 +326,7 @@ export function materializeContributions(
           
         case 'monthly':
           // For monthly, use the start date's day or 1st if not specified
-          if (contribution.startDate) {
+          if (contribution.startDate !== undefined) {
             const startDate = ensureDate(contribution.startDate);
             const day = startDate ? startDate.getDate() : 1;
             daysToCheck.add(day);
@@ -340,7 +339,7 @@ export function materializeContributions(
           // For quarterly, check if this is a quarter month (Jan, Apr, Jul, Oct)
           const quarterMonths = [0, 3, 6, 9]; // 0-indexed months
           if (quarterMonths.includes(currentDate.getMonth())) {
-            if (contribution.startDate) {
+            if (contribution.startDate !== undefined) {
               const startDate = ensureDate(contribution.startDate);
               const day = startDate ? startDate.getDate() : 1;
               daysToCheck.add(day);
@@ -352,7 +351,7 @@ export function materializeContributions(
           
         case 'yearly':
           // For yearly, check if this is the start month
-          if (contribution.startDate) {
+          if (contribution.startDate !== undefined) {
             const startDate = ensureDate(contribution.startDate);
             if (startDate && startDate.getMonth() === currentDate.getMonth()) {
               daysToCheck.add(startDate.getDate());
@@ -365,15 +364,18 @@ export function materializeContributions(
           }
           break;
           
-        default:
+        default: {
           // For other frequencies or one-time, add the start date's day
-          if (contribution.startDate) {
-            const startDate = ensureDate(contribution.startDate);
+          // Use a local variable with type assertion to handle the 'never' type issue
+          const contributionWithStartDate = contribution as { startDate?: Date | string };
+          if (contributionWithStartDate.startDate !== undefined) {
+            const startDate = ensureDate(contributionWithStartDate.startDate);
             const day = startDate ? startDate.getDate() : 1;
             daysToCheck.add(day);
           } else {
             daysToCheck.add(1);
           }
+        }
           break;
       }
     }
@@ -453,10 +455,10 @@ export function getMonthContribution(
   // Calculate the calendar month and year for this simulation month
   const calendarMonth = ((startMonth - 1 + simulationMonth - 1) % 12) + 1;
   const yearOffset = Math.floor((startMonth - 1 + simulationMonth - 1) / 12);
-  const currentYear = new Date().getFullYear() + yearOffset;
+  const yearValue = new Date().getFullYear() + yearOffset;
   
   // Create the month key
-  const key = `${currentYear}-${calendarMonth.toString().padStart(2, '0')}`;
+  const key = `${yearValue}-${calendarMonth.toString().padStart(2, '0')}`;
   
   // Return the contribution amount or 0 if none
   return monthlyContributions[key] || 0;
