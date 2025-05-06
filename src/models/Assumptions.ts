@@ -6,6 +6,9 @@ export type FilingType = 'single' | 'married' | 'headOfHousehold';
 // DRIP strategy types
 export type DripStrategy = 'none' | 'percentage' | 'fixedAmount' | 'fixedIncome';
 
+// Import supplemental contribution types
+import { SupplementalContribution } from './SupplementalContribution';
+
 export interface Assumptions {
     // Investor Profile
     initialShareCount: number;
@@ -26,6 +29,9 @@ export interface Assumptions {
     dripPercentage?: number;
     dripFixedAmount?: number;
     fixedIncomeAmount?: number; // Monthly income amount for fixedIncome strategy
+    
+    // Supplemental Contributions
+    supplementalContributions?: SupplementalContribution[];
     
     // Simulation Parameters
     simulationMonths: number;

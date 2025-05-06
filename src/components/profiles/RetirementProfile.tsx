@@ -24,6 +24,19 @@ export const retirementProfile: InvestorProfileData = {
     dripPercentage: 100,
     dripFixedAmount: 0,
     fixedIncomeAmount: 0,
+    supplementalContributions: [
+      {
+        id: '8e32f4a1-5b9c-4d7e-9f3a-483e6c7d9b0e',
+        name: 'One-time Bonus Investment',
+        amount: 10000,
+        type: 'oneTime',
+        enabled: true,
+        recurring: false,
+        frequency: 'none',
+        startDate: new Date('2025-06-15'),
+        endDate: new Date('2025-06-15')
+      }
+    ],
     
     // Simulation Parameters
     simulationMonths: 120, // 10 years

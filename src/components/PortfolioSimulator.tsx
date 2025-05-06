@@ -195,16 +195,36 @@ export function PortfolioSimulator() {
         // Save the selected profile
         localStorage.setItem("selectedProfile", selectedProfile);
         
+        // Ensure dates are stored as ISO strings
+        const formDataToSave = {
+          ...formData,
+          supplementalContributions: formData.supplementalContributions?.map(contribution => ({
+            ...contribution,
+            startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
+            endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
+          }))
+        };
+        
         // Save the current form data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(formDataToSave));
         
         // If on custom profile, update customProfileData and save it
         if (selectedProfile === "custom") {
-          setCustomProfileData(formData);
-          localStorage.setItem("customProfileData", JSON.stringify(formData));
+          setCustomProfileData(formDataToSave);
+          localStorage.setItem("customProfileData", JSON.stringify(formDataToSave));
         } else {
+          // Process customProfileData with ISO dates before saving
+          const customProfileToSave = {
+            ...customProfileData,
+            supplementalContributions: customProfileData.supplementalContributions?.map(contribution => ({
+              ...contribution,
+              startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
+              endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
+            }))
+          };
+          
           // Otherwise, just save the customProfileData separately
-          localStorage.setItem("customProfileData", JSON.stringify(customProfileData));
+          localStorage.setItem("customProfileData", JSON.stringify(customProfileToSave));
         }
         
         setSaveStatus('saved');
@@ -313,6 +333,9 @@ export function PortfolioSimulator() {
       dripFixedAmount: toNumber(formData.dripFixedAmount),
       fixedIncomeAmount: toNumber(formData.fixedIncomeAmount),
       
+      // Supplemental Contributions
+      supplementalContributions: formData.supplementalContributions || [],
+      
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
       startMonth: toInteger(formData.startMonth) || 1, // Default to January if not set
@@ -386,6 +409,7 @@ export function PortfolioSimulator() {
                 includeTaxes={formData.taxWithholdingStrategy !== 'none'}
                 taxStrategy={formData.taxWithholdingStrategy}
                 startMonth={typeof formData.startMonth === 'string' ? parseInt(formData.startMonth) : (formData.startMonth || 1)}
+                includeContributions={formData.supplementalContributions && formData.supplementalContributions.some(c => c.enabled)}
               />
             </div>
           </div>

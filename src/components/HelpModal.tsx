@@ -49,7 +49,8 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             <p className="text-gray-700 leading-relaxed text-center">
               The $MSTY Portfolio Simulator helps you model the long-term growth of a portfolio 
               invested in $MSTY, accounting for regular dividend payments, dividend reinvestment (DRIP), 
-              taxes, and loan financing scenarios.
+              taxes, loan financing scenarios, and supplemental contributions like dollar-cost averaging (DCA) 
+              and recurring salary investments.
             </p>
 
             <h2 className="text-2xl font-bold text-indigo-800 border-b pb-2 mt-8 mb-4 text-center">What This Tool Can Help You With</h2>
@@ -59,6 +60,8 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <li>• Visualize the effect of dividend reinvestment (DRIP)</li>
               <li>• Account for taxes on dividend income</li>
               <li>• See when a loan would be paid off and how your net portfolio value grows</li>
+              <li>• Model supplemental contributions like dollar-cost averaging and salary investments</li>
+              <li>• Compare different DRIP strategies (percentage-based or fixed amount)</li>
               <li>• Understand how different parameters affect your investment outcomes</li>
             </ul>
 
@@ -70,6 +73,20 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <li>• <span className="font-semibold">Initial Share Price</span>: Current price per share of $MSTY</li>
               <li>• <span className="font-semibold">Dividend Yield per 4w (%)</span>: The percentage yield for each 4-week dividend period</li>
               <li>• <span className="font-semibold">Monthly Appreciation (%)</span>: Expected monthly share price change (can be negative for a conservative model)</li>
+              <li>• <span className="font-semibold">Simulation Start Month</span>: The month of the year to start the simulation (1-12 for Jan-Dec)</li>
+            </ul>
+
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">DRIP Strategy</h3>
+            <ul className="list-none space-y-2 my-4 text-center">
+              <li>• <span className="font-semibold">DRIP Strategy</span>: Choose how dividend reinvestment is handled:
+                <ul className="list-none space-y-1 mt-1">
+                  <li>- <em>Percentage</em>: Reinvest a percentage of dividends</li>
+                  <li>- <em>Fixed Amount</em>: Reinvest a fixed dollar amount each period</li>
+                </ul>
+              </li>
+              <li>• <span className="font-semibold">DRIP Percentage</span>: Percentage of dividends to reinvest when using percentage strategy</li>
+              <li>• <span className="font-semibold">DRIP Fixed Amount</span>: Dollar amount to reinvest when using fixed amount strategy</li>
+              <li>• <span className="font-semibold">Fixed Income</span>: Dollar amount of fixed income to receive regardless of DRIP strategy</li>
             </ul>
 
             <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Loan Parameters</h3>
@@ -90,9 +107,25 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
                   <li>- <em>Fixed Percentage</em>: Withholds a fixed percentage of dividend income</li>
                 </ul>
               </li>
+              <li>• <span className="font-semibold">Tax Filing Type</span>: Filing status (single, married filing jointly, etc.) for tax bracket calculations</li>
               <li>• <span className="font-semibold">Base Income</span>: Your annual income (used for tax bracket calculations)</li>
               <li>• <span className="font-semibold">Fixed Amount</span>: Dollar amount withheld per period when using the fixed amount method</li>
               <li>• <span className="font-semibold">Fixed Percentage</span>: Percentage of dividends withheld when using the fixed percentage method</li>
+            </ul>
+            
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Supplemental Contributions</h3>
+            <ul className="list-none space-y-2 my-4 text-center">
+              <li>• <span className="font-semibold">Add Contribution</span>: Add supplemental contributions to your portfolio over time</li>
+              <li>• <span className="font-semibold">Types of Contributions</span>:
+                <ul className="list-none space-y-1 mt-1">
+                  <li>- <em>Dollar-Cost Averaging (DCA)</em>: Regular fixed-amount investments at specified intervals</li>
+                  <li>- <em>Salary Contribution</em>: Regular contributions from salary at standard pay periods</li>
+                  <li>- <em>One-Time Contribution</em>: Single lump-sum addition to your portfolio</li>
+                </ul>
+              </li>
+              <li>• <span className="font-semibold">Frequency Options</span>: Daily, weekly, bi-weekly, semi-monthly, monthly, quarterly, or yearly depending on type</li>
+              <li>• <span className="font-semibold">Date Range</span>: Set full simulation period or custom date range for each contribution</li>
+              <li>• <span className="font-semibold">Toggle Contributions</span>: Enable/disable individual contributions without deleting them</li>
             </ul>
 
             <h2 className="text-2xl font-bold text-indigo-800 border-b pb-2 mt-8 mb-4">How to Use the Simulator</h2>
@@ -121,6 +154,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             <ul className="list-none space-y-2 my-4 text-center">
               <li>• Loan-related columns are hidden when "Include Loan" is turned off</li>
               <li>• Tax-related columns are hidden when "Withhold Taxes" is turned off</li>
+              <li>• Contribution-related columns are hidden when no supplemental contributions are enabled</li>
             </ul>
 
             <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Summary Tab</h3>
@@ -140,6 +174,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <li>• Tax implications of dividend income</li>
               <li>• Loan payment progress</li>
               <li>• New shares acquired through DRIP</li>
+              <li>• Contributions made during each period</li>
               <li>• Overall portfolio valuation</li>
             </ul>
 
@@ -152,7 +187,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             <ul className="list-none space-y-2 my-4 text-center">
               <li>• Click the "Export CSV" button in the top-right corner of the table</li>
               <li>• The exported file will reflect the current tab selection (Yearly Summary or Full Detail)</li>
-              <li>• Only visible columns will be included in the export (based on Loan and Tax settings)</li>
+              <li>• Only visible columns will be included in the export (based on Loan, Tax, and Contribution settings)</li>
             </ul>
 
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-8 mx-auto max-w-3xl">

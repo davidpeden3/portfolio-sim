@@ -24,6 +24,17 @@ export const midCareerProfile: InvestorProfileData = {
     dripPercentage: 100,
     dripFixedAmount: 0,
     fixedIncomeAmount: 0,
+    supplementalContributions: [
+      {
+        id: '7249a1e2-3d4e-4c8d-b1f2-592b7b8c6123',
+        name: 'Biweekly Salary Contribution',
+        amount: 500,
+        type: 'salary',
+        enabled: true,
+        recurring: true,
+        frequency: 'biweekly'
+      }
+    ],
     
     // Simulation Parameters
     simulationMonths: 240, // 20 years

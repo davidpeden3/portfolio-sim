@@ -78,3 +78,12 @@ export function formatNumber(value: number | string): string {
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   return numValue.toLocaleString();
 }
+
+/**
+ * Format a value as currency for display (alias for formatDollarValue)
+ * @param value The number value to format
+ * @returns Formatted string with $ symbol and commas
+ */
+export function formatUSD(value: number | string): string {
+  return formatDollarValue(value);
+}
