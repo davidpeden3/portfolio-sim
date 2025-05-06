@@ -60,9 +60,9 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   
   const getDefaultEndDate = (): Date => {
     const startDate = getDefaultStartDate();
-    // Add simulation months to the start date
+    // Add simulation months to the start date (no subtraction)
     const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + simulationMonths - 1);
+    endDate.setMonth(endDate.getMonth() + simulationMonths);
     return endDate;
   };
   

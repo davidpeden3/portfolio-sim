@@ -173,6 +173,10 @@ export function materializeContributions(
     // Calculate the calendar month (1-12) for the current simulation month
     const calendarMonth = ((startMonth - 1 + month - 1) % 12) + 1;
     
+    // Calculate the year offset for the current simulation month
+    const yearOffset = Math.floor((startMonth - 1 + month - 1) / 12);
+    const currentYear = new Date().getFullYear() + yearOffset;
+    
     // Calculate the date for this month (we'll use the 1st by default)
     const currentDate = calculateContributionDate(month, calendarMonth, startMonth);
     
@@ -198,6 +202,25 @@ export function materializeContributions(
           // Since these are based on day of week, we need to check all days in the month
           // to find matching weekdays
           const daysInMonthForWeekly = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+          
+          // Check if this weekday actually occurs in this month
+          let weekdayExists = false;
+          for (let d = 1; d <= daysInMonthForWeekly; d++) {
+            const specificDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+            
+            // Check if this day matches the weekday we're looking for
+            if ((contribution.dayOfWeek && specificDate.getDay() === contribution.dayOfWeek) ||
+                (!contribution.dayOfWeek && contribution.startDate && 
+                 specificDate.getDay() === ensureDate(contribution.startDate)?.getDay())) {
+              weekdayExists = true;
+              break;
+            }
+          }
+          
+          // If this weekday doesn't occur in this month, skip it entirely
+          if (!weekdayExists) {
+            continue;
+          }
           
           // Check all days for potential weekday matches
           for (let d = 1; d <= daysInMonthForWeekly; d++) {
