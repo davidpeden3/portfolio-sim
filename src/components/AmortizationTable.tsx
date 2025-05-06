@@ -91,7 +91,7 @@ const AmortizationTable = ({
         { key: "sharePrice", label: "Share Price", loanRelated: false, taxRelated: false, contributionRelated: false, format: (val: number) => "$" + val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "shareCount", label: "Starting Share Count", loanRelated: false, taxRelated: false, contributionRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "newSharesFromDrip", label: "New Shares from DRIP", loanRelated: false, taxRelated: false, contributionRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-        { key: "newSharesFromContribution", label: "New Shares from Contributions", loanRelated: false, taxRelated: false, contributionRelated: true, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
+        { key: "newSharesFromContribution", label: "New Shares from Contributions", loanRelated: false, taxRelated: false, contributionRelated: true, format: (val: number) => (val || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         { key: "totalShares", label: "Ending Share Count", loanRelated: false, taxRelated: false, contributionRelated: false, format: (val: number) => val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
         
         // 5. Portfolio valuation
@@ -102,7 +102,8 @@ const AmortizationTable = ({
     
     // Check if any amortization entries have supplemental contributions
     const hasContributions = includeContributions && amortization.some(entry => 
-        entry.supplementalContribution > 0 || entry.newSharesFromContribution > 0
+        (entry.supplementalContribution > 0) || 
+        (entry.newSharesFromContribution !== undefined && entry.newSharesFromContribution > 0)
     );
     
     // Filter columns based on includeLoan, includeTaxes, and hasContributions props

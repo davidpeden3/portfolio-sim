@@ -8,12 +8,6 @@ import {
 } from '../../models/SupplementalContribution';
 import { DollarInput } from '../inputs';
 
-// Array of month names for friendly display
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
 // Helper function to format a date to YYYY-MM-DD for input
 const formatDateForInput = (date: Date | string | undefined): string => {
   if (!date) return '';
@@ -150,7 +144,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       resetStartDate();
       resetEndDate();
       // For new contributions, default to full simulation period for recurring types
-      setUseCustomDateRange(type !== 'oneTime' ? false : undefined);
+      setUseCustomDateRange(type !== 'oneTime' ? false : false);
     }
   }, [contribution, simulationStartMonth, simulationMonths]);
   
@@ -265,8 +259,8 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     let actualAmount = amountInput?.value || amount;
     
     // Treat empty string values as empty
-    if (actualName === '') actualName = null;
-    if (actualAmount === '') actualAmount = null;
+    if (actualName === '') actualName = '' as any;
+    if (actualAmount === '') actualAmount = '' as any;
     
     // Simple validation with fallback values
     if (!actualName || !actualAmount) {
@@ -378,12 +372,6 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     return [];
   };
   
-  // Get full weekday name from number
-  const getWeekdayName = (day: WeekDay): string => {
-    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    return weekdays[day - 1];
-  };
-  
   // Get short weekday name from number
   const getWeekdayShortName = (day: WeekDay): string => {
     const weekdaysShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -474,7 +462,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         </div>
         
         {/* Frequency (only for recurring contributions) - 5/12 width when three columns */}
-        {recurring && type !== 'oneTime' ? (
+        {recurring ? (
           <div className={`${(frequency === 'weekly' || frequency === 'biweekly') && recurring && type !== 'oneTime' ? 'col-span-5' : ''}`}>
             <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
               Frequency *

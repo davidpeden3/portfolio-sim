@@ -198,7 +198,7 @@ export function PortfolioSimulator() {
         // Ensure dates are stored as ISO strings
         const formDataToSave = {
           ...formData,
-          supplementalContributions: formData.supplementalContributions?.map(contribution => ({
+          supplementalContributions: formData.supplementalContributions?.map((contribution: any) => ({
             ...contribution,
             startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
             endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
@@ -216,7 +216,7 @@ export function PortfolioSimulator() {
           // Process customProfileData with ISO dates before saving
           const customProfileToSave = {
             ...customProfileData,
-            supplementalContributions: customProfileData.supplementalContributions?.map(contribution => ({
+            supplementalContributions: customProfileData.supplementalContributions?.map((contribution: any) => ({
               ...contribution,
               startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
               endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
@@ -409,7 +409,7 @@ export function PortfolioSimulator() {
                 includeTaxes={formData.taxWithholdingStrategy !== 'none'}
                 taxStrategy={formData.taxWithholdingStrategy}
                 startMonth={typeof formData.startMonth === 'string' ? parseInt(formData.startMonth) : (formData.startMonth || 1)}
-                includeContributions={formData.supplementalContributions && formData.supplementalContributions.some(c => c.enabled)}
+                includeContributions={formData.supplementalContributions ? formData.supplementalContributions.some((c: any) => c.enabled) : false}
               />
             </div>
           </div>
