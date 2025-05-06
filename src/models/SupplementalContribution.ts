@@ -25,6 +25,7 @@ export interface BaseContribution {
   startDate?: Date; // Optional start date, defaults to simulation start
   endDate?: Date; // Optional end date, defaults to simulation end
   dayOfWeek?: WeekDay; // Optional day of week (1-5, Monday-Friday) for weekly/biweekly contributions
+  useCustomDateRange?: boolean; // Whether this contribution uses a custom date range or adapts to simulation bounds
 }
 
 // Interface for dollar-cost averaging contributions

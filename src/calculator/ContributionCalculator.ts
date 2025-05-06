@@ -69,10 +69,22 @@ function shouldApplyContribution(
   // Get simulation start date (using the 1st of the simulation start month in the current year)
   const simulationStartDate = new Date(currentDate.getFullYear(), startMonth - 1, 1);
   
-  // Use provided dates or defaults
-  // Ensure dates are Date objects - when loaded from localStorage they might be strings
-  const startDate = ensureDate(contribution.startDate) || simulationStartDate;
-  const endDate = ensureDate(contribution.endDate) || new Date(simulationStartDate.getFullYear() + 100, 0, 1); // Default to 100 years in the future
+  // Determine dates based on useCustomDateRange flag
+  let startDate: Date;
+  let endDate: Date;
+  
+  // If using custom date range and dates are provided, use those dates
+  // Otherwise use simulation start/end dates
+  if (contribution.useCustomDateRange) {
+    // If custom date range but no dates specified, fall back to simulation dates
+    startDate = ensureDate(contribution.startDate) || simulationStartDate;
+    endDate = ensureDate(contribution.endDate) || new Date(simulationStartDate.getFullYear() + 100, 0, 1);
+  } else {
+    // If not using custom date range, always use simulation dates regardless of whether dates are provided
+    startDate = simulationStartDate;
+    // Default end date is 100 years from simulation start (essentially infinite for the simulation)
+    endDate = new Date(simulationStartDate.getFullYear() + 100, 0, 1);
+  }
   
   // Check if current date is within the contribution period
   if (currentDate < startDate || currentDate > endDate) {

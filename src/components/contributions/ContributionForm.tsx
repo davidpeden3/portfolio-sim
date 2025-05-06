@@ -8,6 +8,12 @@ import {
 } from '../../models/SupplementalContribution';
 import { DollarInput } from '../inputs';
 
+// Array of month names for friendly display
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
 // Helper function to format a date to YYYY-MM-DD for input
 const formatDateForInput = (date: Date | string | undefined): string => {
   if (!date) return '';
@@ -50,6 +56,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const [endDate, setEndDate] = useState<string>('');
   const [nameManuallySet, setNameManuallySet] = useState(false);
   const [dayOfWeek, setDayOfWeek] = useState<WeekDay>(5); // Default to Friday
+  const [useCustomDateRange, setUseCustomDateRange] = useState(false); // Default to using full simulation period
   
   // Calculate default simulation start and end dates
   const getDefaultStartDate = (): Date => {
@@ -74,7 +81,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const resetEndDate = () => {
     setEndDate(formatDateForInput(getDefaultEndDate()));
   };
-
+  
   // Set up initial values if editing
   useEffect(() => {
     if (contribution) {
@@ -88,10 +95,24 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       // Always set dayOfWeek, even if undefined, to ensure proper initialization
       setDayOfWeek(contribution.dayOfWeek || 5); // Default to Friday if not set
       
+      // Check if this contribution uses a custom date range
+      // We consider a contribution to have custom dates if it has the useCustomDateRange flag set
+      // or if it has date values stored
+      const hasCustomDates = contribution.useCustomDateRange === true || 
+                            (contribution.startDate !== undefined || contribution.endDate !== undefined);
+      
+      setUseCustomDateRange(hasCustomDates);
+      
       try {
-        // Format dates safely - handle both Date objects and strings
-        setStartDate(formatDateForInput(contribution.startDate));
-        setEndDate(formatDateForInput(contribution.endDate));
+        if (hasCustomDates) {
+          // If using custom dates, show those dates
+          setStartDate(formatDateForInput(contribution.startDate));
+          setEndDate(formatDateForInput(contribution.endDate));
+        } else {
+          // If using full simulation period, show simulation dates
+          resetStartDate();
+          resetEndDate();
+        }
       } catch (e) {
         console.error('Error formatting dates when loading contribution:', e);
         // Fall back to default dates if there's a problem
@@ -104,6 +125,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       // Set default dates for new contributions
       resetStartDate();
       resetEndDate();
+      setUseCustomDateRange(false);
     }
   }, [contribution, simulationStartMonth, simulationMonths]);
   
@@ -268,10 +290,13 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       type,
       recurring,
       frequency,
-      ...(startDate ? { startDate: createDateFromString(startDate) } : {}),
-      ...(endDate ? { endDate: createDateFromString(endDate) } : {}),
+      // Only include dates if using custom date range
+      ...(useCustomDateRange && startDate ? { startDate: createDateFromString(startDate) } : {}),
+      ...(useCustomDateRange && endDate ? { endDate: createDateFromString(endDate) } : {}),
       // Always explicitly set dayOfWeek regardless of frequency
-      dayOfWeek
+      dayOfWeek,
+      // Save the use custom date range preference
+      useCustomDateRange
     });
     
     // Log the object we're about to save for debugging
@@ -486,11 +511,43 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         </div>
       </div>
       
-      {/* Date Range */}
+      {/* Date Range Selection */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200">
+          Duration
+        </label>
+        <div className="flex flex-col space-y-2">
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              className="form-radio text-indigo-600 dark:text-basshead-blue-500"
+              name="dateRangeType"
+              checked={!useCustomDateRange}
+              onChange={() => setUseCustomDateRange(false)}
+            />
+            <span className="ml-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">Full Simulation Period</span>
+          </label>
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              className="form-radio text-indigo-600 dark:text-basshead-blue-500"
+              name="dateRangeType"
+              checked={useCustomDateRange}
+              onChange={() => setUseCustomDateRange(true)}
+            />
+            <span className="ml-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">Custom Date Range</span>
+          </label>
+        </div>
+      </div>
+      
+      {/* Date Range Inputs */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
-            {type === 'oneTime' ? 'Date' : 'Start Date'}
+            {!useCustomDateRange 
+              ? "Simulation Start" 
+              : (type === 'oneTime' ? 'Date' : 'Start Date')
+            }
           </label>
           <div>
             <input
@@ -503,13 +560,24 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                 if (type === 'oneTime') {
                   setEndDate(e.target.value);
                 }
+                
+                // If changing from default simulation dates, switch to custom mode
+                if (!useCustomDateRange) {
+                  setUseCustomDateRange(true);
+                }
               }}
-              className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
+              disabled={!useCustomDateRange}
+              className={`mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200 ${!useCustomDateRange ? 'bg-gray-100 dark:bg-darkBlue-800 opacity-75' : ''}`}
             />
             <div className="text-right mt-1">
               <button 
                 type="button" 
-                onClick={resetStartDate}
+                onClick={() => {
+                  resetStartDate();
+                  if (startDate !== '') {
+                    setUseCustomDateRange(false);
+                  }
+                }}
                 className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
               >
                 reset
@@ -518,24 +586,37 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
           </div>
         </div>
         
-        {type !== 'oneTime' && (
+        {(type !== 'oneTime' || useCustomDateRange) && (
           <div>
             <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200">
-              End Date
+              {!useCustomDateRange ? "Simulation End" : "End Date"}
             </label>
             <div>
               <input
                 type="date"
                 id="endDate"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200"
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  
+                  // If changing from default simulation dates, switch to custom mode
+                  if (!useCustomDateRange) {
+                    setUseCustomDateRange(true);
+                  }
+                }}
+                disabled={!useCustomDateRange}
+                className={`mt-1 block w-full p-2 border border-gray-300 dark:border-darkBlue-600 dark:bg-darkBlue-900 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-basshead-blue-500 dark:focus:border-basshead-blue-500 text-gray-900 dark:text-white transition-colors duration-200 ${!useCustomDateRange ? 'bg-gray-100 dark:bg-darkBlue-800 opacity-75' : ''}`}
                 min={startDate}
               />
               <div className="text-right mt-1">
                 <button 
                   type="button" 
-                  onClick={resetEndDate}
+                  onClick={() => {
+                    resetEndDate();
+                    if (endDate !== '') {
+                      setUseCustomDateRange(false);
+                    }
+                  }}
                   className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   reset
