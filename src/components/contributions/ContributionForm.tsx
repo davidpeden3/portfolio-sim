@@ -54,6 +54,8 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const [frequency, setFrequency] = useState<ContributionFrequency>('monthly');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [customStartDate, setCustomStartDate] = useState<string>(''); // Store custom date when toggling modes
+  const [customEndDate, setCustomEndDate] = useState<string>(''); // Store custom date when toggling modes
   const [nameManuallySet, setNameManuallySet] = useState(false);
   const [dayOfWeek, setDayOfWeek] = useState<WeekDay>(5); // Default to Friday
   const [useCustomDateRange, setUseCustomDateRange] = useState(false); // Default to using full simulation period
@@ -106,18 +108,31 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       try {
         if (hasCustomDates) {
           // If using custom dates, show those dates
-          setStartDate(formatDateForInput(contribution.startDate));
-          setEndDate(formatDateForInput(contribution.endDate));
+          const formattedStartDate = formatDateForInput(contribution.startDate);
+          const formattedEndDate = formatDateForInput(contribution.endDate);
+          
+          setStartDate(formattedStartDate);
+          setEndDate(formattedEndDate);
+          
+          // Also store in custom date fields so they're preserved when toggling
+          setCustomStartDate(formattedStartDate);
+          setCustomEndDate(formattedEndDate);
         } else {
           // If using full simulation period, show simulation dates
           resetStartDate();
           resetEndDate();
+          
+          // Clear custom dates
+          setCustomStartDate('');
+          setCustomEndDate('');
         }
       } catch (e) {
         console.error('Error formatting dates when loading contribution:', e);
         // Fall back to default dates if there's a problem
         resetStartDate();
         resetEndDate();
+        setCustomStartDate('');
+        setCustomEndDate('');
       }
       
       setNameManuallySet(true); // Consider the name manually set when editing
@@ -523,7 +538,18 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               className="form-radio text-indigo-600 dark:text-basshead-blue-500"
               name="dateRangeType"
               checked={!useCustomDateRange}
-              onChange={() => setUseCustomDateRange(false)}
+              onChange={() => {
+                // Save current dates as custom dates
+                if (useCustomDateRange) {
+                  setCustomStartDate(startDate);
+                  setCustomEndDate(endDate);
+                }
+                
+                setUseCustomDateRange(false);
+                // Update date fields to show simulation dates
+                resetStartDate();
+                resetEndDate();
+              }}
             />
             <span className="ml-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">Full Simulation Period</span>
           </label>
@@ -533,7 +559,18 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               className="form-radio text-indigo-600 dark:text-basshead-blue-500"
               name="dateRangeType"
               checked={useCustomDateRange}
-              onChange={() => setUseCustomDateRange(true)}
+              onChange={() => {
+                setUseCustomDateRange(true);
+                
+                // Restore custom dates if they exist
+                if (customStartDate) {
+                  setStartDate(customStartDate);
+                }
+                
+                if (customEndDate) {
+                  setEndDate(customEndDate);
+                }
+              }}
             />
             <span className="ml-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">Custom Date Range</span>
           </label>
@@ -555,10 +592,15 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               id="startDate"
               value={startDate}
               onChange={(e) => {
-                setStartDate(e.target.value);
+                const newDate = e.target.value;
+                setStartDate(newDate);
+                // Also update the stored custom date
+                setCustomStartDate(newDate);
+                
                 // For one-time contributions, update end date to match start date
                 if (type === 'oneTime') {
-                  setEndDate(e.target.value);
+                  setEndDate(newDate);
+                  setCustomEndDate(newDate);
                 }
                 
                 // If changing from default simulation dates, switch to custom mode
@@ -573,6 +615,10 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
               <button 
                 type="button" 
                 onClick={() => {
+                  if (useCustomDateRange) {
+                    // Clear the custom start date
+                    setCustomStartDate('');
+                  }
                   resetStartDate();
                   if (startDate !== '') {
                     setUseCustomDateRange(false);
@@ -597,7 +643,10 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                 id="endDate"
                 value={endDate}
                 onChange={(e) => {
-                  setEndDate(e.target.value);
+                  const newDate = e.target.value;
+                  setEndDate(newDate);
+                  // Also update the stored custom date
+                  setCustomEndDate(newDate);
                   
                   // If changing from default simulation dates, switch to custom mode
                   if (!useCustomDateRange) {
@@ -612,6 +661,10 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
                 <button 
                   type="button" 
                   onClick={() => {
+                    if (useCustomDateRange) {
+                      // Clear the custom end date
+                      setCustomEndDate('');
+                    }
                     resetEndDate();
                     if (endDate !== '') {
                       setUseCustomDateRange(false);
