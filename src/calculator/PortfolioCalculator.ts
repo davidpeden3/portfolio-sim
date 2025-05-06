@@ -147,9 +147,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     // Ensure supplementalContributions is an array for backwards compatibility
     const contributionsToProcess = supplementalContributions || [];
     
-    // Debug log for supplemental contributions
-    console.log("Processing supplemental contributions:", contributionsToProcess);
-    
+    // Process and group contributions
     const materializedContributions = materializeContributions(
         contributionsToProcess,
         simulationMonths,
@@ -158,10 +156,6 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     
     // Group contributions by month
     const monthlyContributions = groupContributionsByMonth(materializedContributions);
-    
-    // Debug logs for contributions
-    console.log("Materialized contributions:", materializedContributions);
-    console.log("Monthly contributions:", monthlyContributions);
 
     const amortization: AmortizationEntry[] = [];
 
@@ -370,15 +364,11 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         // Get the supplemental contribution for this month
         const supplementalContribution = getMonthContribution(monthlyContributions, month, startMonth);
         
-        // Log current month's contribution
-        console.log(`Month ${month} contribution: $${supplementalContribution}`);
-        
         // Calculate new shares from DRIP and supplemental contributions
         const newSharesFromDrip = (actualDrip > 0 && updatedSharePrice > 0) ? actualDrip / updatedSharePrice : 0;
         const newSharesFromContribution = (supplementalContribution > 0 && updatedSharePrice > 0) 
             ? supplementalContribution / updatedSharePrice 
             : 0;
-        console.log(`Month ${month} new shares from contribution: ${newSharesFromContribution}, at price: ${updatedSharePrice}`);
         
         const totalShares = prev.totalShares + newSharesFromDrip + newSharesFromContribution;
 
@@ -503,9 +493,6 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             loanPrincipal: updatedLoanPrincipal,
             netPortfolioValue
         };
-        
-        // Log the entry we're adding
-        console.log(`Adding amortization entry for month ${month} with supplementalContribution: ${entry.supplementalContribution}`);
         
         amortization.push(entry);
     }
