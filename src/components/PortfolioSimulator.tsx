@@ -195,16 +195,36 @@ export function PortfolioSimulator() {
         // Save the selected profile
         localStorage.setItem("selectedProfile", selectedProfile);
         
+        // Ensure dates are stored as ISO strings
+        const formDataToSave = {
+          ...formData,
+          supplementalContributions: formData.supplementalContributions?.map(contribution => ({
+            ...contribution,
+            startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
+            endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
+          }))
+        };
+        
         // Save the current form data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(formDataToSave));
         
         // If on custom profile, update customProfileData and save it
         if (selectedProfile === "custom") {
-          setCustomProfileData(formData);
-          localStorage.setItem("customProfileData", JSON.stringify(formData));
+          setCustomProfileData(formDataToSave);
+          localStorage.setItem("customProfileData", JSON.stringify(formDataToSave));
         } else {
+          // Process customProfileData with ISO dates before saving
+          const customProfileToSave = {
+            ...customProfileData,
+            supplementalContributions: customProfileData.supplementalContributions?.map(contribution => ({
+              ...contribution,
+              startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
+              endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
+            }))
+          };
+          
           // Otherwise, just save the customProfileData separately
-          localStorage.setItem("customProfileData", JSON.stringify(customProfileData));
+          localStorage.setItem("customProfileData", JSON.stringify(customProfileToSave));
         }
         
         setSaveStatus('saved');
