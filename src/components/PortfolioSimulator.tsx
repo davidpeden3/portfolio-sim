@@ -389,6 +389,7 @@ export function PortfolioSimulator() {
                 includeTaxes={formData.taxWithholdingStrategy !== 'none'}
                 taxStrategy={formData.taxWithholdingStrategy}
                 startMonth={typeof formData.startMonth === 'string' ? parseInt(formData.startMonth) : (formData.startMonth || 1)}
+                includeContributions={formData.supplementalContributions && formData.supplementalContributions.some(c => c.enabled)}
               />
             </div>
           </div>
