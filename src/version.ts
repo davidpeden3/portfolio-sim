@@ -7,7 +7,18 @@ import packageJson from '@package';
 
 // Import buildInfo.json statically to avoid dynamic import issues
 // We're importing a JSON file
-import buildInfo from './buildInfo.json';
+// Import JSON file and cast it to the expected type
+import buildInfoJson from './buildInfo.json';
+const buildInfo = buildInfoJson as BuildInfo;
+
+// Define the expected structure of buildInfo.json
+interface BuildInfo {
+  version: string;
+  buildNumber: number;
+  buildDate: string;
+  fullVersion: string;
+  timestamp: number;
+}
 
 export interface VersionInfo {
   version: string;
