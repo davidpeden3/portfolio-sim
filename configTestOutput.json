@@ -1,0 +1,23 @@
+{
+  "original": {
+    "selectedProfile": "custom",
+    "customProfile": "{\"supplementalContributions\":[{\"id\":\"test-123\",\"name\":\"Test Contribution\",\"amount\":500,\"type\":\"recurring\",\"enabled\":true}]}",
+    "settings": "{\"someSetting\":true,\"anotherSetting\":\"value\"}",
+    "theme": "dark",
+    "version": {
+      "appVersion": "1.0.0",
+      "timestamp": 1746761474853
+    }
+  },
+  "compressed": "N4IgzgpgNhDGAuEAmAFATgewGYEsYgC4RYBXMeDAWxABpiyLL1s8JCRgAdcEgB15iUIAO3gBDKAGEMotDgBGJeDhlhuBANpcQOJOu6JyAWgCMAJgDM3Gt2Fih+kABUI5AATTZCpSuHXu9hgkouoArAAM4TYg8ACevBCOaHAkaHLCAOb+ICJi8jB6hPBoJBAAvgC6ZbTgEPDKmWDs2mBUEADKdQ1ZRSUQ0WLCGPAAFhBonfU4mY4AbhKl3NV0oxBC7EhiaADWNbPjYL6EoGL8AGoHR0QmAHThdzXKQuT2vIQmAOwALABsHz8mL7fAAcoQsZTKQA",
+  "decompressed": {
+    "selectedProfile": "custom",
+    "customProfile": "{\"supplementalContributions\":[{\"id\":\"test-123\",\"name\":\"Test Contribution\",\"amount\":500,\"type\":\"recurring\",\"enabled\":true}]}",
+    "settings": "{\"someSetting\":true,\"anotherSetting\":\"value\"}",
+    "theme": "dark",
+    "version": {
+      "appVersion": "1.0.0",
+      "timestamp": 1746761474853
+    }
+  }
+}

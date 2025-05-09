@@ -1,11 +1,11 @@
 import versionInfo from '../version';
 
 const VersionFooter = () => {
-  const { version, buildDate, environment, commitHash } = versionInfo;
+  const { version, buildNumber, buildDate, fullVersion, environment, commitHash } = versionInfo;
   
   return (
     <div className="text-xs text-gray-400 text-center mt-4">
-      <span className="mr-2">Version {version}</span>
+      <span className="mr-2" title={`Full version: ${fullVersion}`}>Version {version} (build {buildNumber})</span>
       <span className="mr-2">•</span>
       <span>{buildDate}</span>
       {commitHash && (

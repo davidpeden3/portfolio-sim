@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Get the commit message
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Run our version checking script
+node scripts/versioning/version-manager.js process-commit "$COMMIT_MSG"

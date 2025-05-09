@@ -21,7 +21,7 @@ function ensureDate(dateInput: Date | string | undefined): Date | undefined {
   // If it's a string, try to parse it as a date
   try {
     return new Date(dateInput);
-  } catch (e) {
+  } catch {
     return undefined;
   }
 }
@@ -39,7 +39,7 @@ export function dateToISOString(date: Date | undefined): string | undefined {
   if (!(date instanceof Date)) {
     try {
       date = new Date(date);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
@@ -137,7 +137,7 @@ function shouldApplyContribution(
     case 'daily':
       return true; // Apply every day
       
-    case 'weekly':
+    case 'weekly': {
       // If dayOfWeek is specified, use that as the weekday (1-5 for Mon-Fri)
       if (contribution.dayOfWeek) {
         // JavaScript getDay() returns 0-6 (Sun-Sat), where Sunday is 0, Monday is 1, etc.
@@ -148,8 +148,9 @@ function shouldApplyContribution(
         // Fall back to old behavior if no dayOfWeek is specified
         return currentDate.getDay() === startDate.getDay();
       }
+    }
       
-    case 'biweekly':
+    case 'biweekly': {
       // Calculate weeks since the start date
       const msPerWeek = 7 * 24 * 60 * 60 * 1000;
       const weeksSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / msPerWeek);
@@ -166,30 +167,36 @@ function shouldApplyContribution(
         // Fall back to old behavior if no dayOfWeek is specified
         return isEvenWeek && currentDate.getDay() === startDate.getDay();
       }
+    }
       
-    case 'semimonthly':
+    case 'semimonthly': {
       // Apply on the 1st and 15th of each month
       const day = currentDate.getDate();
       return day === 1 || day === 15;
+    }
       
-    case 'monthly':
+    case 'monthly': {
       // Apply if the day of month matches
       return currentDate.getDate() === startDate.getDate();
+    }
       
-    case 'quarterly':
+    case 'quarterly': {
       // Apply if the month is a quarter boundary (Jan, Apr, Jul, Oct) and the day matches
       const quarterMonths = [0, 3, 6, 9]; // 0-indexed months (Jan, Apr, Jul, Oct)
       return quarterMonths.includes(currentDate.getMonth()) && currentDate.getDate() === startDate.getDate();
+    }
       
-    case 'yearly':
+    case 'yearly': {
       // Apply if the month and day match the start date
       return (
         currentDate.getMonth() === startDate.getMonth() &&
         currentDate.getDate() === startDate.getDate()
       );
+    }
       
-    default:
+    default: {
       return false;
+    }
   }
 }
 
@@ -263,16 +270,17 @@ export function materializeContributions(
       }
       
       switch (contribution.frequency) {
-        case 'daily':
+        case 'daily': {
           // For daily contributions, we'll need all days
           const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
           for (let d = 1; d <= daysInMonth; d++) {
             daysToCheck.add(d);
           }
           break;
+        }
         
         case 'weekly':
-        case 'biweekly':
+        case 'biweekly': {
           // For weekly/biweekly, we need to check dates that correspond to the specified day of week
           // Since these are based on day of week, we need to check all days in the month
           // to find matching weekdays
@@ -317,14 +325,16 @@ export function materializeContributions(
             }
           }
           break;
+        }
           
-        case 'semimonthly':
+        case 'semimonthly': {
           // For semi-monthly, add both the 1st and 15th
           daysToCheck.add(1);
           daysToCheck.add(15);
           break;
+        }
           
-        case 'monthly':
+        case 'monthly': {
           // For monthly, use the start date's day or 1st if not specified
           if (contribution.startDate !== undefined) {
             const startDate = ensureDate(contribution.startDate);
@@ -334,8 +344,9 @@ export function materializeContributions(
             daysToCheck.add(1);
           }
           break;
+        }
           
-        case 'quarterly':
+        case 'quarterly': {
           // For quarterly, check if this is a quarter month (Jan, Apr, Jul, Oct)
           const quarterMonths = [0, 3, 6, 9]; // 0-indexed months
           if (quarterMonths.includes(currentDate.getMonth())) {
@@ -348,8 +359,9 @@ export function materializeContributions(
             }
           }
           break;
+        }
           
-        case 'yearly':
+        case 'yearly': {
           // For yearly, check if this is the start month
           if (contribution.startDate !== undefined) {
             const startDate = ensureDate(contribution.startDate);
@@ -363,6 +375,7 @@ export function materializeContributions(
             }
           }
           break;
+        }
           
         default: {
           // For other frequencies or one-time, add the start date's day

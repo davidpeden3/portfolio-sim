@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { calculatePortfolio } from "../calculator/PortfolioCalculator";
 import { AmortizationEntry } from "../models/AmortizationEntry";
 import { CalculatedSummary } from "../models/CalculatedSummary";
+import { SupplementalContribution } from "../models/SupplementalContribution";
 import PortfolioChart from "./PortfolioChart";
 import AmortizationTable from "./AmortizationTable";
 import CalculatedSummaryDisplay from "./CalculatedSummary";
@@ -33,15 +34,12 @@ function getProfileData(profileType: ProfileType) {
   }
 }
 
-// Local storage key
-const STORAGE_KEY = 'portfolio-simulator-settings';
 
 export function PortfolioSimulator() {
   // Get saved profile info from localStorage
   const getInitialState = () => {
     try {
       const savedProfile = localStorage.getItem("selectedProfile") as ProfileType;
-      const savedCustomSettings = localStorage.getItem(STORAGE_KEY);
       const savedCustomProfileData = localStorage.getItem("customProfileData");
       
       // Check if a custom profile exists
@@ -49,7 +47,7 @@ export function PortfolioSimulator() {
       
       // If there's no saved profile, default to midCareer
       if (!savedProfile) {
-        // Ensure DEFAULT_FORM_DATA has tax withholding settings with default to 'none'
+        // Use default data with sensible defaults for all fields
         const formDataWithDefaults = {
           ...DEFAULT_FORM_DATA,
           taxWithholdingStrategy: DEFAULT_FORM_DATA.taxWithholdingStrategy || 'none',
@@ -74,10 +72,11 @@ export function PortfolioSimulator() {
       }
       
       // If it's a custom profile
-      if (savedProfile === "custom" && savedCustomSettings) {
-        const customData = JSON.parse(savedCustomSettings);
+      if (savedProfile === "custom" && savedCustomProfileData) {
+        // Parse the custom profile data
+        const customData = JSON.parse(savedCustomProfileData);
         
-        // Ensure customData has tax withholding settings with defaults
+        // Ensure customData has all required settings with defaults
         const dataWithDefaults = {
           ...customData,
           taxWithholdingStrategy: customData.taxWithholdingStrategy || 'none',
@@ -103,9 +102,10 @@ export function PortfolioSimulator() {
       
       // If it's a predefined profile
       if (savedProfile === "earlyCareer" || savedProfile === "midCareer" || savedProfile === "retirement" || savedProfile === "custom") {
+        // Get the standard profile data from the profile definitions
         const profileData = getProfileData(savedProfile);
         
-        // Ensure profile data has tax withholding settings with defaults
+        // Ensure profile data has all required settings with defaults
         const dataWithDefaults = {
           ...profileData,
           taxWithholdingStrategy: profileData.taxWithholdingStrategy || 'none',
@@ -176,7 +176,6 @@ export function PortfolioSimulator() {
   const initialState = getInitialState();
   const [formData, setFormData] = useState(initialState.formData);
   const [customProfileData, setCustomProfileData] = useState<PortfolioFormData>(initialState.customData);
-  // We still use setSaveStatus in localStorage operations but don't display it anymore
   const [, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('saved');
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isShareModalOpen, setShareModalOpen] = useState(false);
@@ -188,14 +187,6 @@ export function PortfolioSimulator() {
     amortization: AmortizationEntry[];
   } | null>(null);
 
-  // Handle successful config import
-  const handleConfigImport = () => {
-    // Reload the page to apply imported settings
-    window.location.reload();
-  };
-
-  // No need for loading useEffect since we initialize state properly in getInitialState
-
   // Save settings to localStorage when form data or profile changes (with debounce)
   useEffect(() => {
     const saveSettings = () => {
@@ -205,35 +196,38 @@ export function PortfolioSimulator() {
         // Save the selected profile
         localStorage.setItem("selectedProfile", selectedProfile);
         
-        // Ensure dates are stored as ISO strings
-        const formDataToSave = {
-          ...formData,
-          supplementalContributions: formData.supplementalContributions?.map((contribution: any) => ({
+        // Format dates as ISO strings
+        const processContributions = (contributions?: SupplementalContribution[]) => {
+          if (!contributions) return [];
+          
+          return contributions.map((contribution: SupplementalContribution) => ({
             ...contribution,
             startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
             endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
-          }))
+          }));
         };
         
-        // Save the current form data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formDataToSave));
+        // Process form data with standardized date format
+        const formDataToSave = {
+          ...formData,
+          supplementalContributions: processContributions(formData.supplementalContributions)
+        };
         
-        // If on custom profile, update customProfileData and save it
+        // For custom profile, we save the form data
         if (selectedProfile === "custom") {
           setCustomProfileData(formDataToSave);
           localStorage.setItem("customProfileData", JSON.stringify(formDataToSave));
         } else {
+          // For standard profiles, we only need to save the custom profile data
+          // for future use when switching to custom profile
+          
           // Process customProfileData with ISO dates before saving
           const customProfileToSave = {
             ...customProfileData,
-            supplementalContributions: customProfileData.supplementalContributions?.map((contribution: any) => ({
-              ...contribution,
-              startDate: contribution.startDate instanceof Date ? contribution.startDate.toISOString() : contribution.startDate,
-              endDate: contribution.endDate instanceof Date ? contribution.endDate.toISOString() : contribution.endDate
-            }))
+            supplementalContributions: processContributions(customProfileData.supplementalContributions)
           };
           
-          // Otherwise, just save the customProfileData separately
+          // Save the customProfileData separately
           localStorage.setItem("customProfileData", JSON.stringify(customProfileToSave));
         }
         
@@ -306,16 +300,16 @@ export function PortfolioSimulator() {
     e.preventDefault();
     
     // Helper functions to convert form values to appropriate numeric types
-    const toNumber = (value: any): number => {
+    const toNumber = (value: string | number | undefined): number => {
       if (value === "" || value === undefined) return 0;
-      const parsed = parseFloat(value);
+      const parsed = parseFloat(String(value));
       return isNaN(parsed) ? 0 : parsed;
     };
     
     // Convert to integer for month fields
-    const toInteger = (value: any): number => {
+    const toInteger = (value: string | number | undefined): number => {
       if (value === "" || value === undefined) return 0;
-      const parsed = parseFloat(value);
+      const parsed = parseFloat(String(value));
       return isNaN(parsed) ? 0 : Math.round(parsed);
     };
     
@@ -432,9 +426,7 @@ export function PortfolioSimulator() {
                 Copy the link below to share your current configuration with others.
               </p>
               
-              <ShareConfig 
-                onImportSuccess={handleConfigImport} 
-              />
+              <ShareConfig />
             </div>
           </div>
         </Modal>
@@ -461,7 +453,7 @@ export function PortfolioSimulator() {
                 includeTaxes={formData.taxWithholdingStrategy !== 'none'}
                 taxStrategy={formData.taxWithholdingStrategy}
                 startMonth={typeof formData.startMonth === 'string' ? parseInt(formData.startMonth) : (formData.startMonth || 1)}
-                includeContributions={formData.supplementalContributions ? formData.supplementalContributions.some((c: any) => c.enabled) : false}
+                includeContributions={formData.supplementalContributions ? formData.supplementalContributions.some((c: SupplementalContribution) => c.enabled) : false}
               />
             </div>
           </div>

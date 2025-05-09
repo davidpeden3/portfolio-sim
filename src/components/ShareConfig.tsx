@@ -1,27 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { generateShareableUrl, checkAndImportFromUrl } from '../utils/configShare';
+import { generateShareableUrl } from '../utils/configShare';
 
 interface ShareConfigProps {
   onImportSuccess?: () => void;
-  hideButton?: boolean;
 }
 
-const ShareConfig: React.FC<ShareConfigProps> = ({ 
-  onImportSuccess,
-  hideButton = false
-}) => {
+const ShareConfig: React.FC<ShareConfigProps> = () => {
   const [shareUrl, setShareUrl] = useState<string>('');
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
-  
-  // Check for URL import on component mount
-  useEffect(() => {
-    const imported = checkAndImportFromUrl();
-    if (imported && onImportSuccess) {
-      onImportSuccess();
-    }
-  }, [onImportSuccess]);
 
   // Initialize URL if not set
   useEffect(() => {

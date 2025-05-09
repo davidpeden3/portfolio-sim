@@ -20,7 +20,7 @@ const formatDateForInput = (date: Date | string | undefined): string => {
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
     const day = String(dateObj.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  } catch (e) {
+  } catch {
     return '';
   }
 };
@@ -54,28 +54,28 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   const [useCustomDateRange, setUseCustomDateRange] = useState(false); // Default to using full simulation period
   
   // Calculate default simulation start and end dates
-  const getDefaultStartDate = (): Date => {
+  const getDefaultStartDate = useCallback((): Date => {
     const today = new Date();
     const simStartDate = new Date(today.getFullYear(), simulationStartMonth - 1, 1);
     return simStartDate;
-  };
+  }, [simulationStartMonth]);
   
-  const getDefaultEndDate = (): Date => {
+  const getDefaultEndDate = useCallback((): Date => {
     const startDate = getDefaultStartDate();
     // Add simulation months to the start date (no subtraction)
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + simulationMonths);
     return endDate;
-  };
+  }, [simulationMonths, getDefaultStartDate]);
   
-  // Reset dates to defaults
-  const resetStartDate = () => {
+  // Reset dates to defaults - wrapped in useCallback to prevent dependency changes
+  const resetStartDate = useCallback(() => {
     setStartDate(formatDateForInput(getDefaultStartDate()));
-  };
+  }, [getDefaultStartDate]);
   
-  const resetEndDate = () => {
+  const resetEndDate = useCallback(() => {
     setEndDate(formatDateForInput(getDefaultEndDate()));
-  };
+  }, [getDefaultEndDate]);
   
   // Set up initial values if editing
   useEffect(() => {
@@ -129,7 +129,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
             setCustomEndDate('');
           }
         }
-      } catch (e) {
+      } catch {
         // Fall back to default dates if there's a problem
         resetStartDate();
         resetEndDate();
@@ -146,10 +146,16 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       // For new contributions, default to full simulation period for recurring types
       setUseCustomDateRange(type !== 'oneTime' ? false : false);
     }
-  }, [contribution, simulationStartMonth, simulationMonths]);
+  }, [contribution, simulationStartMonth, simulationMonths, resetStartDate, resetEndDate, type]);
   
+  // Get short weekday name from number (declared once, used in multiple places)
+  const getWeekdayShortName = useCallback((day: WeekDay): string => {
+    const weekdaysShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return weekdaysShort[day - 1];
+  }, []);
+
   // Generate name based on form values
-  const generateName = (): string => {
+  const generateName = useCallback((): string => {
     if (!amount) return '';
     
     const amountFormatted = typeof amount === 'number' 
@@ -161,9 +167,9 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     
     // These are only for display, not used as actual frequency values
     if (frequency === 'biweekly') {
-      frequencyText = 'bi-weekly' as any; // Using 'as any' to bypass type checking for the display string
+      frequencyText = 'bi-weekly' as ContributionFrequency;
     } else if (frequency === 'semimonthly') {
-      frequencyText = 'semi-monthly' as any; // Using 'as any' to bypass type checking for the display string
+      frequencyText = 'semi-monthly' as ContributionFrequency;
     }
     
     // Add weekday for weekly/biweekly frequencies
@@ -187,19 +193,19 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     }
     
     return displayName;
-  };
+  }, [amount, type, frequency, dayOfWeek, getWeekdayShortName]);
   
   // Function to update the name when form values change
   const updateName = useCallback(() => {
     if (!nameManuallySet && amount) {
       setName(generateName());
     }
-  }, [amount, type, frequency, dayOfWeek, nameManuallySet, generateName]);
+  }, [nameManuallySet, amount, generateName]);
   
   // Auto-update name when form values change
   useEffect(() => {
     updateName();
-  }, [amount, type, frequency, dayOfWeek, nameManuallySet, updateName]);
+  }, [updateName]);
   
   // Handle type changes for both new and edited contributions
   useEffect(() => {
@@ -234,7 +240,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         resetEndDate();
       }
     }
-  }, [type]);
+  }, [type, startDate, frequency, contribution, resetStartDate, resetEndDate]);
   
   // Handle name input change
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,7 +255,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
   };
   
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     // Get direct references to DOM elements for fallback validation
     const nameInput = document.getElementById("name") as HTMLInputElement;
     const amountInput = document.getElementsByName("amount")[0] as HTMLInputElement;
@@ -259,8 +265,8 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     let actualAmount = amountInput?.value || amount;
     
     // Treat empty string values as empty
-    if (actualName === '') actualName = '' as any;
-    if (actualAmount === '') actualAmount = '' as any;
+    if (actualName === '') actualName = '';
+    if (actualAmount === '') actualAmount = '';
     
     // Simple validation with fallback values
     if (!actualName || !actualAmount) {
@@ -296,7 +302,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
         // Reset time part to avoid timezone issues
         date.setHours(0, 0, 0, 0);
         return date;
-      } catch (e) {
+      } catch {
         return new Date(); // Default to today if parsing fails
       }
     };
@@ -349,7 +355,7 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
     
     // Save the contribution
     onSave(baseContribution as SupplementalContribution);
-  };
+  }, [name, amount, type, frequency, dayOfWeek, startDate, endDate, onSave, contribution, recurring, useCustomDateRange]);
   
   // Filter frequency options based on the contribution type
   const getFrequencyOptions = () => {
@@ -370,12 +376,6 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       ];
     }
     return [];
-  };
-  
-  // Get short weekday name from number
-  const getWeekdayShortName = (day: WeekDay): string => {
-    const weekdaysShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    return weekdaysShort[day - 1];
   };
   
   // Add function to handle day of week changes
@@ -410,14 +410,14 @@ const ContributionForm: React.FC<ContributionFormProps> = ({
       e.preventDefault();
       onCancel();
     }
-  }, [onCancel, name, amount, type, frequency, dayOfWeek, startDate, endDate]);
+  }, [onCancel, handleSubmit]);
   
   // Add and remove keyboard event listeners
   useEffect(() => {
-    // We need to cast to any because TypeScript doesn't recognize the argument type properly
-    document.addEventListener('keydown', handleKeyDown as any);
+    // Cast explicitly to EventListener for proper typing
+    document.addEventListener('keydown', handleKeyDown as unknown as EventListener);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown as any);
+      document.removeEventListener('keydown', handleKeyDown as unknown as EventListener);
     };
   }, [handleKeyDown]);
   

@@ -9,10 +9,7 @@ export { default as RetirementProfile } from './RetirementProfile';
 export { default as CustomProfile } from './CustomProfile';
 
 // Export profile data
-export { earlyCareerProfile } from './EarlyCareerProfile';
-export { midCareerProfile } from './MidCareerProfile';
-export { retirementProfile } from './RetirementProfile';
-export { customProfile } from './CustomProfile';
+export { earlyCareerProfile, midCareerProfile, retirementProfile, customProfile } from './profileExports';
 
 // Export shared types and constants
 export type { ProfileType } from './types';

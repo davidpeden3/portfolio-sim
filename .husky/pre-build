@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Increment build number before each build
+node scripts/versioning/version-manager.js increment-build
+
+# Generate version file for the build
+node scripts/versioning/version-manager.js generate-version-file

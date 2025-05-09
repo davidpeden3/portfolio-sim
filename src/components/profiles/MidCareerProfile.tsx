@@ -1,55 +1,8 @@
 import React from 'react';
 import ProfileCard from '../ProfileCard';
 import { MidCareerIcon } from '../ProfileIcons';
-import { InvestorProfileData, CURRENT_SHARE_PRICE, DEFAULT_DIVIDEND_YIELD, DEFAULT_MONTHLY_APPRECIATION } from './ProfileData';
 import { ProfileType } from './types';
-
-// Mid-Career profile data
-export const midCareerProfile: InvestorProfileData = {
-  name: "Mid-Career Professional (40s-50s)",
-  description: "For established professionals with higher income and existing position",
-  data: {
-    // Investor Profile
-    initialShareCount: 5000,
-    initialInvestment: 50000,
-    baseIncome: 120000,
-    surplusForDripPercent: 50, // balanced approach
-    withholdTaxes: true, // For backward compatibility
-    taxWithholdingStrategy: 'monthly',
-    taxWithholdingMethod: 'taxBracket',
-    taxFilingType: 'married',
-    taxFixedAmount: 0,
-    taxFixedPercent: 0,
-    dripStrategy: 'percentage',
-    dripPercentage: 100,
-    dripFixedAmount: 0,
-    fixedIncomeAmount: 0,
-    supplementalContributions: [
-      {
-        id: '7249a1e2-3d4e-4c8d-b1f2-592b7b8c6123',
-        name: 'Biweekly Salary Contribution',
-        amount: 500,
-        type: 'salary',
-        enabled: true,
-        recurring: true,
-        frequency: 'biweekly'
-      }
-    ],
-    
-    // Simulation Parameters
-    simulationMonths: 240, // 20 years
-    startMonth: 1, // January
-    initialSharePrice: CURRENT_SHARE_PRICE,
-    dividendYield4w: DEFAULT_DIVIDEND_YIELD,
-    monthlyAppreciation: DEFAULT_MONTHLY_APPRECIATION,
-    
-    // Loan Settings
-    includeLoan: true,
-    loanAmount: 75000,
-    annualInterestRate: 7.5,
-    amortizationMonths: 240 // 20 years
-  }
-};
+import { midCareerProfile } from './profileExports';
 
 interface MidCareerProfileProps {
   selectedProfile: ProfileType;

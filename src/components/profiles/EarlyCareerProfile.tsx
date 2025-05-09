@@ -1,55 +1,8 @@
 import React from 'react';
 import ProfileCard from '../ProfileCard';
 import { EarlyCareerIcon } from '../ProfileIcons';
-import { InvestorProfileData, CURRENT_SHARE_PRICE, DEFAULT_DIVIDEND_YIELD, DEFAULT_MONTHLY_APPRECIATION } from './ProfileData';
 import { ProfileType } from './types';
-
-// Early Career profile data
-export const earlyCareerProfile: InvestorProfileData = {
-  name: "Early Career (20s-30s)",
-  description: "For young investors focusing on growth with moderate income",
-  data: {
-    // Investor Profile
-    initialShareCount: 0,
-    initialInvestment: 10000,
-    baseIncome: 60000,
-    surplusForDripPercent: 25, // pay loan down faster
-    withholdTaxes: true, // For backward compatibility
-    taxWithholdingStrategy: 'monthly',
-    taxWithholdingMethod: 'taxBracket',
-    taxFilingType: 'single',
-    taxFixedAmount: 0,
-    taxFixedPercent: 0,
-    dripStrategy: 'percentage',
-    dripPercentage: 100,
-    dripFixedAmount: 0,
-    fixedIncomeAmount: 0,
-    supplementalContributions: [
-      {
-        id: '6fd7e6c0-3e3e-4b3b-a4e2-691a7a7b9584',
-        name: 'Monthly DCA Investment',
-        amount: 250,
-        type: 'dca',
-        enabled: true,
-        recurring: true,
-        frequency: 'monthly'
-      }
-    ],
-    
-    // Simulation Parameters
-    simulationMonths: 300, // 25 years
-    startMonth: 1, // January
-    initialSharePrice: CURRENT_SHARE_PRICE,
-    dividendYield4w: DEFAULT_DIVIDEND_YIELD,
-    monthlyAppreciation: DEFAULT_MONTHLY_APPRECIATION,
-    
-    // Loan Settings
-    includeLoan: true,
-    loanAmount: 15000,
-    annualInterestRate: 9.0,
-    amortizationMonths: 300 // 25 years
-  }
-};
+import { earlyCareerProfile } from './profileExports';
 
 interface EarlyCareerProfileProps {
   selectedProfile: ProfileType;

@@ -1,20 +1,31 @@
-// This file can be automatically updated by CI/CD pipelines
-// For example, in GitHub Actions, you could use a script to rewrite this file
+// This file is automatically updated during the build process
 
-// @ts-expect-error - We've configured vite to handle this import
+// We've configured vite to handle this import
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import packageJson from '@package';
+
+// Import buildInfo.json statically to avoid dynamic import issues
+// We're importing a JSON file
+import buildInfo from './buildInfo.json';
 
 export interface VersionInfo {
   version: string;
+  buildNumber: number;
   buildDate: string;
-  commitHash?: string;
+  fullVersion: string;
+  timestamp: number;
   environment: string;
+  commitHash?: string;
 }
 
-// In a real CI/CD pipeline, these values would be injected during the build
+// Combine package.json version with build information
 const versionInfo: VersionInfo = {
   version: packageJson.version,
-  buildDate: new Date().toISOString().split('T')[0],
+  buildNumber: buildInfo.buildNumber || 0,
+  buildDate: buildInfo.buildDate || new Date().toISOString().split('T')[0],
+  fullVersion: buildInfo.fullVersion || packageJson.version,
+  timestamp: buildInfo.timestamp || Date.now(),
   environment: import.meta.env.MODE
 };
 

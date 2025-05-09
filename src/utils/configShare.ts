@@ -1,10 +1,15 @@
-import { compress, decompress, compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import versionInfo from '../version';
+import { getStorageItem, setStorageItem } from './storageUtils';
 
 export interface ConfigShareData {
   selectedProfile: string;
-  settings: string; // JSON stringified simulator settings
   customProfile?: string; // JSON stringified custom profile data
   theme?: string;
+  version: {
+    appVersion: string;
+    timestamp: number;
+  };
 }
 
 /**
@@ -12,17 +17,32 @@ export interface ConfigShareData {
  * @returns Object containing all config data to be shared
  */
 export function collectConfigData(): ConfigShareData {
-  const selectedProfile = localStorage.getItem("selectedProfile");
-  const settings = localStorage.getItem("portfolio-simulator-settings");
-  const customProfile = localStorage.getItem("customProfileData");
-  const theme = localStorage.getItem("theme");
+  const selectedProfile = getStorageItem('selectedProfile') || 'midCareer';
+  const theme = getStorageItem('theme');
 
-  return {
-    selectedProfile: selectedProfile || "midCareer",
-    settings: settings || "",
-    ...(customProfile && { customProfile }),
-    ...(theme && { theme })
+  // Create a minimal base config with just the profile and version
+  const baseConfig: ConfigShareData = {
+    selectedProfile,
+    version: {
+      appVersion: versionInfo.fullVersion,
+      timestamp: versionInfo.timestamp
+    }
   };
+
+  // Add theme if present
+  if (theme) {
+    baseConfig.theme = theme;
+  }
+
+  // If it's a custom profile, include the custom profile data
+  if (selectedProfile === 'custom') {
+    const customProfile = getStorageItem('customProfileData');
+    if (customProfile) {
+      baseConfig.customProfile = customProfile;
+    }
+  }
+
+  return baseConfig;
 }
 
 /**
@@ -32,10 +52,9 @@ export function collectConfigData(): ConfigShareData {
  */
 export function generateShareableUrl(baseUrl: string = window.location.origin): string {
   const configData = collectConfigData();
+
   const configStr = JSON.stringify(configData);
-  // Use the URL-safe compression method provided by lz-string
   const compressed = compressToEncodedURIComponent(configStr);
-  
   return `${baseUrl}?config=${compressed}`;
 }
 
@@ -48,61 +67,64 @@ export function importConfig(urlParam: string): boolean {
   try {
     // Decode the URL parameter using the matching decompression method
     const decompressed = decompressFromEncodedURIComponent(urlParam);
-    if (!decompressed) return false;
-    
+    if (!decompressed) {
+      return false;
+    }
+
     // Parse the config data
     const configData = JSON.parse(decompressed) as ConfigShareData;
-    
-    // Store each piece in localStorage
-    if (configData.selectedProfile) {
-      localStorage.setItem("selectedProfile", configData.selectedProfile);
-    }
-    
-    if (configData.settings) {
-      localStorage.setItem("portfolio-simulator-settings", configData.settings);
-    }
-    
+
+    // STEP 1: Extract and parse custom profile data if it exists
+    let customProfileObj = null;
     if (configData.customProfile) {
-      localStorage.setItem("customProfileData", configData.customProfile);
+      try {
+        customProfileObj = JSON.parse(configData.customProfile);
+      } catch (e) {
+        console.error('Error parsing customProfile:', e);
+      }
     }
-    
-    if (configData.theme) {
-      localStorage.setItem("theme", configData.theme);
+
+    // STEP 2: Save data to localStorage using our utility
+
+    // Save profile selection
+    if (configData.selectedProfile) {
+      setStorageItem('selectedProfile', configData.selectedProfile);
     }
-    
+
+    // Save customProfile data if it exists
+    if (customProfileObj) {
+      setStorageItem('customProfileData', JSON.stringify(customProfileObj));
+    }
+
+    // Set the theme
+    if (configData.theme === 'light' || configData.theme === 'dark') {
+      setStorageItem('theme', configData.theme);
+    }
+
     return true;
   } catch (error) {
-    console.error("Failed to import configuration:", error);
+    console.error('Error importing config:', error);
     return false;
   }
 }
 
 /**
- * Checks the URL for a config parameter and imports it if found
+ * Checks the URL for parameters and processes them consistently
  * @returns True if config was imported, false otherwise
  */
 export function checkAndImportFromUrl(): boolean {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const configParam = urlParams.get('config');
-    
+
     if (configParam) {
       const success = importConfig(configParam);
-      
-      // Clean up the URL to remove the config parameter
-      if (success && window.history && window.history.replaceState) {
-        const cleanUrl = window.location.protocol + "//" + 
-                         window.location.host + 
-                         window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-      
       return success;
     }
     
     return false;
   } catch (error) {
-    console.error("Error checking for URL config:", error);
+    console.error('Error checking URL for config:', error);
     return false;
   }
 }
