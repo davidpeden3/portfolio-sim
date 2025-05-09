@@ -145,6 +145,19 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <li>• Use the "Reset to Defaults" button if you want to start fresh</li>
             </ul>
 
+            <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Sharing Your Configuration</h3>
+            <p className="text-gray-700 leading-relaxed text-center">
+              You can share your portfolio simulation configuration with others:
+            </p>
+            <ul className="list-none space-y-2 my-4 text-center">
+              <li>• Click the "Share" button in the menu at the top right of the application</li>
+              <li>• Share settings with friends or family members</li>
+              <li>• Share between browsers on the same computer</li>
+              <li>• Share your setup from your computer to your phone</li>
+              <li>• Copy the generated link or use the QR code to share your configuration</li>
+              <li>• When someone opens your shared link, the simulator will load with your exact settings</li>
+            </ul>
+
             <h2 className="text-2xl font-bold text-indigo-800 border-b pb-2 mt-8 mb-4 text-center">Understanding the Results</h2>
             
             <h3 className="text-xl font-bold text-indigo-700 mt-6 mb-3 text-center">Dynamic Display</h3>

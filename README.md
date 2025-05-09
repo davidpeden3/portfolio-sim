@@ -114,6 +114,16 @@ Your inputs are automatically saved to your browser's local storage. This means:
 - All supplemental contributions are stored and remembered
 - You can try different scenarios without losing your baseline configuration
 
+### Sharing Your Configuration
+
+You can share your portfolio simulation configuration with others:
+- A new sharing feature allows you to share your settings with friends or family members
+- Share between browsers on the same computer or from your computer to your phone
+- Sharing can be found in the menu at the top right of the application
+- The shared URL includes your current settings (compressed and encoded)
+- Copy the link to share your configuration with others, or use the generated QR code
+- When someone opens your shared link, their simulator will load with your exact settings
+
 ## Understanding the Results
 
 ### Dynamic Display
