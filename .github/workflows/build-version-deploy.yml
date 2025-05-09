@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# Add permissions block to allow the workflow to write to the repository
+permissions:
+  contents: write  # This allows the GITHUB_TOKEN to push changes
+  pull-requests: write
+  deployments: write
+
 jobs:
   build_and_version:
     runs-on: ubuntu-latest
@@ -50,14 +56,16 @@ jobs:
         run: |
           BUILD_NUMBER=$(cat buildNumber.txt)
           VERSION=$(node -p "require('./package.json').version")
-          
+
           git add buildNumber.txt src/buildInfo.json
-          
+
           # Only commit if there are changes
           if git diff --staged --quiet; then
             echo "No version changes to commit"
           else
             git commit -m "🤖 Auto-increment build number to $BUILD_NUMBER [skip ci]"
+
+            # The GITHUB_TOKEN will be used automatically with the configured permissions
             git push
           fi
 
