@@ -32,7 +32,7 @@ export interface PortfolioFormData {
     initialInvestment: number | string;
     baseIncome: number | string;
     surplusForDripPercent: number | string;
-
+    
     // Tax Settings
     withholdTaxes: boolean; // Kept for backward compatibility
     taxWithholdingStrategy: TaxWithholdingStrategy;
@@ -40,27 +40,27 @@ export interface PortfolioFormData {
     taxFilingType: FilingType;
     taxFixedAmount: number | string;
     taxFixedPercent: number | string;
-
+    
     // DRIP Settings
     dripStrategy: DripStrategy;
     dripPercentage: number | string;
     dripFixedAmount: number | string;
     fixedIncomeAmount: number | string; // Monthly income amount for fixedIncome strategy
-
+    
     // Supplemental Contributions
     supplementalContributions: SupplementalContribution[];
-
+    
     // Simulation Parameters
     simulationMonths: number | string;
     startMonth: number | string; // 1-12 representing January-December
     initialSharePrice: number | string;
     dividendYield4w: number | string;
-
+    
     // Share Price Model
     sharePriceModel: SharePriceModel;
     monthlyAppreciation: number | string; // For backward compatibility and geometric model
     linearChangeAmount: number | string; // For linear model
-
+    
     // Variable Model Settings
     variableDistribution: VariableDistribution;
     uniformMin: number | string;
@@ -69,7 +69,7 @@ export interface PortfolioFormData {
     normalStdDev: number | string;
     gbmDrift: number | string;
     gbmVolatility: number | string;
-
+    
     // Loan Settings
     includeLoan: boolean;
     loanAmount: number | string;
@@ -134,10 +134,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
         } else if (name === "sharePriceModel") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid SharePriceModel value. If not, default to 'geometric'
-            const modelValue = (value === 'linear' || value === 'geometric' || value === 'variable')
+            const modelValue = (value === 'linear' || value === 'geometric' || value === 'variable') 
                 ? value as SharePriceModel
                 : 'geometric';
-
+                
             if (modelValue === 'geometric') {
                 // Use monthly appreciation percentage
                 onChange({
@@ -165,10 +165,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
         } else if (name === "variableDistribution") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid VariableDistribution value
-            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm' || value === 'actual')
+            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm' || value === 'actual') 
                 ? value as VariableDistribution
                 : 'uniform';
-
+                
             if (distribValue === 'uniform') {
                 onChange({
                     ...formData,
@@ -352,53 +352,65 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Simulation Parameters</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that control how the portfolio simulation runs.</p>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <IntegerInput
-                        name="simulationMonths"
-                        value={formData.simulationMonths}
-                        onChange={handleChange}
-                        label="Simulation Duration (months)"
-                    />
-                    
-                    <div>
-                        <SelectInput
-                            name="startMonth"
-                            value={formData.startMonth ? formData.startMonth.toString() : '1'}
+                {/* Basic Simulation Settings */}
+                <div className="mb-6">
+                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        Basic Parameters
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <IntegerInput
+                            name="simulationMonths"
+                            value={formData.simulationMonths}
                             onChange={handleChange}
-                            label="Start Month"
-                            options={[
-                                { value: '1', label: 'January' },
-                                { value: '2', label: 'February' },
-                                { value: '3', label: 'March' },
-                                { value: '4', label: 'April' },
-                                { value: '5', label: 'May' },
-                                { value: '6', label: 'June' },
-                                { value: '7', label: 'July' },
-                                { value: '8', label: 'August' },
-                                { value: '9', label: 'September' },
-                                { value: '10', label: 'October' },
-                                { value: '11', label: 'November' },
-                                { value: '12', label: 'December' }
-                            ]}
+                            label="Simulation Duration (months)"
+                        />
+
+                        <div>
+                            <SelectInput
+                                name="startMonth"
+                                value={formData.startMonth ? formData.startMonth.toString() : '1'}
+                                onChange={handleChange}
+                                label="Start Month"
+                                options={[
+                                    { value: '1', label: 'January' },
+                                    { value: '2', label: 'February' },
+                                    { value: '3', label: 'March' },
+                                    { value: '4', label: 'April' },
+                                    { value: '5', label: 'May' },
+                                    { value: '6', label: 'June' },
+                                    { value: '7', label: 'July' },
+                                    { value: '8', label: 'August' },
+                                    { value: '9', label: 'September' },
+                                    { value: '10', label: 'October' },
+                                    { value: '11', label: 'November' },
+                                    { value: '12', label: 'December' }
+                                ]}
+                            />
+                        </div>
+
+                        <PercentInput
+                            name="dividendYield4w"
+                            value={formData.dividendYield4w}
+                            onChange={handleChange}
+                            label="Dividend Yield (% per 4w)"
                         />
                     </div>
+                </div>
 
-                    <DollarInput
-                        name="initialSharePrice"
-                        value={formData.initialSharePrice}
-                        onChange={handleChange}
-                        label="Initial Share Price ($)"
-                    />
-                    
-                    <PercentInput
-                        name="dividendYield4w"
-                        value={formData.dividendYield4w}
-                        onChange={handleChange}
-                        label="Dividend Yield (% per 4w)"
-                    />
+                {/* Share Price Model Section */}
+                <div className="mb-6">
+                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        Share Price Modeling
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* First row with initial price and model selection */}
+                        <DollarInput
+                            name="initialSharePrice"
+                            value={formData.initialSharePrice}
+                            onChange={handleChange}
+                            label="Initial Share Price ($)"
+                        />
 
-                    {/* Share Price Model Section */}
-                    <div>
                         <SelectInput
                             name="sharePriceModel"
                             value={formData.sharePriceModel || 'geometric'}
@@ -410,143 +422,159 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 { value: 'variable', label: 'Variable Change' }
                             ]}
                         />
+
+                        {/* Show different inputs based on the selected share price model */}
+                        {formData.sharePriceModel === 'linear' && (
+                            <div className="col-span-2">
+                                <DollarInput
+                                    name="linearChangeAmount"
+                                    value={formData.linearChangeAmount}
+                                    onChange={handleChange}
+                                    label="Monthly $ Change"
+                                />
+                            </div>
+                        )}
+
+                        {(formData.sharePriceModel === 'geometric' || !formData.sharePriceModel) && (
+                            <div className="col-span-2">
+                                <PercentInput
+                                    name="monthlyAppreciation"
+                                    value={formData.monthlyAppreciation}
+                                    onChange={handleChange}
+                                    label="Monthly Change (%)"
+                                />
+                            </div>
+                        )}
+
+                        {formData.sharePriceModel === 'variable' && (
+                            <>
+                                <div className="col-span-2">
+                                    <SelectInput
+                                        name="variableDistribution"
+                                        value={formData.variableDistribution || 'uniform'}
+                                        onChange={handleChange}
+                                        label="Distribution Type"
+                                        options={[
+                                            { value: 'uniform', label: 'Uniform Distribution' },
+                                            { value: 'normal', label: 'Normal Distribution' },
+                                            { value: 'gbm', label: 'Geometric Brownian Motion' },
+                                            { value: 'actual', label: 'Actual Historical Data' }
+                                        ]}
+                                    />
+
+                                    {/* Variable distribution parameters - moved underneath */}
+                                    <div className="mt-4">
+                                        {formData.variableDistribution === 'uniform' && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <PercentInput
+                                                    name="uniformMin"
+                                                    value={formData.uniformMin}
+                                                    onChange={handleChange}
+                                                    label="Min Change (%)"
+                                                />
+                                                <PercentInput
+                                                    name="uniformMax"
+                                                    value={formData.uniformMax}
+                                                    onChange={handleChange}
+                                                    label="Max Change (%)"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {formData.variableDistribution === 'normal' && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <PercentInput
+                                                    name="normalMean"
+                                                    value={formData.normalMean}
+                                                    onChange={handleChange}
+                                                    label="Mean Change (%)"
+                                                />
+                                                <PercentInput
+                                                    name="normalStdDev"
+                                                    value={formData.normalStdDev}
+                                                    onChange={handleChange}
+                                                    label="Standard Deviation (%)"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {formData.variableDistribution === 'gbm' && (
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <PercentInput
+                                                    name="gbmDrift"
+                                                    value={formData.gbmDrift}
+                                                    onChange={handleChange}
+                                                    label="Drift (%)"
+                                                />
+                                                <PercentInput
+                                                    name="gbmVolatility"
+                                                    value={formData.gbmVolatility}
+                                                    onChange={handleChange}
+                                                    label="Volatility (%)"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
+                </div>
 
-                    {/* Show different inputs based on the selected share price model */}
-                    {formData.sharePriceModel === 'linear' && (
-                        <DollarInput
-                            name="linearChangeAmount"
-                            value={formData.linearChangeAmount}
-                            onChange={handleChange}
-                            label="Monthly $ Change"
-                        />
-                    )}
-
-                    {(formData.sharePriceModel === 'geometric' || !formData.sharePriceModel) && (
-                        <PercentInput
-                            name="monthlyAppreciation"
-                            value={formData.monthlyAppreciation}
-                            onChange={handleChange}
-                            label="Monthly Change (%)"
-                        />
-                    )}
-
-                    {formData.sharePriceModel === 'variable' && (
-                        <div>
+                {/* DRIP Strategy Section */}
+                <div>
+                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        DRIP Settings
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="col-span-2">
                             <SelectInput
-                                name="variableDistribution"
-                                value={formData.variableDistribution || 'uniform'}
+                                name="dripStrategy"
+                                value={formData.dripStrategy || 'percentage'}
                                 onChange={handleChange}
-                                label="Distribution Type"
+                                label="DRIP Strategy"
                                 options={[
-                                    { value: 'uniform', label: 'Uniform Distribution' },
-                                    { value: 'normal', label: 'Normal Distribution' },
-                                    { value: 'gbm', label: 'Geometric Brownian Motion' },
-                                    { value: 'actual', label: 'Actual Historical Data' }
+                                    { value: 'none', label: 'No DRIP' },
+                                    { value: 'percentage', label: 'DRIP Percentage (%)' },
+                                    { value: 'fixedAmount', label: 'DRIP Fixed Amount ($)' },
+                                    { value: 'fixedIncome', label: 'Fixed Income + DRIP Remainder' }
                                 ]}
                             />
                         </div>
-                    )}
-
-                    {/* Variable distribution parameters */}
-                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'uniform' && (
-                        <>
-                            <PercentInput
-                                name="uniformMin"
-                                value={formData.uniformMin}
-                                onChange={handleChange}
-                                label="Min Change (%)"
-                            />
-                            <PercentInput
-                                name="uniformMax"
-                                value={formData.uniformMax}
-                                onChange={handleChange}
-                                label="Max Change (%)"
-                            />
-                        </>
-                    )}
-
-                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'normal' && (
-                        <>
-                            <PercentInput
-                                name="normalMean"
-                                value={formData.normalMean}
-                                onChange={handleChange}
-                                label="Mean Change (%)"
-                            />
-                            <PercentInput
-                                name="normalStdDev"
-                                value={formData.normalStdDev}
-                                onChange={handleChange}
-                                label="Standard Deviation (%)"
-                            />
-                        </>
-                    )}
-
-                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'gbm' && (
-                        <>
-                            <PercentInput
-                                name="gbmDrift"
-                                value={formData.gbmDrift}
-                                onChange={handleChange}
-                                label="Drift (%)"
-                            />
-                            <PercentInput
-                                name="gbmVolatility"
-                                value={formData.gbmVolatility}
-                                onChange={handleChange}
-                                label="Volatility (%)"
-                            />
-                        </>
-                    )}
-
-                    <div>
-                        <SelectInput
-                            name="dripStrategy"
-                            value={formData.dripStrategy || 'percentage'}
-                            onChange={handleChange}
-                            label="DRIP Strategy"
-                            options={[
-                                { value: 'none', label: 'No DRIP' },
-                                { value: 'percentage', label: 'DRIP Percentage (%)' },
-                                { value: 'fixedAmount', label: 'DRIP Fixed Amount ($)' },
-                                { value: 'fixedIncome', label: 'Fixed Income + DRIP Remainder' }
-                            ]}
-                        />
+                        
+                        {(formData.dripStrategy === 'percentage' || !formData.dripStrategy) && (
+                            <div>
+                                <PercentInput
+                                    name="dripPercentage"
+                                    value={formData.dripPercentage || 100}
+                                    onChange={handleChange}
+                                    label="DRIP Percentage"
+                                />
+                            </div>
+                        )}
+                        
+                        {formData.dripStrategy === 'fixedAmount' && (
+                            <div>
+                                <DollarInput
+                                    name="dripFixedAmount"
+                                    value={formData.dripFixedAmount}
+                                    onChange={handleChange}
+                                    label="DRIP Fixed Amount"
+                                />
+                            </div>
+                        )}
+                        
+                        {formData.dripStrategy === 'fixedIncome' && (
+                            <div>
+                                <DollarInput
+                                    name="fixedIncomeAmount"
+                                    value={formData.fixedIncomeAmount || 0}
+                                    onChange={handleChange}
+                                    label="Monthly Income Amount"
+                                />
+                            </div>
+                        )}
                     </div>
-                    
-                    {(formData.dripStrategy === 'percentage' || !formData.dripStrategy) && (
-                        <div>
-                            <PercentInput
-                                name="dripPercentage"
-                                value={formData.dripPercentage || 100}
-                                onChange={handleChange}
-                                label="DRIP Percentage"
-                            />
-                        </div>
-                    )}
-                    
-                    {formData.dripStrategy === 'fixedAmount' && (
-                        <div>
-                            <DollarInput
-                                name="dripFixedAmount"
-                                value={formData.dripFixedAmount}
-                                onChange={handleChange}
-                                label="DRIP Fixed Amount"
-                            />
-                        </div>
-                    )}
-                    
-                    {formData.dripStrategy === 'fixedIncome' && (
-                        <div>
-                            <DollarInput
-                                name="fixedIncomeAmount"
-                                value={formData.fixedIncomeAmount || 0}
-                                onChange={handleChange}
-                                label="Monthly Income Amount"
-                            />
-                        </div>
-                    )}
                 </div>
             </div>
             
