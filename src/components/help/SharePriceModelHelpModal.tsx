@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Modal from '../common/Modal';
 
 // Content for each model type
@@ -42,12 +42,12 @@ const SharePriceModelHelpModal: React.FC<SharePriceModelHelpModalProps> = ({
   currentModel
 }) => {
   // Map variable distribution types to direct model types
-  const getInitialModel = () => {
+  const getInitialModel = useCallback(() => {
     if (currentModel === 'variable') {
       return 'uniform'; // Default to uniform if variable is selected
     }
     return currentModel || 'geometric';
-  };
+  }, [currentModel]);
 
   // State to track the selected model in the modal
   const [selectedModel, setSelectedModel] = useState(getInitialModel());
@@ -57,7 +57,7 @@ const SharePriceModelHelpModal: React.FC<SharePriceModelHelpModalProps> = ({
     if (isOpen) {
       setSelectedModel(getInitialModel());
     }
-  }, [isOpen, currentModel]);
+  }, [isOpen, currentModel, getInitialModel]);
 
   return (
     <Modal
