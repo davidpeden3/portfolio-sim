@@ -15,11 +15,13 @@ import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./Pr
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
 
 // Import types from models
-import { 
-  TaxWithholdingStrategy, 
-  TaxWithholdingMethod, 
+import {
+  TaxWithholdingStrategy,
+  TaxWithholdingMethod,
   FilingType,
-  DripStrategy 
+  DripStrategy,
+  SharePriceModel,
+  VariableDistribution
 } from '../models/Assumptions';
 import { SupplementalContribution } from '../models/SupplementalContribution';
 
@@ -30,7 +32,7 @@ export interface PortfolioFormData {
     initialInvestment: number | string;
     baseIncome: number | string;
     surplusForDripPercent: number | string;
-    
+
     // Tax Settings
     withholdTaxes: boolean; // Kept for backward compatibility
     taxWithholdingStrategy: TaxWithholdingStrategy;
@@ -38,23 +40,36 @@ export interface PortfolioFormData {
     taxFilingType: FilingType;
     taxFixedAmount: number | string;
     taxFixedPercent: number | string;
-    
+
     // DRIP Settings
     dripStrategy: DripStrategy;
     dripPercentage: number | string;
     dripFixedAmount: number | string;
     fixedIncomeAmount: number | string; // Monthly income amount for fixedIncome strategy
-    
+
     // Supplemental Contributions
     supplementalContributions: SupplementalContribution[];
-    
+
     // Simulation Parameters
     simulationMonths: number | string;
     startMonth: number | string; // 1-12 representing January-December
     initialSharePrice: number | string;
     dividendYield4w: number | string;
-    monthlyAppreciation: number | string;
-    
+
+    // Share Price Model
+    sharePriceModel: SharePriceModel;
+    monthlyAppreciation: number | string; // For backward compatibility and geometric model
+    linearChangeAmount: number | string; // For linear model
+
+    // Variable Model Settings
+    variableDistribution: VariableDistribution;
+    uniformMin: number | string;
+    uniformMax: number | string;
+    normalMean: number | string;
+    normalStdDev: number | string;
+    gbmDrift: number | string;
+    gbmVolatility: number | string;
+
     // Loan Settings
     includeLoan: boolean;
     loanAmount: number | string;
@@ -114,6 +129,71 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 onChange({
                     ...formData,
                     [name]: dripValue,
+                });
+            }
+        } else if (name === "sharePriceModel") {
+            // The value coming from an input could be of any string type, so we need to check
+            // if it's a valid SharePriceModel value. If not, default to 'geometric'
+            const modelValue = (value === 'linear' || value === 'geometric' || value === 'variable')
+                ? value as SharePriceModel
+                : 'geometric';
+
+            if (modelValue === 'geometric') {
+                // Use monthly appreciation percentage
+                onChange({
+                    ...formData,
+                    [name]: modelValue,
+                    monthlyAppreciation: formData.monthlyAppreciation || 0,
+                });
+            } else if (modelValue === 'linear') {
+                // Set default linear change amount to 0
+                onChange({
+                    ...formData,
+                    [name]: modelValue,
+                    linearChangeAmount: formData.linearChangeAmount || 0,
+                });
+            } else if (modelValue === 'variable') {
+                // Set default distribution to uniform
+                onChange({
+                    ...formData,
+                    [name]: modelValue,
+                    variableDistribution: formData.variableDistribution || 'uniform',
+                    uniformMin: formData.uniformMin || -1,
+                    uniformMax: formData.uniformMax || 1,
+                });
+            }
+        } else if (name === "variableDistribution") {
+            // The value coming from an input could be of any string type, so we need to check
+            // if it's a valid VariableDistribution value
+            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm' || value === 'actual')
+                ? value as VariableDistribution
+                : 'uniform';
+
+            if (distribValue === 'uniform') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    uniformMin: formData.uniformMin || -1,
+                    uniformMax: formData.uniformMax || 1,
+                });
+            } else if (distribValue === 'normal') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    normalMean: formData.normalMean || 0.5,
+                    normalStdDev: formData.normalStdDev || 1,
+                });
+            } else if (distribValue === 'gbm') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    gbmDrift: formData.gbmDrift || 0.5,
+                    gbmVolatility: formData.gbmVolatility || 2,
+                });
+            } else if (distribValue === 'actual') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
                 });
             }
         } else {
@@ -316,14 +396,110 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         onChange={handleChange}
                         label="Dividend Yield (% per 4w)"
                     />
-                    
-                    <PercentInput
-                        name="monthlyAppreciation"
-                        value={formData.monthlyAppreciation}
-                        onChange={handleChange}
-                        label="Monthly Appreciation (%)"
-                    />
-                    
+
+                    {/* Share Price Model Section */}
+                    <div>
+                        <SelectInput
+                            name="sharePriceModel"
+                            value={formData.sharePriceModel || 'geometric'}
+                            onChange={handleChange}
+                            label="Share Price Model"
+                            options={[
+                                { value: 'linear', label: 'Linear Change ($)' },
+                                { value: 'geometric', label: 'Geometric Change (%)' },
+                                { value: 'variable', label: 'Variable Change' }
+                            ]}
+                        />
+                    </div>
+
+                    {/* Show different inputs based on the selected share price model */}
+                    {formData.sharePriceModel === 'linear' && (
+                        <DollarInput
+                            name="linearChangeAmount"
+                            value={formData.linearChangeAmount}
+                            onChange={handleChange}
+                            label="Monthly $ Change"
+                        />
+                    )}
+
+                    {(formData.sharePriceModel === 'geometric' || !formData.sharePriceModel) && (
+                        <PercentInput
+                            name="monthlyAppreciation"
+                            value={formData.monthlyAppreciation}
+                            onChange={handleChange}
+                            label="Monthly Change (%)"
+                        />
+                    )}
+
+                    {formData.sharePriceModel === 'variable' && (
+                        <div>
+                            <SelectInput
+                                name="variableDistribution"
+                                value={formData.variableDistribution || 'uniform'}
+                                onChange={handleChange}
+                                label="Distribution Type"
+                                options={[
+                                    { value: 'uniform', label: 'Uniform Distribution' },
+                                    { value: 'normal', label: 'Normal Distribution' },
+                                    { value: 'gbm', label: 'Geometric Brownian Motion' },
+                                    { value: 'actual', label: 'Actual Historical Data' }
+                                ]}
+                            />
+                        </div>
+                    )}
+
+                    {/* Variable distribution parameters */}
+                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'uniform' && (
+                        <>
+                            <PercentInput
+                                name="uniformMin"
+                                value={formData.uniformMin}
+                                onChange={handleChange}
+                                label="Min Change (%)"
+                            />
+                            <PercentInput
+                                name="uniformMax"
+                                value={formData.uniformMax}
+                                onChange={handleChange}
+                                label="Max Change (%)"
+                            />
+                        </>
+                    )}
+
+                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'normal' && (
+                        <>
+                            <PercentInput
+                                name="normalMean"
+                                value={formData.normalMean}
+                                onChange={handleChange}
+                                label="Mean Change (%)"
+                            />
+                            <PercentInput
+                                name="normalStdDev"
+                                value={formData.normalStdDev}
+                                onChange={handleChange}
+                                label="Standard Deviation (%)"
+                            />
+                        </>
+                    )}
+
+                    {formData.sharePriceModel === 'variable' && formData.variableDistribution === 'gbm' && (
+                        <>
+                            <PercentInput
+                                name="gbmDrift"
+                                value={formData.gbmDrift}
+                                onChange={handleChange}
+                                label="Drift (%)"
+                            />
+                            <PercentInput
+                                name="gbmVolatility"
+                                value={formData.gbmVolatility}
+                                onChange={handleChange}
+                                label="Volatility (%)"
+                            />
+                        </>
+                    )}
+
                     <div>
                         <SelectInput
                             name="dripStrategy"

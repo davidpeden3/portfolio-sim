@@ -59,7 +59,18 @@ export function PortfolioSimulator() {
           dripPercentage: DEFAULT_FORM_DATA.dripPercentage || 100,
           dripFixedAmount: DEFAULT_FORM_DATA.dripFixedAmount || 0,
           fixedIncomeAmount: DEFAULT_FORM_DATA.fixedIncomeAmount || 0,
-          startMonth: DEFAULT_FORM_DATA.startMonth || 1 // Default to January
+          startMonth: DEFAULT_FORM_DATA.startMonth || 1, // Default to January
+
+          // Share Price Model defaults
+          sharePriceModel: DEFAULT_FORM_DATA.sharePriceModel || 'geometric',
+          linearChangeAmount: DEFAULT_FORM_DATA.linearChangeAmount || 0,
+          variableDistribution: DEFAULT_FORM_DATA.variableDistribution || 'uniform',
+          uniformMin: DEFAULT_FORM_DATA.uniformMin || -1,
+          uniformMax: DEFAULT_FORM_DATA.uniformMax || 1,
+          normalMean: DEFAULT_FORM_DATA.normalMean || 0.5,
+          normalStdDev: DEFAULT_FORM_DATA.normalStdDev || 1,
+          gbmDrift: DEFAULT_FORM_DATA.gbmDrift || 0.5,
+          gbmVolatility: DEFAULT_FORM_DATA.gbmVolatility || 2
         };
         
         return {
@@ -88,7 +99,18 @@ export function PortfolioSimulator() {
           dripPercentage: customData.dripPercentage || 100,
           dripFixedAmount: customData.dripFixedAmount || 0,
           fixedIncomeAmount: customData.fixedIncomeAmount || 0,
-          startMonth: customData.startMonth || 1 // Default to January
+          startMonth: customData.startMonth || 1, // Default to January
+
+          // Share Price Model defaults
+          sharePriceModel: customData.sharePriceModel || 'geometric',
+          linearChangeAmount: customData.linearChangeAmount || 0,
+          variableDistribution: customData.variableDistribution || 'uniform',
+          uniformMin: customData.uniformMin || -1,
+          uniformMax: customData.uniformMax || 1,
+          normalMean: customData.normalMean || 0.5,
+          normalStdDev: customData.normalStdDev || 1,
+          gbmDrift: customData.gbmDrift || 0.5,
+          gbmVolatility: customData.gbmVolatility || 2
         };
         
         return {
@@ -117,7 +139,18 @@ export function PortfolioSimulator() {
           dripPercentage: profileData.dripPercentage || 100,
           dripFixedAmount: profileData.dripFixedAmount || 0,
           fixedIncomeAmount: profileData.fixedIncomeAmount || 0,
-          startMonth: profileData.startMonth || 1 // Default to January
+          startMonth: profileData.startMonth || 1, // Default to January
+
+          // Share Price Model defaults
+          sharePriceModel: profileData.sharePriceModel || 'geometric',
+          linearChangeAmount: profileData.linearChangeAmount || 0,
+          variableDistribution: profileData.variableDistribution || 'uniform',
+          uniformMin: profileData.uniformMin || -1,
+          uniformMax: profileData.uniformMax || 1,
+          normalMean: profileData.normalMean || 0.5,
+          normalStdDev: profileData.normalStdDev || 1,
+          gbmDrift: profileData.gbmDrift || 0.5,
+          gbmVolatility: profileData.gbmVolatility || 2
         };
         
         return {
@@ -320,33 +353,51 @@ export function PortfolioSimulator() {
       initialInvestment: toNumber(formData.initialInvestment),
       baseIncome: toNumber(formData.baseIncome),
       surplusForDripToPrincipalPercent: toNumber(formData.surplusForDripPercent),
-      
+
       // Set withholdTaxes based on the new taxWithholdingStrategy
       withholdTaxes: formData.taxWithholdingStrategy !== 'none',
-      
+
       // New tax withholding settings
       taxWithholdingStrategy: formData.taxWithholdingStrategy,
       taxWithholdingMethod: formData.taxWithholdingMethod,
       taxFilingType: formData.taxFilingType,
       taxFixedAmount: toNumber(formData.taxFixedAmount),
       taxFixedPercent: toNumber(formData.taxFixedPercent),
-      
+
       // DRIP strategy settings
       dripStrategy: formData.dripStrategy,
       dripPercentage: toNumber(formData.dripPercentage),
       dripFixedAmount: toNumber(formData.dripFixedAmount),
       fixedIncomeAmount: toNumber(formData.fixedIncomeAmount),
-      
+
       // Supplemental Contributions
       supplementalContributions: formData.supplementalContributions || [],
-      
+
       // Simulation Parameters
       simulationMonths: toInteger(formData.simulationMonths),
       startMonth: toInteger(formData.startMonth) || 1, // Default to January if not set
       initialSharePrice: toNumber(formData.initialSharePrice),
       dividendYieldPer4wPercent: toNumber(formData.dividendYield4w),
+
+      // Share Price Model
+      sharePriceModel: formData.sharePriceModel || 'geometric',
+
+      // For backward compatibility, always include monthlyAppreciationPercent
+      // For geometric model this is also the primary configuration value
       monthlyAppreciationPercent: toNumber(formData.monthlyAppreciation),
-      
+
+      // Linear Model parameters
+      linearChangeAmount: toNumber(formData.linearChangeAmount),
+
+      // Variable Model parameters
+      variableDistribution: formData.variableDistribution || 'uniform',
+      uniformMin: toNumber(formData.uniformMin),
+      uniformMax: toNumber(formData.uniformMax),
+      normalMean: toNumber(formData.normalMean),
+      normalStdDev: toNumber(formData.normalStdDev),
+      gbmDrift: toNumber(formData.gbmDrift),
+      gbmVolatility: toNumber(formData.gbmVolatility),
+
       // Loan Settings
       includeLoan: Boolean(formData.includeLoan),
       loanAmount: toNumber(formData.loanAmount),

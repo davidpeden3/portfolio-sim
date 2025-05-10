@@ -1,11 +1,210 @@
-import { Assumptions, FilingType } from "../models/Assumptions";
+import {
+  Assumptions,
+  FilingType,
+  VariableDistribution
+} from "../models/Assumptions";
 import { CalculatedSummary } from "../models/CalculatedSummary";
 import { AmortizationEntry } from "../models/AmortizationEntry";
-import { 
-  materializeContributions, 
-  groupContributionsByMonth, 
-  getMonthContribution 
+import {
+  materializeContributions,
+  groupContributionsByMonth,
+  getMonthContribution
 } from "./ContributionCalculator";
+
+/**
+ * Calculates the next share price based on linear change model
+ * @param prevPrice The previous share price
+ * @param linearChangeAmount The flat dollar amount to change per month
+ * @returns The new share price after applying linear change
+ */
+function calculateLinearSharePrice(prevPrice: number, linearChangeAmount: number): number {
+  // Ensure the price never goes below zero
+  return Math.max(0, prevPrice + linearChangeAmount);
+}
+
+/**
+ * Calculates the next share price based on geometric change model (percentage change)
+ * @param prevPrice The previous share price
+ * @param monthlyAppreciationPercent The percentage to change per month
+ * @returns The new share price after applying geometric (percentage) change
+ */
+function calculateGeometricSharePrice(prevPrice: number, monthlyAppreciationPercent: number): number {
+  return prevPrice * (1 + (monthlyAppreciationPercent / 100));
+}
+
+/**
+ * Generates a random number from a uniform distribution
+ * @param min The minimum value of the distribution
+ * @param max The maximum value of the distribution
+ * @returns A random number between min and max
+ */
+function getUniformRandom(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+
+/**
+ * Generates a random number from a normal distribution using the Box-Muller transform
+ * @param mean The mean value of the normal distribution
+ * @param stdDev The standard deviation of the normal distribution
+ * @returns A random number from a normal distribution
+ */
+function getNormalRandom(mean: number, stdDev: number): number {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+  while (v === 0) v = Math.random();
+  const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  return mean + z * stdDev;
+}
+
+/**
+ * Calculates the next share price based on a uniform distribution
+ * @param prevPrice The previous share price
+ * @param uniformMin The minimum percentage change
+ * @param uniformMax The maximum percentage change
+ * @returns The new share price after applying uniform random change
+ */
+function calculateUniformSharePrice(prevPrice: number, uniformMin: number, uniformMax: number): number {
+  const percentChange = getUniformRandom(uniformMin, uniformMax);
+  return prevPrice * (1 + (percentChange / 100));
+}
+
+/**
+ * Calculates the next share price based on a normal distribution
+ * @param prevPrice The previous share price
+ * @param normalMean The mean percentage change
+ * @param normalStdDev The standard deviation of percentage change
+ * @returns The new share price after applying normal random change
+ */
+function calculateNormalSharePrice(prevPrice: number, normalMean: number, normalStdDev: number): number {
+  const percentChange = getNormalRandom(normalMean, normalStdDev);
+  return prevPrice * (1 + (percentChange / 100));
+}
+
+/**
+ * Calculates the next share price based on Geometric Brownian Motion
+ * @param prevPrice The previous share price
+ * @param drift The drift parameter (annualized percentage)
+ * @param volatility The volatility parameter (annualized percentage)
+ * @returns The new share price after applying GBM
+ */
+function calculateGBMSharePrice(prevPrice: number, drift: number, volatility: number): number {
+  // Convert annual rates to monthly
+  const monthlyDrift = drift / 12 / 100;
+  const monthlyVolatility = volatility / Math.sqrt(12) / 100;
+
+  // GBM formula: S(t+Δt) = S(t) * exp((μ - σ²/2)Δt + σW√Δt)
+  // Where W is a random sample from standard normal distribution
+  // For monthly calculation, Δt = 1/12
+  const deltaT = 1/12;
+  const meanTerm = (monthlyDrift - (Math.pow(monthlyVolatility, 2) / 2)) * deltaT;
+  const randomTerm = monthlyVolatility * getNormalRandom(0, 1) * Math.sqrt(deltaT);
+
+  return prevPrice * Math.exp(meanTerm + randomTerm);
+}
+
+/**
+ * Calculates the next share price based on variable model
+ * @param prevPrice The previous share price
+ * @param distribution The type of distribution to use
+ * @param params Parameters specific to the distribution
+ * @returns The new share price based on the specified distribution
+ */
+function calculateVariableSharePrice(
+  prevPrice: number,
+  distribution: VariableDistribution,
+  params: {
+    uniformMin?: number;
+    uniformMax?: number;
+    normalMean?: number;
+    normalStdDev?: number;
+    gbmDrift?: number;
+    gbmVolatility?: number;
+    actualPrices?: { month: number; price: number }[];
+    currentMonth?: number;
+  }
+): number {
+  switch (distribution) {
+    case 'uniform':
+      if (params.uniformMin !== undefined && params.uniformMax !== undefined) {
+        return calculateUniformSharePrice(prevPrice, params.uniformMin, params.uniformMax);
+      }
+      break;
+
+    case 'normal':
+      if (params.normalMean !== undefined && params.normalStdDev !== undefined) {
+        return calculateNormalSharePrice(prevPrice, params.normalMean, params.normalStdDev);
+      }
+      break;
+
+    case 'gbm':
+      if (params.gbmDrift !== undefined && params.gbmVolatility !== undefined) {
+        return calculateGBMSharePrice(prevPrice, params.gbmDrift, params.gbmVolatility);
+      }
+      break;
+
+    case 'actual':
+      if (params.actualPrices && params.currentMonth !== undefined) {
+        // Find the actual price for this month, or use the previous price if not found
+        const priceEntry = params.actualPrices.find(p => p.month === params.currentMonth);
+        if (priceEntry) {
+          return priceEntry.price;
+        }
+      }
+      break;
+  }
+
+  // Fallback to no change if invalid parameters or 'actual' with missing data
+  return prevPrice;
+}
+
+/**
+ * Main function to calculate the next share price based on the selected model
+ * @param prevPrice The previous share price
+ * @param assumptions The simulation assumptions containing model parameters
+ * @param month The current month in the simulation
+ * @returns The new share price based on the selected model
+ */
+function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, month: number): number {
+  const {
+    sharePriceModel = 'geometric', // Default to geometric for backward compatibility
+    monthlyAppreciationPercent = 0, // Default to 0% if not specified
+    linearChangeAmount = 0, // Default to $0 if not specified
+    variableDistribution = 'uniform',
+    uniformMin = -1,
+    uniformMax = 1,
+    normalMean = 0.5,
+    normalStdDev = 1,
+    gbmDrift = 0.5,
+    gbmVolatility = 2,
+    actualPrices = []
+  } = assumptions;
+
+  switch (sharePriceModel) {
+    case 'linear':
+      return calculateLinearSharePrice(prevPrice, linearChangeAmount);
+
+    case 'variable':
+      return calculateVariableSharePrice(
+        prevPrice,
+        variableDistribution,
+        {
+          uniformMin,
+          uniformMax,
+          normalMean,
+          normalStdDev,
+          gbmDrift,
+          gbmVolatility,
+          actualPrices,
+          currentMonth: month
+        }
+      );
+
+    case 'geometric':
+    default:
+      // Default to geometric model for backward compatibility
+      return calculateGeometricSharePrice(prevPrice, monthlyAppreciationPercent);
+  }
+}
 
 function calculatePmt(rate: number, nper: number, pv: number): number {
     // Handle 0% interest rate - just divide principal by number of periods
@@ -124,7 +323,6 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         startMonth = 1, // Default to January if not set
         initialSharePrice,
         dividendYieldPer4wPercent,
-        monthlyAppreciationPercent,
         
         // Loan Settings
         includeLoan,
@@ -189,8 +387,13 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
 
         // Calculate calendar month (1-12) for current simulation month
         const calendarMonth = ((startMonth - 1 + month - 1) % 12) + 1;
-        
-        const updatedSharePrice = prev.sharePrice * (1 + (monthlyAppreciationPercent / 100));
+
+        // Pass the current month and get the updated share price using our model
+        const updatedSharePrice = calculateNextSharePrice(prev.sharePrice, {
+            ...assumptions,
+            // Pass along any needed properties that might not be in the original assumptions object
+            // This ensures we have all parameters needed for price calculation
+        }, month);
 
         // December (month 12) typically has double dividends
         const dividendMultiplier = (calendarMonth === 12) ? 2 : 1;
