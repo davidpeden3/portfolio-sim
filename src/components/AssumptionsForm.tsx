@@ -166,7 +166,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
         } else if (name === "variableDistribution") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid VariableDistribution value
-            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm' || value === 'actual') 
+            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm')
                 ? value as VariableDistribution
                 : 'uniform';
                 
@@ -190,11 +190,6 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     [name]: distribValue,
                     gbmDrift: formData.gbmDrift || 0.5,
                     gbmVolatility: formData.gbmVolatility || 2,
-                });
-            } else if (distribValue === 'actual') {
-                onChange({
-                    ...formData,
-                    [name]: distribValue,
                 });
             }
         } else {
@@ -469,8 +464,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                         options={[
                                             { value: 'uniform', label: 'Uniform Distribution' },
                                             { value: 'normal', label: 'Normal Distribution' },
-                                            { value: 'gbm', label: 'Geometric Brownian Motion' },
-                                            { value: 'actual', label: 'Actual Historical Data' }
+                                            { value: 'gbm', label: 'Geometric Brownian Motion' }
                                         ]}
                                     />
 

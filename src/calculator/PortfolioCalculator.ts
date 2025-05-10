@@ -119,7 +119,6 @@ function calculateVariableSharePrice(
     normalStdDev?: number;
     gbmDrift?: number;
     gbmVolatility?: number;
-    actualPrices?: { month: number; price: number }[];
     currentMonth?: number;
   }
 ): number {
@@ -142,18 +141,9 @@ function calculateVariableSharePrice(
       }
       break;
 
-    case 'actual':
-      if (params.actualPrices && params.currentMonth !== undefined) {
-        // Find the actual price for this month, or use the previous price if not found
-        const priceEntry = params.actualPrices.find(p => p.month === params.currentMonth);
-        if (priceEntry) {
-          return priceEntry.price;
-        }
-      }
-      break;
   }
 
-  // Fallback to no change if invalid parameters or 'actual' with missing data
+  // Fallback to no change if invalid parameters
   return prevPrice;
 }
 
@@ -176,7 +166,6 @@ function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, mo
     normalStdDev = 1,
     gbmDrift = 0.5,
     gbmVolatility = 2,
-    actualPrices = []
   } = assumptions;
 
   switch (sharePriceModel) {
@@ -194,7 +183,6 @@ function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, mo
           normalStdDev,
           gbmDrift,
           gbmVolatility,
-          actualPrices,
           currentMonth: month
         }
       );

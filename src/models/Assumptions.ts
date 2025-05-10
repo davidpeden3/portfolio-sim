@@ -8,7 +8,7 @@ export type DripStrategy = 'none' | 'percentage' | 'fixedAmount' | 'fixedIncome'
 
 // Share price change model types
 export type SharePriceModel = 'linear' | 'geometric' | 'variable';
-export type VariableDistribution = 'uniform' | 'normal' | 'gbm' | 'actual';
+export type VariableDistribution = 'uniform' | 'normal' | 'gbm';
 
 // Import supplemental contribution types
 import { SupplementalContribution } from './SupplementalContribution';
@@ -65,11 +65,6 @@ export interface Assumptions {
     gbmDrift?: number;
     gbmVolatility?: number;
 
-    // For actual historical data
-    actualPrices?: {
-        month: number;
-        price: number;
-    }[];
 
     // Loan Settings
     includeLoan: boolean;
