@@ -23,7 +23,7 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({
 }) => {
   return (
     <div className="mb-6">
-      <p className="text-sm text-gray-500 dark:text-gray-300 mb-3 transition-colors duration-200">
+      <p className="text-sm text-blue-700 dark:text-blue-300 mb-3 transition-colors duration-200">
         Select a predefined profile or customize your own:
       </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

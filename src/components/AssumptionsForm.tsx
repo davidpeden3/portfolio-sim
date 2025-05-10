@@ -218,17 +218,27 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             {/* Investor Profile Section */}
             <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Investor Profile</h3>
-                
+
                 {/* Profile Selector */}
-                <ProfileSelector
-                    selectedProfile={selectedProfile}
-                    onProfileChange={onProfileChange}
-                    hasCustomProfile={hasCustomProfile}
-                />
-                
-                {/* Profile Settings */}
-                <div className="pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that define your investment approach.</p>
+                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        Profile Selection
+                    </h4>
+                    <ProfileSelector
+                        selectedProfile={selectedProfile}
+                        onProfileChange={onProfileChange}
+                        hasCustomProfile={hasCustomProfile}
+                    />
+                </div>
+
+                {/* Investment Settings */}
+                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        Investment Settings
+                    </h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-4 transition-colors duration-200">
+                        Settings that define your investment approach.
+                    </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <TextInput
                             name="initialShareCount"
@@ -237,14 +247,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             label="Initial Share Count"
                             formatWithCommas={true}
                         />
-                        
+
                         <DollarInput
                             name="initialInvestment"
                             value={formData.initialInvestment}
                             onChange={handleChange}
                             label="Initial Investment ($)"
                         />
-                        
+
                         <DollarInput
                             name="baseIncome"
                             value={formData.baseIncome}
@@ -264,80 +274,84 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 ]}
                             />
                         </div>
-                        
-                        {/* Only show the withholding details if a strategy other than 'none' is selected */}
-                        {formData.taxWithholdingStrategy !== 'none' && (
-                            <div className="col-span-2 md:col-span-4 mt-4 pt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
-                                <h4 className="text-md font-medium text-gray-900 dark:text-white mb-3 transition-colors duration-200">Tax Withholding Settings</h4>
-                                
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                    <div>
-                                        <SelectInput
-                                            name="taxWithholdingMethod"
-                                            value={formData.taxWithholdingMethod}
-                                            onChange={handleChange}
-                                            label="Withholding Method"
-                                            options={[
-                                                { value: 'taxBracket', label: 'Tax Bracket Based' },
-                                                { value: 'fixedAmount', label: 'Fixed Amount ($)' },
-                                                { value: 'fixedPercent', label: 'Fixed Percentage (%)' }
-                                            ]}
-                                        />
-                                    </div>
-
-                                    {/* For Tax Bracket method, show the filing type selector */}
-                                    {formData.taxWithholdingMethod === 'taxBracket' && (
-                                        <div>
-                                            <SelectInput
-                                                name="taxFilingType"
-                                                value={formData.taxFilingType}
-                                                onChange={handleChange}
-                                                label="Filing Status"
-                                                options={[
-                                                    { value: 'single', label: 'Single' },
-                                                    { value: 'married', label: 'Married Filing Jointly' },
-                                                    { value: 'headOfHousehold', label: 'Head of Household' }
-                                                ]}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {formData.taxWithholdingMethod === 'fixedAmount' && (
-                                        <div>
-                                            <DollarInput
-                                                name="taxFixedAmount"
-                                                value={formData.taxFixedAmount}
-                                                onChange={handleChange}
-                                                label={`Amount per ${formData.taxWithholdingStrategy === 'monthly' ? 'Month' : 'Quarter'}`}
-                                                small={true}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {formData.taxWithholdingMethod === 'fixedPercent' && (
-                                        <div>
-                                            <PercentInput
-                                                name="taxFixedPercent"
-                                                value={formData.taxFixedPercent}
-                                                onChange={handleChange}
-                                                label="Percentage"
-                                                small={true}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                {/* Add Tax Bracket Table for the tax bracket method */}
-                                {formData.taxWithholdingMethod === 'taxBracket' && (
-                                    <TaxBracketTable currentFilingType={formData.taxFilingType} />
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
-                
+
+                {/* Tax Withholding Settings - only show if a strategy other than 'none' is selected */}
+                {formData.taxWithholdingStrategy !== 'none' && (
+                    <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                        <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
+                            Tax Withholding Settings
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <SelectInput
+                                    name="taxWithholdingMethod"
+                                    value={formData.taxWithholdingMethod}
+                                    onChange={handleChange}
+                                    label="Withholding Method"
+                                    options={[
+                                        { value: 'taxBracket', label: 'Tax Bracket Based' },
+                                        { value: 'fixedAmount', label: 'Fixed Amount ($)' },
+                                        { value: 'fixedPercent', label: 'Fixed Percentage (%)' }
+                                    ]}
+                                />
+                            </div>
+
+                            {/* For Tax Bracket method, show the filing type selector */}
+                            {formData.taxWithholdingMethod === 'taxBracket' && (
+                                <div>
+                                    <SelectInput
+                                        name="taxFilingType"
+                                        value={formData.taxFilingType}
+                                        onChange={handleChange}
+                                        label="Filing Status"
+                                        options={[
+                                            { value: 'single', label: 'Single' },
+                                            { value: 'married', label: 'Married Filing Jointly' },
+                                            { value: 'headOfHousehold', label: 'Head of Household' }
+                                        ]}
+                                    />
+                                </div>
+                            )}
+
+                            {formData.taxWithholdingMethod === 'fixedAmount' && (
+                                <div>
+                                    <DollarInput
+                                        name="taxFixedAmount"
+                                        value={formData.taxFixedAmount}
+                                        onChange={handleChange}
+                                        label={`Amount per ${formData.taxWithholdingStrategy === 'monthly' ? 'Month' : 'Quarter'}`}
+                                        small={true}
+                                    />
+                                </div>
+                            )}
+
+                            {formData.taxWithholdingMethod === 'fixedPercent' && (
+                                <div>
+                                    <PercentInput
+                                        name="taxFixedPercent"
+                                        value={formData.taxFixedPercent}
+                                        onChange={handleChange}
+                                        label="Percentage"
+                                        small={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Add Tax Bracket Table for the tax bracket method */}
+                        {formData.taxWithholdingMethod === 'taxBracket' && (
+                            <TaxBracketTable currentFilingType={formData.taxFilingType} />
+                        )}
+                    </div>
+                )}
+
                 {/* Supplemental Contributions Section */}
-                <div className="pt-4 mt-4 border-t border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                <div className="bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
+                        Supplemental Contributions
+                    </h4>
                     <ContributionManager
                         contributions={formData.supplementalContributions || []}
                         onChange={handleContributionsChange}
@@ -350,11 +364,11 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
             {/* Simulation Parameters Section */}
             <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Simulation Parameters</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200">Settings that control how the portfolio simulation runs.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200 hidden">Settings that control how the portfolio simulation runs.</p>
                 
                 {/* Basic Simulation Settings */}
-                <div className="mb-6">
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
                         Basic Parameters
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -398,8 +412,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 </div>
 
                 {/* Share Price Model Section */}
-                <div className="mb-6">
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
                         Share Price Modeling
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -463,7 +477,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                     />
 
                                     {/* Variable distribution parameters - moved underneath */}
-                                    <div className="mt-4">
+                                    <div className="mt-4 p-3 bg-blue-100 dark:bg-darkBlue-800/80 rounded-md">
                                         {formData.variableDistribution === 'uniform' && (
                                             <div className="grid grid-cols-2 gap-4">
                                                 <PercentInput
@@ -522,8 +536,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 </div>
 
                 {/* DRIP Strategy Section */}
-                <div>
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-gray-200 dark:border-darkBlue-600 transition-colors duration-200">
+                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
                         DRIP Settings
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -541,7 +555,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 ]}
                             />
                         </div>
-                        
+
                         {(formData.dripStrategy === 'percentage' || !formData.dripStrategy) && (
                             <div>
                                 <PercentInput
@@ -552,7 +566,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 />
                             </div>
                         )}
-                        
+
                         {formData.dripStrategy === 'fixedAmount' && (
                             <div>
                                 <DollarInput
@@ -563,7 +577,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 />
                             </div>
                         )}
-                        
+
                         {formData.dripStrategy === 'fixedIncome' && (
                             <div>
                                 <DollarInput
@@ -576,66 +590,64 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         )}
                     </div>
                 </div>
-            </div>
-            
-            {/* Loan Settings Section */}
-            <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
-                <div className="relative mb-4">
-                    {/* Centered header and subtext */}
-                    <div className="text-center">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white transition-colors duration-200">Loan Settings</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1 transition-colors duration-200">Optional settings for modeling loan-based financing.</p>
+
+                {/* Loan Settings Section */}
+                <div className="bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
+                    <div className="relative mb-4">
+                        <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
+                            Loan Settings
+                        </h4>
+
+                        {/* Explicit toggle for loan inclusion - positioned absolutely at top right */}
+                        <div className="absolute top-0 right-0 flex items-center">
+                            <span className="mr-3 text-sm text-blue-700 dark:text-blue-300 transition-colors duration-200">Include Loan:</span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    name="includeLoan"
+                                    checked={formData.includeLoan}
+                                    onChange={handleChange}
+                                    className="sr-only peer"
+                                />
+                                <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 transition-colors duration-200 ${formData.includeLoan ? 'toggle-switch-on' : 'toggle-switch-off'}`}></div>
+                            </label>
+                        </div>
                     </div>
-                    
-                    {/* Explicit toggle for loan inclusion - positioned absolutely at top right */}
-                    <div className="absolute top-0 right-0 flex items-center">
-                        <span className="mr-3 text-sm text-gray-700 dark:text-gray-300 transition-colors duration-200">Include Loan:</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input 
-                                type="checkbox"
-                                name="includeLoan"
-                                checked={formData.includeLoan}
+
+                    <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <DollarInput
+                                name="loanAmount"
+                                value={formData.loanAmount}
                                 onChange={handleChange}
-                                className="sr-only peer"
+                                label="Loan Amount ($)"
+                                disabled={!formData.includeLoan}
                             />
-                            <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 transition-colors duration-200 ${formData.includeLoan ? 'toggle-switch-on' : 'toggle-switch-off'}`}></div>
-                        </label>
-                    </div>
-                </div>
-                
-                <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <DollarInput
-                            name="loanAmount"
-                            value={formData.loanAmount}
-                            onChange={handleChange}
-                            label="Loan Amount ($)"
-                            disabled={!formData.includeLoan}
-                        />
-                        
-                        <PercentInput
-                            name="annualInterestRate"
-                            value={formData.annualInterestRate}
-                            onChange={handleChange}
-                            label="Annual Interest Rate (%)"
-                            disabled={!formData.includeLoan}
-                        />
-                        
-                        <IntegerInput
-                            name="amortizationMonths"
-                            value={formData.amortizationMonths}
-                            onChange={handleChange}
-                            label="Amortization (months)"
-                            disabled={!formData.includeLoan}
-                        />
-                        
-                        <PercentInput
-                            name="surplusForDripPercent"
-                            value={formData.surplusForDripPercent}
-                            onChange={handleChange}
-                            label="DRIP to Principal (%)"
-                            disabled={!formData.includeLoan}
-                        />
+
+                            <PercentInput
+                                name="annualInterestRate"
+                                value={formData.annualInterestRate}
+                                onChange={handleChange}
+                                label="Annual Interest Rate (%)"
+                                disabled={!formData.includeLoan}
+                            />
+
+                            <IntegerInput
+                                name="amortizationMonths"
+                                value={formData.amortizationMonths}
+                                onChange={handleChange}
+                                label="Amortization (months)"
+                                disabled={!formData.includeLoan}
+                            />
+
+                            <PercentInput
+                                name="surplusForDripPercent"
+                                value={formData.surplusForDripPercent}
+                                onChange={handleChange}
+                                label="DRIP to Principal (%)"
+                                disabled={!formData.includeLoan}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
