@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   DollarInput, 
   PercentInput, 
@@ -11,6 +11,7 @@ import { ProfileType } from './profiles';
 import TaxBracketTable from './TaxBracketTable';
 import { ContributionManager } from './contributions';
 import Panel from './common/Panel';
+import SharePriceModelHelpModal from './help/SharePriceModelHelpModal';
 // Re-export icons for backward compatibility
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
@@ -94,6 +95,8 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 
 // Main form component
 const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
+    // State for help modals
+    const [isSharePriceModelHelpOpen, setSharePriceModelHelpOpen] = useState(false);
     // Simplified change handler
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement;
@@ -211,6 +214,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
 
     return (
         <form onSubmit={onSubmit} className="space-y-8">
+            {/* Help Modals */}
+            <SharePriceModelHelpModal
+                isOpen={isSharePriceModelHelpOpen}
+                onClose={() => setSharePriceModelHelpOpen(false)}
+                currentModel={formData.sharePriceModel === 'variable' ? (formData.variableDistribution || 'uniform') : (formData.sharePriceModel || 'geometric')}
+            />
+
             {/* Investor Profile Section */}
             <div className="bg-white dark:bg-darkBlue-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-darkBlue-700 transition-colors duration-200">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Investor Profile</h3>
@@ -408,6 +418,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <Panel
                     title="Share Price Modeling"
                     className="mb-6"
+                    onHelp={() => setSharePriceModelHelpOpen(true)}
                 >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {/* First row with initial price and model selection */}
@@ -471,53 +482,62 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                     {/* Variable distribution parameters - moved underneath */}
                                     <div className="mt-4 p-3 bg-blue-100 dark:bg-darkBlue-800/80 rounded-md">
                                         {formData.variableDistribution === 'uniform' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <PercentInput
-                                                    name="uniformMin"
-                                                    value={formData.uniformMin}
-                                                    onChange={handleChange}
-                                                    label="Min Change (%)"
-                                                />
-                                                <PercentInput
-                                                    name="uniformMax"
-                                                    value={formData.uniformMax}
-                                                    onChange={handleChange}
-                                                    label="Max Change (%)"
-                                                />
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Uniform Distribution</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <PercentInput
+                                                        name="uniformMin"
+                                                        value={formData.uniformMin}
+                                                        onChange={handleChange}
+                                                        label="Min Change (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="uniformMax"
+                                                        value={formData.uniformMax}
+                                                        onChange={handleChange}
+                                                        label="Max Change (%)"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
 
                                         {formData.variableDistribution === 'normal' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <PercentInput
-                                                    name="normalMean"
-                                                    value={formData.normalMean}
-                                                    onChange={handleChange}
-                                                    label="Mean Change (%)"
-                                                />
-                                                <PercentInput
-                                                    name="normalStdDev"
-                                                    value={formData.normalStdDev}
-                                                    onChange={handleChange}
-                                                    label="Standard Deviation (%)"
-                                                />
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Normal Distribution</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <PercentInput
+                                                        name="normalMean"
+                                                        value={formData.normalMean}
+                                                        onChange={handleChange}
+                                                        label="Mean Change (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="normalStdDev"
+                                                        value={formData.normalStdDev}
+                                                        onChange={handleChange}
+                                                        label="Standard Deviation (%)"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
 
                                         {formData.variableDistribution === 'gbm' && (
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <PercentInput
-                                                    name="gbmDrift"
-                                                    value={formData.gbmDrift}
-                                                    onChange={handleChange}
-                                                    label="Drift (%)"
-                                                />
-                                                <PercentInput
-                                                    name="gbmVolatility"
-                                                    value={formData.gbmVolatility}
-                                                    onChange={handleChange}
-                                                    label="Volatility (%)"
-                                                />
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Geometric Brownian Motion</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <PercentInput
+                                                        name="gbmDrift"
+                                                        value={formData.gbmDrift}
+                                                        onChange={handleChange}
+                                                        label="Drift (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="gbmVolatility"
+                                                        value={formData.gbmVolatility}
+                                                        onChange={handleChange}
+                                                        label="Volatility (%)"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                     </div>
