@@ -10,6 +10,7 @@ import ProfileSelector from './ProfileSelector';
 import { ProfileType } from './profiles';
 import TaxBracketTable from './TaxBracketTable';
 import { ContributionManager } from './contributions';
+import Panel from './common/Panel';
 // Re-export icons for backward compatibility
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
@@ -220,25 +221,23 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 transition-colors duration-200">Investor Profile</h3>
 
                 {/* Profile Selector */}
-                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        Profile Selection
-                    </h4>
+                <Panel
+                    title="Profile Selection"
+                    className="mb-6"
+                >
                     <ProfileSelector
                         selectedProfile={selectedProfile}
                         onProfileChange={onProfileChange}
                         hasCustomProfile={hasCustomProfile}
                     />
-                </div>
+                </Panel>
 
                 {/* Investment Settings */}
-                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        Investment Settings
-                    </h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-4 transition-colors duration-200">
-                        Settings that define your investment approach.
-                    </p>
+                <Panel
+                    title="Investment Settings"
+                    description="Settings that define your investment approach."
+                    className="mb-6"
+                >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <TextInput
                             name="initialShareCount"
@@ -275,14 +274,14 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             />
                         </div>
                     </div>
-                </div>
+                </Panel>
 
                 {/* Tax Withholding Settings - only show if a strategy other than 'none' is selected */}
                 {formData.taxWithholdingStrategy !== 'none' && (
-                    <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                        <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                            Tax Withholding Settings
-                        </h4>
+                    <Panel
+                        title="Tax Withholding Settings"
+                        className="mb-6"
+                    >
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             <div>
                                 <SelectInput
@@ -344,21 +343,20 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                         {formData.taxWithholdingMethod === 'taxBracket' && (
                             <TaxBracketTable currentFilingType={formData.taxFilingType} />
                         )}
-                    </div>
+                    </Panel>
                 )}
 
                 {/* Supplemental Contributions Section */}
-                <div className="bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        Supplemental Contributions
-                    </h4>
+                <Panel
+                    title="Supplemental Contributions"
+                >
                     <ContributionManager
                         contributions={formData.supplementalContributions || []}
                         onChange={handleContributionsChange}
                         simulationStartMonth={Number(formData.startMonth)}
                         simulationMonths={Number(formData.simulationMonths)}
                     />
-                </div>
+                </Panel>
             </div>
             
             {/* Simulation Parameters Section */}
@@ -367,10 +365,10 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 transition-colors duration-200 hidden">Settings that control how the portfolio simulation runs.</p>
                 
                 {/* Basic Simulation Settings */}
-                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        Basic Parameters
-                    </h4>
+                <Panel
+                    title="Basic Parameters"
+                    className="mb-6"
+                >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <IntegerInput
                             name="simulationMonths"
@@ -409,13 +407,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             label="Dividend Yield (% per 4w)"
                         />
                     </div>
-                </div>
+                </Panel>
 
                 {/* Share Price Model Section */}
-                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        Share Price Modeling
-                    </h4>
+                <Panel
+                    title="Share Price Modeling"
+                    className="mb-6"
+                >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {/* First row with initial price and model selection */}
                         <DollarInput
@@ -533,13 +531,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             </>
                         )}
                     </div>
-                </div>
+                </Panel>
 
                 {/* DRIP Strategy Section */}
-                <div className="mb-6 bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                        DRIP Settings
-                    </h4>
+                <Panel
+                    title="DRIP Settings"
+                    className="mb-6"
+                >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="col-span-2">
                             <SelectInput
@@ -589,17 +587,13 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             </div>
                         )}
                     </div>
-                </div>
+                </Panel>
 
                 {/* Loan Settings Section */}
-                <div className="bg-blue-50 dark:bg-darkBlue-900 rounded-lg p-5 border border-blue-100 dark:border-darkBlue-700 shadow-sm transition-colors duration-200">
-                    <div className="relative mb-4">
-                        <h4 className="text-md font-medium text-blue-800 dark:text-blue-300 mb-3 pb-2 border-b border-blue-200 dark:border-darkBlue-600 transition-colors duration-200">
-                            Loan Settings
-                        </h4>
-
-                        {/* Explicit toggle for loan inclusion - positioned absolutely at top right */}
-                        <div className="absolute top-0 right-0 flex items-center">
+                <Panel
+                    title="Loan Settings"
+                    rightElement={
+                        <div className="flex items-center">
                             <span className="mr-3 text-sm text-blue-700 dark:text-blue-300 transition-colors duration-200">Include Loan:</span>
                             <label className="relative inline-flex items-center cursor-pointer">
                                 <input
@@ -612,8 +606,8 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                 <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-basshead-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-darkBlue-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 transition-colors duration-200 ${formData.includeLoan ? 'toggle-switch-on' : 'toggle-switch-off'}`}></div>
                             </label>
                         </div>
-                    </div>
-
+                    }
+                >
                     <div className={`${!formData.includeLoan ? 'opacity-50' : ''}`}>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <DollarInput
@@ -649,7 +643,7 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             />
                         </div>
                     </div>
-                </div>
+                </Panel>
             </div>
             
             {/* Form Actions */}
