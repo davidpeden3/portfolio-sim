@@ -12,6 +12,7 @@ import TaxBracketTable from './TaxBracketTable';
 import { ContributionManager } from './contributions';
 import Panel from './common/Panel';
 import SharePriceModelHelpModal from './help/SharePriceModelHelpModal';
+import DividendModelHelpModal from './help/DividendModelHelpModal';
 // Re-export icons for backward compatibility
 import { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon } from "./ProfileIcons";
 export { EarlyCareerIcon, MidCareerIcon, RetirementIcon, CustomIcon };
@@ -56,7 +57,23 @@ export interface PortfolioFormData {
     simulationMonths: number | string;
     startMonth: number | string; // 1-12 representing January-December
     initialSharePrice: number | string;
-    dividendYield4w: number | string;
+    dividendYield4w?: number | string; // Kept for backward compatibility
+
+    // Dividend Model
+    dividendModel?: string; // 'flatAmount', 'yieldBased', 'variable'
+    flatDividendAmount?: number | string;
+    yieldPeriod?: string; // '4w' or 'yearly'
+    dividendYieldPercent?: number | string;
+    dividendVariableDistribution?: string;
+    dividendUniformMin?: number | string;
+    dividendUniformMax?: number | string;
+    dividendNormalMean?: number | string;
+    dividendNormalStdDev?: number | string;
+    dividendGbmDrift?: number | string;
+    dividendGbmVolatility?: number | string;
+    initialDividendMethod?: string;
+    initialDividendAmount?: number | string;
+    initialDividendYield?: number | string;
     
     // Share Price Model
     sharePriceModel: SharePriceModel;
@@ -97,6 +114,7 @@ interface AssumptionsFormWrapperProps extends AssumptionsFormProps {
 const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCustomProfile, onProfileChange }: AssumptionsFormWrapperProps) => {
     // State for help modals
     const [isSharePriceModelHelpOpen, setSharePriceModelHelpOpen] = useState(false);
+    const [isDividendModelHelpOpen, setDividendModelHelpOpen] = useState(false);
     // Simplified change handler
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement;
@@ -108,6 +126,84 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 ...formData,
                 [name]: checked,
             });
+        } else if (name === "dividendModel") {
+            // Handle dividend model changes
+            const dividendModelValue = (value === 'flatAmount' || value === 'yieldBased' || value === 'variable')
+                ? value
+                : 'yieldBased';
+
+            if (dividendModelValue === 'yieldBased') {
+                // If switching to yield-based, ensure we have a default yield
+                // Try to use existing dividendYieldPercent or legacy dividendYield4w
+                onChange({
+                    ...formData,
+                    [name]: dividendModelValue,
+                    dividendYieldPercent: formData.dividendYieldPercent || formData.dividendYield4w || 3,
+                    yieldPeriod: formData.yieldPeriod || '4w'
+                });
+            } else if (dividendModelValue === 'flatAmount') {
+                // Set default flat amount when selecting flat amount strategy
+                onChange({
+                    ...formData,
+                    [name]: dividendModelValue,
+                    flatDividendAmount: formData.flatDividendAmount || 0.25, // Default to $0.25
+                });
+            } else if (dividendModelValue === 'variable') {
+                // Set default distribution to uniform when selecting variable
+                onChange({
+                    ...formData,
+                    [name]: dividendModelValue,
+                    dividendVariableDistribution: formData.dividendVariableDistribution || 'uniform',
+                    dividendUniformMin: formData.dividendUniformMin || 0.5,
+                    dividendUniformMax: formData.dividendUniformMax || 2
+                });
+            } else {
+                onChange({
+                    ...formData,
+                    [name]: dividendModelValue
+                });
+            }
+        } else if (name === "initialDividendMethod") {
+            // Handle initial dividend method changes
+            const methodValue = (value === 'flatAmount' || value === 'yieldBased')
+                ? value
+                : 'yieldBased';
+
+            onChange({
+                ...formData,
+                [name]: methodValue
+            });
+        } else if (name === "dividendVariableDistribution") {
+            // Handle dividend distribution changes
+            const distribValue = (value === 'uniform' || value === 'normal' || value === 'gbm')
+                ? value
+                : 'uniform';
+
+            if (distribValue === 'uniform') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    dividendUniformMin: formData.dividendUniformMin || 0.5,
+                    dividendUniformMax: formData.dividendUniformMax || 2
+                });
+            } else if (distribValue === 'normal') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    dividendNormalMean: formData.dividendNormalMean || 1.5,
+                    dividendNormalStdDev: formData.dividendNormalStdDev || 0.5
+                });
+            } else if (distribValue === 'gbm') {
+                onChange({
+                    ...formData,
+                    [name]: distribValue,
+                    dividendGbmDrift: formData.dividendGbmDrift || 2,
+                    dividendGbmVolatility: formData.dividendGbmVolatility || 10,
+                    initialDividendMethod: formData.initialDividendMethod || 'yieldBased',
+                    initialDividendAmount: formData.initialDividendAmount || 0.25,
+                    initialDividendYield: formData.initialDividendYield || 6
+                });
+            }
         } else if (name === "dripStrategy") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid DripStrategy value. If not, default to 'percentage'
@@ -219,6 +315,11 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                 isOpen={isSharePriceModelHelpOpen}
                 onClose={() => setSharePriceModelHelpOpen(false)}
                 currentModel={formData.sharePriceModel === 'variable' ? (formData.variableDistribution || 'uniform') : (formData.sharePriceModel || 'geometric')}
+            />
+            <DividendModelHelpModal
+                isOpen={isDividendModelHelpOpen}
+                onClose={() => setDividendModelHelpOpen(false)}
+                currentModel={formData.dividendModel === 'variable' ? (formData.dividendVariableDistribution || 'uniform') : (formData.dividendModel || 'yieldBased')}
             />
 
             {/* Investor Profile Section */}
@@ -405,12 +506,6 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             />
                         </div>
 
-                        <PercentInput
-                            name="dividendYield4w"
-                            value={formData.dividendYield4w}
-                            onChange={handleChange}
-                            label="Dividend Yield (% per 4w)"
-                        />
                     </div>
                 </Panel>
 
@@ -537,6 +632,193 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                                                         onChange={handleChange}
                                                         label="Volatility (%)"
                                                     />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </Panel>
+
+                {/* Dividend Modeling Section */}
+                <Panel
+                    title="Dividend Modeling"
+                    className="mb-6"
+                    onHelp={() => setDividendModelHelpOpen(true)}
+                >
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* First row with model selection */}
+                        <SelectInput
+                            name="dividendModel"
+                            value={formData.dividendModel || 'yieldBased'}
+                            onChange={handleChange}
+                            label="Dividend Model"
+                            options={[
+                                { value: 'flatAmount', label: 'Flat Amount ($)' },
+                                { value: 'yieldBased', label: 'Dividend Yield (%)' },
+                                { value: 'variable', label: 'Variable Change' }
+                            ]}
+                        />
+
+                        {/* Show different inputs based on the selected dividend model */}
+                        {formData.dividendModel === 'flatAmount' && (
+                            <div>
+                                <DollarInput
+                                    name="flatDividendAmount"
+                                    value={formData.flatDividendAmount}
+                                    onChange={handleChange}
+                                    label="Dividend Amount ($)"
+                                />
+                            </div>
+                        )}
+
+                        {(formData.dividendModel === 'yieldBased' || !formData.dividendModel) && (
+                            <>
+                                <div>
+                                    <PercentInput
+                                        name="dividendYieldPercent"
+                                        value={formData.dividendYieldPercent || formData.dividendYield4w}
+                                        onChange={handleChange}
+                                        label="Dividend Yield (%)"
+                                    />
+                                </div>
+                                <div>
+                                    <SelectInput
+                                        name="yieldPeriod"
+                                        value={formData.yieldPeriod || '4w'}
+                                        onChange={handleChange}
+                                        label="Yield Period"
+                                        options={[
+                                            { value: '4w', label: '4-week period' },
+                                            { value: 'yearly', label: 'Yearly (÷13)' }
+                                        ]}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {formData.dividendModel === 'variable' && (
+                            <>
+                                <div>
+                                    <SelectInput
+                                        name="dividendVariableDistribution"
+                                        value={formData.dividendVariableDistribution || 'uniform'}
+                                        onChange={handleChange}
+                                        label="Distribution Type"
+                                        options={[
+                                            { value: 'uniform', label: 'Uniform Distribution' },
+                                            { value: 'normal', label: 'Normal Distribution' },
+                                            { value: 'gbm', label: 'Geometric Brownian Motion' }
+                                        ]}
+                                    />
+                                </div>
+
+                                {/* Variable distribution parameters */}
+                                <div className="col-span-2 mt-4">
+                                    <div className="p-3 bg-blue-100 dark:bg-darkBlue-800/80 rounded-md">
+                                        {formData.dividendVariableDistribution === 'uniform' && (
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Uniform Distribution</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <PercentInput
+                                                        name="dividendUniformMin"
+                                                        value={formData.dividendUniformMin}
+                                                        onChange={handleChange}
+                                                        label="Min Yield (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="dividendUniformMax"
+                                                        value={formData.dividendUniformMax}
+                                                        onChange={handleChange}
+                                                        label="Max Yield (%)"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {formData.dividendVariableDistribution === 'normal' && (
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Normal Distribution</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <PercentInput
+                                                        name="dividendNormalMean"
+                                                        value={formData.dividendNormalMean}
+                                                        onChange={handleChange}
+                                                        label="Mean Yield (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="dividendNormalStdDev"
+                                                        value={formData.dividendNormalStdDev}
+                                                        onChange={handleChange}
+                                                        label="Standard Deviation (%)"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {formData.dividendVariableDistribution === 'gbm' && (
+                                            <div className="space-y-3">
+                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Geometric Brownian Motion</div>
+                                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                                    <PercentInput
+                                                        name="dividendGbmDrift"
+                                                        value={formData.dividendGbmDrift}
+                                                        onChange={handleChange}
+                                                        label="Drift (%)"
+                                                    />
+                                                    <PercentInput
+                                                        name="dividendGbmVolatility"
+                                                        value={formData.dividendGbmVolatility}
+                                                        onChange={handleChange}
+                                                        label="Volatility (%)"
+                                                    />
+                                                </div>
+
+                                                {/* Initial dividend settings */}
+                                                <div className="border-t border-gray-200 dark:border-darkBlue-600 pt-3 mt-3">
+                                                    <div className="font-medium text-gray-800 dark:text-white mb-2">Initial Dividend Setting</div>
+
+                                                    <div className="grid grid-cols-2 gap-4 mb-2">
+                                                        <div>
+                                                            <SelectInput
+                                                                name="initialDividendMethod"
+                                                                value={formData.initialDividendMethod || 'yieldBased'}
+                                                                onChange={handleChange}
+                                                                label="Initial Method"
+                                                                options={[
+                                                                    { value: 'flatAmount', label: 'Flat Amount ($)' },
+                                                                    { value: 'yieldBased', label: 'Yearly Yield (%)' }
+                                                                ]}
+                                                            />
+                                                        </div>
+
+                                                        {(formData.initialDividendMethod === 'flatAmount' || !formData.initialDividendMethod) && (
+                                                            <div>
+                                                                <DollarInput
+                                                                    name="initialDividendAmount"
+                                                                    value={formData.initialDividendAmount || 0.25}
+                                                                    onChange={handleChange}
+                                                                    label="Initial Amount ($)"
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        {formData.initialDividendMethod === 'yieldBased' && (
+                                                            <div>
+                                                                <PercentInput
+                                                                    name="initialDividendYield"
+                                                                    value={formData.initialDividendYield || 6}
+                                                                    onChange={handleChange}
+                                                                    label="Yearly Yield (%)"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 italic">
+                                                        This sets the starting point for your GBM dividend path
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}

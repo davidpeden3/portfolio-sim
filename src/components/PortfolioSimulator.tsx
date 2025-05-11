@@ -379,6 +379,22 @@ export function PortfolioSimulator() {
       initialSharePrice: toNumber(formData.initialSharePrice),
       dividendYieldPer4wPercent: toNumber(formData.dividendYield4w),
 
+      // Dividend Model Parameters
+      dividendModel: formData.dividendModel || 'yieldBased',
+      flatDividendAmount: toNumber(formData.flatDividendAmount),
+      yieldPeriod: formData.yieldPeriod || '4w',
+      dividendYieldPercent: toNumber(formData.dividendYieldPercent || formData.dividendYield4w),
+      dividendVariableDistribution: formData.dividendVariableDistribution || 'uniform',
+      dividendUniformMin: toNumber(formData.dividendUniformMin),
+      dividendUniformMax: toNumber(formData.dividendUniformMax),
+      dividendNormalMean: toNumber(formData.dividendNormalMean),
+      dividendNormalStdDev: toNumber(formData.dividendNormalStdDev),
+      dividendGbmDrift: toNumber(formData.dividendGbmDrift),
+      dividendGbmVolatility: toNumber(formData.dividendGbmVolatility),
+      initialDividendMethod: formData.initialDividendMethod || 'flatAmount',
+      initialDividendAmount: toNumber(formData.initialDividendAmount),
+      initialDividendYield: toNumber(formData.initialDividendYield),
+
       // Share Price Model
       sharePriceModel: formData.sharePriceModel || 'geometric',
 

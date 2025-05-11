@@ -48,7 +48,8 @@ function getUniformRandom(min: number, max: number): number {
  * @param stdDev The standard deviation of the normal distribution
  * @returns A random number from a normal distribution
  */
-function getNormalRandom(mean: number, stdDev: number): number {
+// Export for testing
+export function getNormalRandom(mean: number, stdDev: number): number {
   let u = 0, v = 0;
   while (u === 0) u = Math.random(); // Converting [0,1) to (0,1)
   while (v === 0) v = Math.random();
@@ -145,6 +146,156 @@ function calculateVariableSharePrice(
 
   // Fallback to no change if invalid parameters
   return prevPrice;
+}
+
+/**
+ * Calculates the flat dividend amount
+ * @returns The fixed dividend amount
+ */
+function calculateFlatDividend(flatAmount: number): number {
+  return flatAmount;
+}
+
+/**
+ * Calculates the yield-based dividend for the current share price
+ * @param sharePrice The current share price
+ * @param yieldPercent The dividend yield percentage
+ * @param yieldPeriod Whether the yield is per 4w or yearly
+ * @returns The dividend amount based on yield
+ */
+function calculateYieldBasedDividend(sharePrice: number, yieldPercent: number, yieldPeriod: YieldPeriod): number {
+  // If yearly, divide by 13 (52 weeks / 4 = 13 periods in a year)
+  const adjustedYield = yieldPeriod === 'yearly' ? yieldPercent / 13 : yieldPercent;
+  return sharePrice * (adjustedYield / 100);
+}
+
+/**
+ * Calculates a dividend based on a uniform distribution
+ * @param sharePrice The current share price
+ * @param uniformMin The minimum yield percentage
+ * @param uniformMax The maximum yield percentage
+ * @returns The dividend amount based on a random uniform yield
+ */
+function calculateUniformDividend(sharePrice: number, uniformMin: number, uniformMax: number): number {
+  const randomYieldPercent = getUniformRandom(uniformMin, uniformMax);
+  return sharePrice * (randomYieldPercent / 100);
+}
+
+/**
+ * Calculates a dividend based on a normal distribution
+ * @param sharePrice The current share price
+ * @param normalMean The mean yield percentage
+ * @param normalStdDev The standard deviation of the yield percentage
+ * @returns The dividend amount based on a random normal yield
+ */
+function calculateNormalDividend(sharePrice: number, normalMean: number, normalStdDev: number): number {
+  const randomYieldPercent = getNormalRandom(normalMean, normalStdDev);
+  return Math.max(0, sharePrice * (randomYieldPercent / 100)); // Ensure dividend is never negative
+}
+
+/**
+ * Calculates a dividend based on Geometric Brownian Motion
+ * @param sharePrice The current share price
+ * @param lastDividend The previous dividend amount
+ * @param drift The drift parameter (annualized percentage)
+ * @param volatility The volatility parameter (annualized percentage)
+ * @param initialDividendMethod Method to calculate initial dividend (flatAmount or yieldBased)
+ * @param initialDividendAmount Fixed amount for initial dividend
+ * @param initialDividendYield Yearly yield percentage for initial dividend
+ * @returns The dividend amount after applying GBM
+ */
+// Export for testing
+export function calculateGBMDividend(
+  sharePrice: number,
+  lastDividend: number,
+  drift: number,
+  volatility: number,
+  initialDividendMethod: 'flatAmount' | 'yieldBased' = 'yieldBased',
+  initialDividendAmount: number = 0.25,
+  initialDividendYield: number = 6
+): number {
+  // If we don't have a previous dividend, initialize based on specified method
+  if (lastDividend === 0) {
+    if (initialDividendMethod === 'flatAmount') {
+      return initialDividendAmount;
+    } else {
+      // yieldBased - convert to 4w yield
+      return sharePrice * (initialDividendYield / 100) / 13;
+    }
+  }
+
+  // Convert annual rates to monthly for GBM calculation
+  const monthlyDrift = drift / 12 / 100;
+  const monthlyVolatility = volatility / Math.sqrt(12) / 100;
+
+  // Use GBM to calculate dividend change
+  const deltaT = 1/12;
+  const meanTerm = (monthlyDrift - (Math.pow(monthlyVolatility, 2) / 2)) * deltaT;
+  const randomTerm = monthlyVolatility * getNormalRandom(0, 1) * Math.sqrt(deltaT);
+
+  // Calculate new dividend with GBM
+  return Math.max(0, lastDividend * Math.exp(meanTerm + randomTerm));
+}
+
+/**
+ * Calculates the dividend based on the selected model
+ * @param sharePrice The current share price
+ * @param prevDividend The previous dividend amount
+ * @param assumptions The simulation assumptions containing model parameters
+ * @returns The dividend based on the selected model
+ */
+function calculateDividend(sharePrice: number, prevDividend: number, assumptions: Assumptions): number {
+  const {
+    // Use the new dividend model parameters
+    dividendModel = 'yieldBased', // Default to yield-based for backward compatibility
+    flatDividendAmount = 0,
+    yieldPeriod = '4w',
+    // Use either the new dividendYieldPercent or fall back to the legacy dividendYieldPer4wPercent
+    dividendYieldPercent = assumptions.dividendYieldPer4wPercent || 0,
+    dividendVariableDistribution = 'uniform',
+    dividendUniformMin = -1,
+    dividendUniformMax = 1,
+    dividendNormalMean = 0.5,
+    dividendNormalStdDev = 1,
+    dividendGbmDrift = 0.5,
+    dividendGbmVolatility = 2,
+  } = assumptions;
+
+  switch (dividendModel) {
+    case 'flatAmount':
+      return calculateFlatDividend(flatDividendAmount);
+
+    case 'yieldBased':
+      return calculateYieldBasedDividend(sharePrice, dividendYieldPercent, yieldPeriod);
+
+    case 'variable':
+      switch (dividendVariableDistribution) {
+        case 'uniform':
+          return calculateUniformDividend(sharePrice, dividendUniformMin, dividendUniformMax);
+
+        case 'normal':
+          return calculateNormalDividend(sharePrice, dividendNormalMean, dividendNormalStdDev);
+
+        case 'gbm':
+          return calculateGBMDividend(
+            sharePrice,
+            prevDividend,
+            dividendGbmDrift,
+            dividendGbmVolatility,
+            assumptions.initialDividendMethod || 'yieldBased',
+            assumptions.initialDividendAmount || 0.25,
+            assumptions.initialDividendYield || 6
+          );
+
+        default:
+          // Fallback to yield-based model
+          return calculateYieldBasedDividend(sharePrice, dividendYieldPercent, yieldPeriod);
+      }
+
+    default:
+      // Default to legacy behavior for backward compatibility
+      return sharePrice * (assumptions.dividendYieldPer4wPercent || 0) / 100;
+  }
 }
 
 /**
@@ -346,12 +497,65 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     const amortization: AmortizationEntry[] = [];
 
     // --- Month 0: Initial state ---
+    // Set initial dividend based on the selected model
+    let initialDividend = 0;
+
+    if (assumptions.dividendModel === 'flatAmount') {
+        // Flat amount model - use the configured flat amount
+        initialDividend = assumptions.flatDividendAmount || 0.25;
+    } else if (assumptions.dividendModel === 'yieldBased') {
+        // Yield-based model - calculate based on initial share price and yield
+        const yieldPercent = assumptions.dividendYieldPercent || assumptions.dividendYieldPer4wPercent || 0;
+        const yieldPeriod = assumptions.yieldPeriod || '4w';
+        const adjustedYield = yieldPeriod === 'yearly' ? yieldPercent / 13 : yieldPercent;
+        initialDividend = initialSharePrice * (adjustedYield / 100);
+    } else if (assumptions.dividendModel === 'variable') {
+        // Variable model - handle based on distribution type
+        if (assumptions.dividendVariableDistribution === 'gbm') {
+            // For GBM, use the initial dividend method and values
+            if (assumptions.initialDividendMethod === 'flatAmount') {
+                initialDividend = assumptions.initialDividendAmount || 0.25;
+            } else {
+                // yieldBased - convert from yearly yield to 4w yield
+                initialDividend = initialSharePrice * ((assumptions.initialDividendYield || 6) / 100) / 13;
+            }
+        } else {
+            // For uniform and normal distributions, just calculate the initial dividend
+            // using the distribution parameters on the initial share price
+            switch (assumptions.dividendVariableDistribution) {
+                case 'uniform': {
+                    const randomYieldPercent = getUniformRandom(
+                        assumptions.dividendUniformMin || 0.5,
+                        assumptions.dividendUniformMax || 2
+                    );
+                    initialDividend = initialSharePrice * (randomYieldPercent / 100);
+                    break;
+                }
+                case 'normal': {
+                    const normalYieldPercent = getNormalRandom(
+                        assumptions.dividendNormalMean || 1.5,
+                        assumptions.dividendNormalStdDev || 0.5
+                    );
+                    initialDividend = Math.max(0, initialSharePrice * (normalYieldPercent / 100));
+                    break;
+                }
+                default:
+                    // Fallback to a reasonable default
+                    initialDividend = initialSharePrice * 0.01; // 1% of share price
+            }
+        }
+    } else {
+        // Legacy handling for backward compatibility
+        initialDividend = initialSharePrice * ((assumptions.dividendYieldPer4wPercent || 0) / 100);
+    }
+
     amortization.push({
         month: 0,
         shareCount: initialShareCount,
-        dividend: 0,
-        distribution: 0,
-        ytdDistribution: 0,
+        dividend: initialDividend,
+        naturalDividend: initialDividend, // Initialize natural dividend same as dividend for month 0
+        distribution: initialDividend * initialShareCount,
+        ytdDistribution: initialDividend * initialShareCount,
         marginalTaxesWithheld: 0,
         effectiveTaxRate: withholdTaxes ? 0 : undefined, // Only add effective tax rate if taxes are withheld
         loanPayment: 0,
@@ -383,9 +587,27 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             // This ensures we have all parameters needed for price calculation
         }, month);
 
+        // Get the appropriate previous dividend value for calculations
+        // For GBM model, use the "natural" dividend (undoubled) to prevent stair-stepping
+        const isGbmModel = assumptions.dividendModel === 'variable' &&
+                          assumptions.dividendVariableDistribution === 'gbm';
+
+        // Calculate the natural (undoubled) dividend based on model
+        let naturalDividend;
+
+        if (isGbmModel) {
+            // For GBM, use the previous naturalDividend to avoid December doubling effects
+            naturalDividend = calculateDividend(updatedSharePrice, prev.naturalDividend!, assumptions);
+        } else {
+            // For other models, calculate normally
+            naturalDividend = calculateDividend(updatedSharePrice, prev.dividend, assumptions);
+        }
+
         // December (month 12) typically has double dividends
         const dividendMultiplier = (calendarMonth === 12) ? 2 : 1;
-        const dividend = dividendMultiplier * (dividendYieldPer4wPercent / 100) * updatedSharePrice;
+
+        // Apply multiplier to get the actual dividend
+        const dividend = dividendMultiplier * naturalDividend;
 
         const distribution = prev.totalShares * dividend;
 
@@ -666,6 +888,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             month,
             shareCount: prev.totalShares, // This properly includes all shares from previous month
             dividend,
+            naturalDividend, // Store the natural (undoubled) dividend for GBM continuity
             distribution,
             ytdDistribution: newYtdDistribution,
             marginalTaxesWithheld,
@@ -677,7 +900,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
             supplementalContribution,
             actualDrip,
             sharePrice: updatedSharePrice,
-            newSharesFromDrip, // Shares from DRIP 
+            newSharesFromDrip, // Shares from DRIP
             newSharesFromContribution, // Add this field to track contribution shares separately
             totalShares, // Updated total including new DRIP shares and contribution shares
             portfolioValue,

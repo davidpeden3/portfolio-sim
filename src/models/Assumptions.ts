@@ -10,6 +10,10 @@ export type DripStrategy = 'none' | 'percentage' | 'fixedAmount' | 'fixedIncome'
 export type SharePriceModel = 'linear' | 'geometric' | 'variable';
 export type VariableDistribution = 'uniform' | 'normal' | 'gbm';
 
+// Dividend model types
+export type DividendModel = 'flatAmount' | 'yieldBased' | 'variable';
+export type YieldPeriod = '4w' | 'yearly';
+
 // Import supplemental contribution types
 import { SupplementalContribution } from './SupplementalContribution';
 
@@ -41,7 +45,27 @@ export interface Assumptions {
     simulationMonths: number;
     startMonth?: number; // 1-12 representing January-December
     initialSharePrice: number;
-    dividendYieldPer4wPercent: number;
+    dividendYieldPer4wPercent?: number; // Kept for backward compatibility
+
+    // Dividend Model
+    dividendModel?: DividendModel; // Default to 'yieldBased' for backward compatibility
+    flatDividendAmount?: number; // For flatAmount model
+    yieldPeriod?: YieldPeriod; // '4w' or 'yearly'
+    dividendYieldPercent?: number; // For yieldBased model
+    dividendVariableDistribution?: VariableDistribution;
+
+    // Parameters for dividend variable distributions
+    dividendUniformMin?: number;
+    dividendUniformMax?: number;
+    dividendNormalMean?: number;
+    dividendNormalStdDev?: number;
+    dividendGbmDrift?: number;
+    dividendGbmVolatility?: number;
+
+    // Initial dividend parameters
+    initialDividendMethod?: 'flatAmount' | 'yieldBased';
+    initialDividendAmount?: number; // Used when initialDividendMethod is 'flatAmount'
+    initialDividendYield?: number; // Used when initialDividendMethod is 'yieldBased'
 
     // Share Price Model
     monthlyAppreciationPercent?: number; // Kept for backward compatibility
