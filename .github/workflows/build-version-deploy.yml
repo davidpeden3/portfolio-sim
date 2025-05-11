@@ -65,8 +65,8 @@ jobs:
             echo "No version changes to commit"
           else
             # Ensure we are on the correct branch
-            BRANCH_NAME=${GITHUB_REF##*/}
-            git checkout $BRANCH_NAME
+            git fetch origin
+            git checkout -B "${GITHUB_REF#refs/heads/}" origin/${GITHUB_REF#refs/heads/}
 
             git commit -m "🤖 Auto-increment build number to $BUILD_NUMBER [skip ci]"
 
