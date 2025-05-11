@@ -234,10 +234,11 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
         } else if (name === "sharePriceModel") {
             // The value coming from an input could be of any string type, so we need to check
             // if it's a valid SharePriceModel value. If not, default to 'geometric'
-            const modelValue = (value === 'linear' || value === 'geometric' || value === 'variable') 
-                ? value as SharePriceModel
+            const validModels = ['linear', 'geometric', 'uniform', 'normal', 'gbm'];
+            const modelValue = validModels.includes(value)
+                ? value
                 : 'geometric';
-                
+
             if (modelValue === 'geometric') {
                 // Use monthly appreciation percentage
                 onChange({
@@ -252,14 +253,29 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                     [name]: modelValue,
                     linearChangeAmount: formData.linearChangeAmount || 0,
                 });
-            } else if (modelValue === 'variable') {
-                // Set default distribution to uniform
+            } else if (modelValue === 'uniform') {
+                // Set default uniform distribution values
                 onChange({
                     ...formData,
                     [name]: modelValue,
-                    variableDistribution: formData.variableDistribution || 'uniform',
                     uniformMin: formData.uniformMin || -1,
                     uniformMax: formData.uniformMax || 1,
+                });
+            } else if (modelValue === 'normal') {
+                // Set default normal distribution values
+                onChange({
+                    ...formData,
+                    [name]: modelValue,
+                    normalMean: formData.normalMean || 0.5,
+                    normalStdDev: formData.normalStdDev || 1,
+                });
+            } else if (modelValue === 'gbm') {
+                // Set default GBM values
+                onChange({
+                    ...formData,
+                    [name]: modelValue,
+                    gbmDrift: formData.gbmDrift || 0.5,
+                    gbmVolatility: formData.gbmVolatility || 2,
                 });
             }
         } else if (name === "variableDistribution") {
@@ -532,7 +548,9 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             options={[
                                 { value: 'linear', label: 'Linear Change ($)' },
                                 { value: 'geometric', label: 'Geometric Change (%)' },
-                                { value: 'variable', label: 'Variable Change' }
+                                { value: 'uniform', label: 'Uniform Distribution' },
+                                { value: 'normal', label: 'Normal Distribution' },
+                                { value: 'gbm', label: 'Geometric Brownian Motion' }
                             ]}
                         />
 
@@ -559,85 +577,55 @@ const AssumptionsForm = ({ formData, onChange, onSubmit, selectedProfile, hasCus
                             </div>
                         )}
 
-                        {formData.sharePriceModel === 'variable' && (
-                            <>
-                                <div className="col-span-2">
-                                    <SelectInput
-                                        name="variableDistribution"
-                                        value={formData.variableDistribution || 'uniform'}
-                                        onChange={handleChange}
-                                        label="Distribution Type"
-                                        options={[
-                                            { value: 'uniform', label: 'Uniform Distribution' },
-                                            { value: 'normal', label: 'Normal Distribution' },
-                                            { value: 'gbm', label: 'Geometric Brownian Motion' }
-                                        ]}
-                                    />
+                        {formData.sharePriceModel === 'uniform' && (
+                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                                <PercentInput
+                                    name="uniformMin"
+                                    value={formData.uniformMin}
+                                    onChange={handleChange}
+                                    label="Min Change (%)"
+                                />
+                                <PercentInput
+                                    name="uniformMax"
+                                    value={formData.uniformMax}
+                                    onChange={handleChange}
+                                    label="Max Change (%)"
+                                />
+                            </div>
+                        )}
 
-                                    {/* Variable distribution parameters - moved underneath */}
-                                    <div className="mt-4 p-3 bg-blue-100 dark:bg-darkBlue-800/80 rounded-md">
-                                        {formData.variableDistribution === 'uniform' && (
-                                            <div className="space-y-3">
-                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Uniform Distribution</div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <PercentInput
-                                                        name="uniformMin"
-                                                        value={formData.uniformMin}
-                                                        onChange={handleChange}
-                                                        label="Min Change (%)"
-                                                    />
-                                                    <PercentInput
-                                                        name="uniformMax"
-                                                        value={formData.uniformMax}
-                                                        onChange={handleChange}
-                                                        label="Max Change (%)"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
+                        {formData.sharePriceModel === 'normal' && (
+                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                                <PercentInput
+                                    name="normalMean"
+                                    value={formData.normalMean}
+                                    onChange={handleChange}
+                                    label="Mean Change (%)"
+                                />
+                                <PercentInput
+                                    name="normalStdDev"
+                                    value={formData.normalStdDev}
+                                    onChange={handleChange}
+                                    label="Standard Deviation (%)"
+                                />
+                            </div>
+                        )}
 
-                                        {formData.variableDistribution === 'normal' && (
-                                            <div className="space-y-3">
-                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Normal Distribution</div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <PercentInput
-                                                        name="normalMean"
-                                                        value={formData.normalMean}
-                                                        onChange={handleChange}
-                                                        label="Mean Change (%)"
-                                                    />
-                                                    <PercentInput
-                                                        name="normalStdDev"
-                                                        value={formData.normalStdDev}
-                                                        onChange={handleChange}
-                                                        label="Standard Deviation (%)"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {formData.variableDistribution === 'gbm' && (
-                                            <div className="space-y-3">
-                                                <div className="font-medium text-gray-800 dark:text-white mb-2">Geometric Brownian Motion</div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <PercentInput
-                                                        name="gbmDrift"
-                                                        value={formData.gbmDrift}
-                                                        onChange={handleChange}
-                                                        label="Drift (%)"
-                                                    />
-                                                    <PercentInput
-                                                        name="gbmVolatility"
-                                                        value={formData.gbmVolatility}
-                                                        onChange={handleChange}
-                                                        label="Volatility (%)"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
+                        {formData.sharePriceModel === 'gbm' && (
+                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                                <PercentInput
+                                    name="gbmDrift"
+                                    value={formData.gbmDrift}
+                                    onChange={handleChange}
+                                    label="Drift (%)"
+                                />
+                                <PercentInput
+                                    name="gbmVolatility"
+                                    value={formData.gbmVolatility}
+                                    onChange={handleChange}
+                                    label="Volatility (%)"
+                                />
+                            </div>
                         )}
                     </div>
                 </Panel>

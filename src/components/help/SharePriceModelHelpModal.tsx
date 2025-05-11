@@ -41,12 +41,11 @@ const SharePriceModelHelpModal: React.FC<SharePriceModelHelpModalProps> = ({
   onClose,
   currentModel
 }) => {
-  // Map variable distribution types to direct model types
+  // Use the current model directly (now flattened)
   const getInitialModel = useCallback(() => {
-    if (currentModel === 'variable') {
-      return 'uniform'; // Default to uniform if variable is selected
-    }
-    return currentModel || 'geometric';
+    // Handle empty or invalid models
+    const validModels = ['linear', 'geometric', 'uniform', 'normal', 'gbm'];
+    return validModels.includes(currentModel) ? currentModel : 'geometric';
   }, [currentModel]);
 
   // State to track the selected model in the modal

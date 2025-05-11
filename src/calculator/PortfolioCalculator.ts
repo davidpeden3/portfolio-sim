@@ -323,7 +323,17 @@ function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, mo
     case 'linear':
       return calculateLinearSharePrice(prevPrice, linearChangeAmount);
 
+    case 'uniform':
+      return calculateUniformSharePrice(prevPrice, uniformMin, uniformMax);
+
+    case 'normal':
+      return calculateNormalSharePrice(prevPrice, normalMean, normalStdDev);
+
+    case 'gbm':
+      return calculateGBMSharePrice(prevPrice, gbmDrift, gbmVolatility);
+
     case 'variable':
+      // Handle legacy 'variable' model by delegating to the specific distribution
       return calculateVariableSharePrice(
         prevPrice,
         variableDistribution,

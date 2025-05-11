@@ -7,7 +7,7 @@ export type FilingType = 'single' | 'married' | 'headOfHousehold';
 export type DripStrategy = 'none' | 'percentage' | 'fixedAmount' | 'fixedIncome';
 
 // Share price change model types
-export type SharePriceModel = 'linear' | 'geometric' | 'variable';
+export type SharePriceModel = 'linear' | 'geometric' | 'uniform' | 'normal' | 'gbm';
 export type VariableDistribution = 'uniform' | 'normal' | 'gbm';
 
 // Dividend model types
