@@ -64,10 +64,22 @@ jobs:
           if git diff --staged --quiet; then
             echo "No version changes to commit"
           else
-            git commit -m "🤖 Auto-increment build number to $BUILD_NUMBER [skip ci]"
+            # For pull requests, we need special handling
+            if [[ "$GITHUB_REF" == refs/pull/* ]]; then
+              # For pull requests, we can't push directly
+              echo "This is a pull request. Version increment will be applied when merged."
+            else
+              # For regular pushes to branches, we can create/update the branch
+              git fetch origin
+              git checkout -b temp-branch
+              git branch -f "${GITHUB_REF#refs/heads/}" temp-branch
+              git checkout "${GITHUB_REF#refs/heads/}"
 
-            # The GITHUB_TOKEN will be used automatically with the configured permissions
-            git push
+              git commit -m "🤖 Auto-increment build number to $BUILD_NUMBER [skip ci]"
+
+              # The GITHUB_TOKEN will be used automatically with the configured permissions
+              git push
+            fi
           fi
 
       - name: Archive production artifacts
