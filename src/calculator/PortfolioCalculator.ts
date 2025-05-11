@@ -1,7 +1,7 @@
 import {
   Assumptions,
   FilingType,
-  VariableDistribution
+  YieldPeriod
 } from "../models/Assumptions";
 import { CalculatedSummary } from "../models/CalculatedSummary";
 import { AmortizationEntry } from "../models/AmortizationEntry";
@@ -103,57 +103,27 @@ function calculateGBMSharePrice(prevPrice: number, drift: number, volatility: nu
   return prevPrice * Math.exp(meanTerm + randomTerm);
 }
 
-/**
- * Calculates the next share price based on variable model
- * @param prevPrice The previous share price
- * @param distribution The type of distribution to use
- * @param params Parameters specific to the distribution
- * @returns The new share price based on the specified distribution
- */
-function calculateVariableSharePrice(
-  prevPrice: number,
-  distribution: VariableDistribution,
-  params: {
-    uniformMin?: number;
-    uniformMax?: number;
-    normalMean?: number;
-    normalStdDev?: number;
-    gbmDrift?: number;
-    gbmVolatility?: number;
-    currentMonth?: number;
-  }
-): number {
-  switch (distribution) {
-    case 'uniform':
-      if (params.uniformMin !== undefined && params.uniformMax !== undefined) {
-        return calculateUniformSharePrice(prevPrice, params.uniformMin, params.uniformMax);
-      }
-      break;
-
-    case 'normal':
-      if (params.normalMean !== undefined && params.normalStdDev !== undefined) {
-        return calculateNormalSharePrice(prevPrice, params.normalMean, params.normalStdDev);
-      }
-      break;
-
-    case 'gbm':
-      if (params.gbmDrift !== undefined && params.gbmVolatility !== undefined) {
-        return calculateGBMSharePrice(prevPrice, params.gbmDrift, params.gbmVolatility);
-      }
-      break;
-
-  }
-
-  // Fallback to no change if invalid parameters
-  return prevPrice;
-}
 
 /**
  * Calculates the flat dividend amount
  * @returns The fixed dividend amount
  */
-function calculateFlatDividend(flatAmount: number): number {
-  return flatAmount;
+/**
+ * Calculates the flat dividend amount with an incremental monthly change
+ * @param incrementalAmount The amount to add each month
+ * @param initialDividend The starting dividend amount for month 0
+ * @param month The current month (0-based)
+ * @returns The dividend amount for the current month
+ */
+function calculateFlatDividend(incrementalAmount: number, initialDividend: number, month: number): number {
+  // For month 0, return just the initial dividend with no increment
+  if (month === 0) {
+    return initialDividend;
+  }
+
+  // After month 0, apply increments based on the month number
+  // Month 1 gets 1 increment, month 2 gets 2 increments, etc.
+  return initialDividend + (incrementalAmount * month);
 }
 
 /**
@@ -176,9 +146,11 @@ function calculateYieldBasedDividend(sharePrice: number, yieldPercent: number, y
  * @param uniformMax The maximum yield percentage
  * @returns The dividend amount based on a random uniform yield
  */
-function calculateUniformDividend(sharePrice: number, uniformMin: number, uniformMax: number): number {
+function calculateUniformDividend(sharePrice: number, uniformMin: number, uniformMax: number, yieldPeriod: YieldPeriod = '4w'): number {
   const randomYieldPercent = getUniformRandom(uniformMin, uniformMax);
-  return sharePrice * (randomYieldPercent / 100);
+  // If yearly, divide by 13 to get the 4-week equivalent value
+  const adjustedYield = yieldPeriod === 'yearly' ? randomYieldPercent / 13 : randomYieldPercent;
+  return sharePrice * (adjustedYield / 100);
 }
 
 /**
@@ -186,11 +158,14 @@ function calculateUniformDividend(sharePrice: number, uniformMin: number, unifor
  * @param sharePrice The current share price
  * @param normalMean The mean yield percentage
  * @param normalStdDev The standard deviation of the yield percentage
+ * @param yieldPeriod Whether the yield is per 4w or yearly
  * @returns The dividend amount based on a random normal yield
  */
-function calculateNormalDividend(sharePrice: number, normalMean: number, normalStdDev: number): number {
+function calculateNormalDividend(sharePrice: number, normalMean: number, normalStdDev: number, yieldPeriod: YieldPeriod = '4w'): number {
   const randomYieldPercent = getNormalRandom(normalMean, normalStdDev);
-  return Math.max(0, sharePrice * (randomYieldPercent / 100)); // Ensure dividend is never negative
+  // If yearly, divide by 13 to get the 4-week equivalent value
+  const adjustedYield = yieldPeriod === 'yearly' ? randomYieldPercent / 13 : randomYieldPercent;
+  return Math.max(0, sharePrice * (adjustedYield / 100)); // Ensure dividend is never negative
 }
 
 /**
@@ -244,57 +219,82 @@ export function calculateGBMDividend(
  * @param assumptions The simulation assumptions containing model parameters
  * @returns The dividend based on the selected model
  */
-function calculateDividend(sharePrice: number, prevDividend: number, assumptions: Assumptions): number {
+function calculateDividend(sharePrice: number, prevDividend: number, assumptions: Assumptions, month: number = 0): number {
   const {
-    // Use the new dividend model parameters
-    dividendModel = 'yieldBased', // Default to yield-based for backward compatibility
+    dividendModel = 'yieldBased',
     flatDividendAmount = 0,
     yieldPeriod = '4w',
-    // Use either the new dividendYieldPercent or fall back to the legacy dividendYieldPer4wPercent
-    dividendYieldPercent = assumptions.dividendYieldPer4wPercent || 0,
-    dividendVariableDistribution = 'uniform',
-    dividendUniformMin = -1,
-    dividendUniformMax = 1,
-    dividendNormalMean = 0.5,
-    dividendNormalStdDev = 1,
     dividendGbmDrift = 0.5,
     dividendGbmVolatility = 2,
   } = assumptions;
 
+  // Get the initialDividendAmount or fall back to 0 if it's not set
+  let initialAmount;
+  let selectedYield;
+  let uniformYieldPeriod;
+  let uniformMin, uniformMax;
+  let normalYieldPeriod;
+  let normalMean, normalStdDev;
+  let defaultYield;
+
   switch (dividendModel) {
-    case 'flatAmount':
-      return calculateFlatDividend(flatDividendAmount);
+    case 'linear':
+      initialAmount = assumptions.initialDividendAmount !== undefined ? assumptions.initialDividendAmount : 0;
+      return calculateFlatDividend(flatDividendAmount, initialAmount, month);
+
 
     case 'yieldBased':
-      return calculateYieldBasedDividend(sharePrice, dividendYieldPercent, yieldPeriod);
+      // Use the appropriate yield percent based on the selected period
+      selectedYield = yieldPeriod === '4w'
+        ? (assumptions.dividend4wYieldPercent !== undefined ? assumptions.dividend4wYieldPercent : 9)
+        : (assumptions.dividendYearlyYieldPercent !== undefined ? assumptions.dividendYearlyYieldPercent : 117);
 
-    case 'variable':
-      switch (dividendVariableDistribution) {
-        case 'uniform':
-          return calculateUniformDividend(sharePrice, dividendUniformMin, dividendUniformMax);
+      return calculateYieldBasedDividend(sharePrice, selectedYield, yieldPeriod);
 
-        case 'normal':
-          return calculateNormalDividend(sharePrice, dividendNormalMean, dividendNormalStdDev);
+    case 'uniform':
+      // Use the appropriate min/max based on the yield period
+      uniformYieldPeriod = assumptions.yieldPeriod || '4w';
+      uniformMin = uniformYieldPeriod === '4w'
+        ? (assumptions.dividendUniformMin4w !== undefined ? assumptions.dividendUniformMin4w : 5)
+        : (assumptions.dividendUniformMinYearly !== undefined ? assumptions.dividendUniformMinYearly : 65);
 
-        case 'gbm':
-          return calculateGBMDividend(
-            sharePrice,
-            prevDividend,
-            dividendGbmDrift,
-            dividendGbmVolatility,
-            assumptions.initialDividendMethod || 'yieldBased',
-            assumptions.initialDividendAmount || 0.25,
-            assumptions.initialDividendYield || 6
-          );
+      uniformMax = uniformYieldPeriod === '4w'
+        ? (assumptions.dividendUniformMax4w !== undefined ? assumptions.dividendUniformMax4w : 10)
+        : (assumptions.dividendUniformMaxYearly !== undefined ? assumptions.dividendUniformMaxYearly : 130);
 
-        default:
-          // Fallback to yield-based model
-          return calculateYieldBasedDividend(sharePrice, dividendYieldPercent, yieldPeriod);
-      }
+      return calculateUniformDividend(sharePrice, uniformMin, uniformMax, uniformYieldPeriod);
+
+    case 'normal':
+      // Use the appropriate mean/stdDev based on the yield period
+      normalYieldPeriod = assumptions.yieldPeriod || '4w';
+      normalMean = normalYieldPeriod === '4w'
+        ? (assumptions.dividendNormalMean4w !== undefined ? assumptions.dividendNormalMean4w : 7.5)
+        : (assumptions.dividendNormalMeanYearly !== undefined ? assumptions.dividendNormalMeanYearly : 97.5);
+
+      normalStdDev = normalYieldPeriod === '4w'
+        ? (assumptions.dividendNormalStdDev4w !== undefined ? assumptions.dividendNormalStdDev4w : 2.5)
+        : (assumptions.dividendNormalStdDevYearly !== undefined ? assumptions.dividendNormalStdDevYearly : 32.5);
+
+      return calculateNormalDividend(sharePrice, normalMean, normalStdDev, normalYieldPeriod);
+
+    case 'gbm':
+      return calculateGBMDividend(
+        sharePrice,
+        prevDividend,
+        dividendGbmDrift,
+        dividendGbmVolatility,
+        assumptions.initialDividendMethod || 'yieldBased',
+        assumptions.initialDividendAmount || 0.25,
+        assumptions.initialDividendYield || 6
+      );
+
 
     default:
-      // Default to legacy behavior for backward compatibility
-      return sharePrice * (assumptions.dividendYieldPer4wPercent || 0) / 100;
+      // Default to yield-based behavior
+      defaultYield = (assumptions.dividendYieldPer4wPercent !== undefined)
+        ? assumptions.dividendYieldPer4wPercent
+        : 0;
+      return sharePrice * defaultYield / 100;
   }
 }
 
@@ -302,15 +302,13 @@ function calculateDividend(sharePrice: number, prevDividend: number, assumptions
  * Main function to calculate the next share price based on the selected model
  * @param prevPrice The previous share price
  * @param assumptions The simulation assumptions containing model parameters
- * @param month The current month in the simulation
  * @returns The new share price based on the selected model
  */
-function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, month: number): number {
+function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions): number {
   const {
-    sharePriceModel = 'geometric', // Default to geometric for backward compatibility
+    sharePriceModel = 'geometric', // Default to geometric
     monthlyAppreciationPercent = 0, // Default to 0% if not specified
     linearChangeAmount = 0, // Default to $0 if not specified
-    variableDistribution = 'uniform',
     uniformMin = -1,
     uniformMax = 1,
     normalMean = 0.5,
@@ -332,25 +330,9 @@ function calculateNextSharePrice(prevPrice: number, assumptions: Assumptions, mo
     case 'gbm':
       return calculateGBMSharePrice(prevPrice, gbmDrift, gbmVolatility);
 
-    case 'variable':
-      // Handle legacy 'variable' model by delegating to the specific distribution
-      return calculateVariableSharePrice(
-        prevPrice,
-        variableDistribution,
-        {
-          uniformMin,
-          uniformMax,
-          normalMean,
-          normalStdDev,
-          gbmDrift,
-          gbmVolatility,
-          currentMonth: month
-        }
-      );
-
     case 'geometric':
     default:
-      // Default to geometric model for backward compatibility
+      // Default to geometric model
       return calculateGeometricSharePrice(prevPrice, monthlyAppreciationPercent);
   }
 }
@@ -452,15 +434,15 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         withholdTaxes,
         
         // New Tax Settings
-        taxWithholdingStrategy = 'monthly', // Default to monthly for backward compatibility
-        taxWithholdingMethod = 'taxBracket', // Default to tax bracket for backward compatibility
-        taxFilingType = 'single', // Default to single filing status for backward compatibility
+        taxWithholdingStrategy = 'monthly', // Default to monthly
+        taxWithholdingMethod = 'taxBracket', // Default to tax bracket
+        taxFilingType = 'single', // Default to single filing status
         taxFixedAmount = 0,
         taxFixedPercent = 0,
         
         // DRIP Settings
-        dripStrategy = 'percentage', // Default to percentage for backward compatibility
-        dripPercentage = 100, // Default to reinvest 100% for backward compatibility
+        dripStrategy = 'percentage', // Default to percentage
+        dripPercentage = 100, // Default to reinvest 100%
         dripFixedAmount = 0,
         fixedIncomeAmount = 0, // Monthly income amount for fixedIncome strategy
         
@@ -486,7 +468,7 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
     // Calculate shares from investment and add any pre-existing shares
     const sharesFromInvestment = initialInvestment / initialSharePrice;
     const initialShareCount = sharesFromInvestment + preexistingShares;
-    const annualizedDividendYieldPercent = 13 * dividendYieldPer4wPercent;
+    const annualizedDividendYieldPercent = 13 * (dividendYieldPer4wPercent ?? 0);
     const monthlyLoanInterestRate = annualInterestRatePercent / 12 / 100;
     const monthlyLoanPayment = calculatePmt(monthlyLoanInterestRate, amortizationMonths, loanAmount);
 
@@ -508,54 +490,91 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
 
     // --- Month 0: Initial state ---
     // Set initial dividend based on the selected model
-    let initialDividend = 0;
+    // Get the initialDividendAmount or use a default if it's undefined
+    // But don't override empty string or 0, as those are valid user inputs
+    let initialDividend = assumptions.initialDividendAmount !== undefined
+        ? assumptions.initialDividendAmount
+        : 0.25;
 
-    if (assumptions.dividendModel === 'flatAmount') {
-        // Flat amount model - use the configured flat amount
-        initialDividend = assumptions.flatDividendAmount || 0.25;
+    // For models that require calculating the initial dividend, override the base value
+    if (assumptions.dividendModel === 'linear') {
+        // Linear model - use the configured amount
+        // If flatDividendAmount is defined, use it - otherwise keep initialDividend
+        initialDividend = assumptions.flatDividendAmount !== undefined
+            ? assumptions.flatDividendAmount
+            : initialDividend;
     } else if (assumptions.dividendModel === 'yieldBased') {
-        // Yield-based model - calculate based on initial share price and yield
-        const yieldPercent = assumptions.dividendYieldPercent || assumptions.dividendYieldPer4wPercent || 0;
-        const yieldPeriod = assumptions.yieldPeriod || '4w';
-        const adjustedYield = yieldPeriod === 'yearly' ? yieldPercent / 13 : yieldPercent;
-        initialDividend = initialSharePrice * (adjustedYield / 100);
-    } else if (assumptions.dividendModel === 'variable') {
-        // Variable model - handle based on distribution type
-        if (assumptions.dividendVariableDistribution === 'gbm') {
-            // For GBM, use the initial dividend method and values
-            if (assumptions.initialDividendMethod === 'flatAmount') {
-                initialDividend = assumptions.initialDividendAmount || 0.25;
-            } else {
-                // yieldBased - convert from yearly yield to 4w yield
-                initialDividend = initialSharePrice * ((assumptions.initialDividendYield || 6) / 100) / 13;
-            }
+        // For yield-based model, use the initialDividendAmount if provided, otherwise calculate it
+        if (assumptions.initialDividendAmount !== undefined) {
+            initialDividend = assumptions.initialDividendAmount;
         } else {
-            // For uniform and normal distributions, just calculate the initial dividend
-            // using the distribution parameters on the initial share price
-            switch (assumptions.dividendVariableDistribution) {
-                case 'uniform': {
-                    const randomYieldPercent = getUniformRandom(
-                        assumptions.dividendUniformMin || 0.5,
-                        assumptions.dividendUniformMax || 2
-                    );
-                    initialDividend = initialSharePrice * (randomYieldPercent / 100);
-                    break;
-                }
-                case 'normal': {
-                    const normalYieldPercent = getNormalRandom(
-                        assumptions.dividendNormalMean || 1.5,
-                        assumptions.dividendNormalStdDev || 0.5
-                    );
-                    initialDividend = Math.max(0, initialSharePrice * (normalYieldPercent / 100));
-                    break;
-                }
-                default:
-                    // Fallback to a reasonable default
-                    initialDividend = initialSharePrice * 0.01; // 1% of share price
-            }
+            // Calculate based on initial share price and yield
+            const yieldPeriod = assumptions.yieldPeriod || '4w';
+
+            // Use period-specific values if available
+            const yieldPercent = yieldPeriod === '4w'
+                ? (assumptions.dividend4wYieldPercent !== undefined
+                ? assumptions.dividend4wYieldPercent
+                : (assumptions.dividendYieldPercent || assumptions.dividendYieldPer4wPercent || 9))
+                : (assumptions.dividendYearlyYieldPercent !== undefined
+                ? assumptions.dividendYearlyYieldPercent
+                : (assumptions.dividendYieldPercent || 117));
+
+            const adjustedYield = yieldPeriod === 'yearly' ? yieldPercent / 13 : yieldPercent;
+            initialDividend = initialSharePrice * (adjustedYield / 100);
         }
+    } else if (assumptions.dividendModel === 'uniform') {
+        // For uniform distribution, use initialDividendAmount if provided, otherwise calculate
+        if (assumptions.initialDividendAmount !== undefined) {
+            initialDividend = assumptions.initialDividendAmount;
+        } else {
+            // Calculate using the distribution parameters based on yield period
+            const yieldPeriod = assumptions.yieldPeriod || '4w';
+
+            const uniformMin = yieldPeriod === '4w'
+                ? (assumptions.dividendUniformMin4w !== undefined ? assumptions.dividendUniformMin4w : 5)
+                : (assumptions.dividendUniformMinYearly !== undefined ? assumptions.dividendUniformMinYearly : 65);
+
+            const uniformMax = yieldPeriod === '4w'
+                ? (assumptions.dividendUniformMax4w !== undefined ? assumptions.dividendUniformMax4w : 10)
+                : (assumptions.dividendUniformMaxYearly !== undefined ? assumptions.dividendUniformMaxYearly : 130);
+
+            const randomYieldPercent = getUniformRandom(uniformMin, uniformMax);
+
+            // If using yearly values, divide by 13 for the 4-week value
+            const adjustedYield = yieldPeriod === 'yearly' ? randomYieldPercent / 13 : randomYieldPercent;
+            initialDividend = initialSharePrice * (adjustedYield / 100);
+        }
+    } else if (assumptions.dividendModel === 'normal') {
+        // For normal distribution, use initialDividendAmount if provided, otherwise calculate
+        if (assumptions.initialDividendAmount !== undefined) {
+            initialDividend = assumptions.initialDividendAmount;
+        } else {
+            // Calculate using the distribution parameters based on yield period
+            const yieldPeriod = assumptions.yieldPeriod || '4w';
+
+            const normalMean = yieldPeriod === '4w'
+                ? (assumptions.dividendNormalMean4w !== undefined ? assumptions.dividendNormalMean4w : 7.5)
+                : (assumptions.dividendNormalMeanYearly !== undefined ? assumptions.dividendNormalMeanYearly : 97.5);
+
+            const normalStdDev = yieldPeriod === '4w'
+                ? (assumptions.dividendNormalStdDev4w !== undefined ? assumptions.dividendNormalStdDev4w : 2.5)
+                : (assumptions.dividendNormalStdDevYearly !== undefined ? assumptions.dividendNormalStdDevYearly : 32.5);
+
+            const normalYieldPercent = getNormalRandom(normalMean, normalStdDev);
+
+            // If using yearly values, divide by 13 for the 4-week value
+            const adjustedYield = yieldPeriod === 'yearly' ? normalYieldPercent / 13 : normalYieldPercent;
+            initialDividend = Math.max(0, initialSharePrice * (adjustedYield / 100));
+        }
+    } else if (assumptions.dividendModel === 'gbm') {
+        // For GBM, just use the initialDividendAmount directly
+        // This is the one model where initialDividendAmount is always respected
+        initialDividend = assumptions.initialDividendAmount !== undefined
+            ? assumptions.initialDividendAmount
+            : 0.25;
     } else {
-        // Legacy handling for backward compatibility
+        // Default yield-based calculation
         initialDividend = initialSharePrice * ((assumptions.dividendYieldPer4wPercent || 0) / 100);
     }
 
@@ -590,27 +609,26 @@ export function calculatePortfolio(assumptions: Assumptions): { summary: Calcula
         // Calculate calendar month (1-12) for current simulation month
         const calendarMonth = ((startMonth - 1 + month - 1) % 12) + 1;
 
-        // Pass the current month and get the updated share price using our model
+        // Get the updated share price using our model
         const updatedSharePrice = calculateNextSharePrice(prev.sharePrice, {
             ...assumptions,
             // Pass along any needed properties that might not be in the original assumptions object
             // This ensures we have all parameters needed for price calculation
-        }, month);
+        });
 
         // Get the appropriate previous dividend value for calculations
         // For GBM model, use the "natural" dividend (undoubled) to prevent stair-stepping
-        const isGbmModel = assumptions.dividendModel === 'variable' &&
-                          assumptions.dividendVariableDistribution === 'gbm';
+        const isGbmModel = assumptions.dividendModel === 'gbm';
 
         // Calculate the natural (undoubled) dividend based on model
         let naturalDividend;
 
         if (isGbmModel) {
             // For GBM, use the previous naturalDividend to avoid December doubling effects
-            naturalDividend = calculateDividend(updatedSharePrice, prev.naturalDividend!, assumptions);
+            naturalDividend = calculateDividend(updatedSharePrice, prev.naturalDividend!, assumptions, month);
         } else {
             // For other models, calculate normally
-            naturalDividend = calculateDividend(updatedSharePrice, prev.dividend, assumptions);
+            naturalDividend = calculateDividend(updatedSharePrice, prev.dividend, assumptions, month);
         }
 
         // December (month 12) typically has double dividends

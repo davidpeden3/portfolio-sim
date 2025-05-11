@@ -112,61 +112,61 @@ describe('portfolioCalculator', () => {
     const m1 = amortization[1];
     expect(m1.month).toBe(1);
     expect(round2(m1.shareCount)).toBe(8888.89);
-    expect(round2(m1.dividend)).toBe(1.11);
-    expect(round2(m1.distribution)).toBe(9900.00);
-    expect(round2(m1.ytdDistribution)).toBe(9900.00);
+    expect(round2(m1.dividend)).toBe(2.00);
+    expect(round2(m1.distribution)).toBe(17820.00);
+    expect(round2(m1.ytdDistribution)).toBe(17820.00);
     // Tax calculation with standard deduction
-    expect(round2(m1.marginalTaxesWithheld)).toBe(2178.00);
+    expect(round2(m1.marginalTaxesWithheld)).toBe(3920.40);
     expect(round2(m1.loanPayment)).toBe(1611.19);
-    expect(round2(m1.surplusForDrip)).toBe(6110.81);
-    expect(round2(m1.additionalPrincipal)).toBe(4583.11);
-    expect(round2(m1.actualDrip)).toBe(1527.70);
+    expect(round2(m1.surplusForDrip)).toBe(12288.41);
+    expect(round2(m1.additionalPrincipal)).toBe(9216.31);
+    expect(round2(m1.actualDrip)).toBe(3072.10);
     expect(round2(m1.sharePrice)).toBe(22.28);
-    expect(round2(m1.newSharesFromDrip)).toBe(68.58);
-    expect(round2(m1.totalShares)).toBe(8957.47);
-    expect(round2(m1.portfolioValue)).toBe(199527.70);
-    expect(round2(m1.loanPrincipal)).toBe(195055.70);
-    expect(round2(m1.netPortfolioValue)).toBe(4472.00);
+    expect(round2(m1.newSharesFromDrip)).toBe(137.92);
+    expect(round2(m1.totalShares)).toBe(9026.81);
+    expect(round2(m1.portfolioValue)).toBe(201072.10);
+    expect(round2(m1.loanPrincipal)).toBe(190422.50);
+    expect(round2(m1.netPortfolioValue)).toBe(10649.60);
 
     // Month 2
     const m2 = amortization[2];
     expect(m2.month).toBe(2);
-    expect(round2(m2.shareCount)).toBe(8957.47);
-    expect(round2(m2.dividend)).toBe(1.10);
-    expect(round2(m2.distribution)).toBe(9876.62);
-    expect(round2(m2.ytdDistribution)).toBe(19776.62);
+    expect(round2(m2.shareCount)).toBe(9026.81);
+    expect(round2(m2.dividend)).toBe(1.98);
+    expect(round2(m2.distribution)).toBe(17915.52);
+    expect(round2(m2.ytdDistribution)).toBe(35735.52);
     // Tax calculation with standard deduction
-    expect(round2(m2.marginalTaxesWithheld)).toBe(2201.39);
+    expect(round2(m2.marginalTaxesWithheld)).toBe(4289.13);
     expect(round2(m2.loanPayment)).toBe(1611.19);
-    expect(round2(m2.surplusForDrip)).toBe(6064.05);
-    expect(round2(m2.additionalPrincipal)).toBe(4548.03);
-    expect(round2(m2.actualDrip)).toBe(1516.01);
+    expect(round2(m2.surplusForDrip)).toBe(12015.21);
+    expect(round2(m2.additionalPrincipal)).toBe(9011.41);
+    expect(round2(m2.actualDrip)).toBe(3003.80);
     expect(round2(m2.sharePrice)).toBe(22.05);
-    expect(round2(m2.newSharesFromDrip)).toBe(68.75);
-    expect(round2(m2.totalShares)).toBe(9026.22);
-    expect(round2(m2.portfolioValue)).toBe(199048.44);
-    expect(round2(m2.loanPrincipal)).toBe(190115.58);
-    expect(round2(m2.netPortfolioValue)).toBe(8932.86);
+    expect(round2(m2.newSharesFromDrip)).toBe(136.21);
+    expect(round2(m2.totalShares)).toBe(9163.02);
+    expect(round2(m2.portfolioValue)).toBe(202065.19);
+    expect(round2(m2.loanPrincipal)).toBe(180990.05);
+    expect(round2(m2.netPortfolioValue)).toBe(21075.14);
 
     // Month 3
     const m3 = amortization[3];
     expect(m3.month).toBe(3);
-    expect(round2(m3.shareCount)).toBe(9026.22);
-    expect(round2(m3.dividend)).toBe(1.09);
-    expect(round2(m3.distribution)).toBe(9852.90);
-    expect(round2(m3.ytdDistribution)).toBe(29629.52);
+    expect(round2(m3.shareCount)).toBe(9163.02);
+    expect(round2(m3.dividend)).toBe(1.96);
+    expect(round2(m3.distribution)).toBe(18004.01);
+    expect(round2(m3.ytdDistribution)).toBe(53739.53);
     // Tax calculation with standard deduction
-    expect(round2(m3.marginalTaxesWithheld)).toBe(2364.70);
+    expect(round2(m3.marginalTaxesWithheld)).toBe(4320.96);
     expect(round2(m3.loanPayment)).toBe(1611.19);
-    expect(round2(m3.surplusForDrip)).toBe(5877.02);
-    expect(round2(m3.additionalPrincipal)).toBe(4407.76);
-    expect(round2(m3.actualDrip)).toBe(1469.25);
+    expect(round2(m3.surplusForDrip)).toBe(12071.86);
+    expect(round2(m3.additionalPrincipal)).toBe(9053.89);
+    expect(round2(m3.actualDrip)).toBe(3017.96);
     expect(round2(m3.sharePrice)).toBe(21.83);
-    expect(round2(m3.newSharesFromDrip)).toBe(67.30);
-    expect(round2(m3.totalShares)).toBe(9093.52);
-    expect(round2(m3.portfolioValue)).toBe(198527.21);
-    expect(round2(m3.loanPrincipal)).toBe(185284.85);
-    expect(round2(m3.netPortfolioValue)).toBe(13242.36);
+    expect(round2(m3.newSharesFromDrip)).toBe(138.24);
+    expect(round2(m3.totalShares)).toBe(9301.26);
+    expect(round2(m3.portfolioValue)).toBe(203062.50);
+    expect(round2(m3.loanPrincipal)).toBe(171456.16);
+    expect(round2(m3.netPortfolioValue)).toBe(31606.34);
   });
 
   it('should reset effective tax rate at the beginning of each year', () => {

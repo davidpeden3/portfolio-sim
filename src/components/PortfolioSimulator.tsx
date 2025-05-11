@@ -398,8 +398,8 @@ export function PortfolioSimulator() {
       // Share Price Model
       sharePriceModel: formData.sharePriceModel || 'geometric',
 
-      // For backward compatibility, always include monthlyAppreciationPercent
-      // For geometric model this is also the primary configuration value
+      // Always include monthlyAppreciationPercent
+      // For geometric model this is the primary configuration value
       monthlyAppreciationPercent: toNumber(formData.monthlyAppreciation),
 
       // Linear Model parameters

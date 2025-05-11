@@ -1,17 +1,24 @@
 import React, { useState, useCallback } from 'react';
 import Modal from '../common/Modal';
 
+// Define the valid model types
+type SharePriceModelType = 'linear' | 'geometric' | 'uniform' | 'normal' | 'gbm';
+
 // Content for each model type
-const modelContent = {
+const modelContent: Record<SharePriceModelType, {
+  title: string;
+  description: string;
+  inputs: string;
+}> = {
   'linear': {
     title: 'Linear Change',
     description: 'The price changes by the same fixed dollar amount each month — either increasing or decreasing in a straight line.',
-    inputs: 'Change per month ($): How much the price goes up or down each month (e.g., +10 = rises by $10/month, -5 = drops by $5/month)'
+    inputs: 'Change ($): How much the price goes up or down each month (e.g., +10 = rises by $10/month, -5 = drops by $5/month)'
   },
   'geometric': {
     title: 'Geometric Change',
     description: 'The price increases or decreases by a percentage each month. This means each change is based on the previous month\'s value — so the growth compounds over time.',
-    inputs: 'Percent change per month (%): Enter a positive or negative percent (e.g., 2 = grows by 2% each month, -1 = shrinks by 1% each month)'
+    inputs: 'Change (%): Enter a positive or negative percent (e.g., 2 = grows by 2% each month, -1 = shrinks by 1% each month)'
   },
   'uniform': {
     title: 'Uniform Distribution',
@@ -42,14 +49,16 @@ const SharePriceModelHelpModal: React.FC<SharePriceModelHelpModalProps> = ({
   currentModel
 }) => {
   // Use the current model directly (now flattened)
-  const getInitialModel = useCallback(() => {
+  const getInitialModel = useCallback((): SharePriceModelType => {
     // Handle empty or invalid models
-    const validModels = ['linear', 'geometric', 'uniform', 'normal', 'gbm'];
-    return validModels.includes(currentModel) ? currentModel : 'geometric';
+    const validModels: SharePriceModelType[] = ['linear', 'geometric', 'uniform', 'normal', 'gbm'];
+    return (validModels.includes(currentModel as SharePriceModelType)
+      ? currentModel as SharePriceModelType
+      : 'geometric');
   }, [currentModel]);
 
   // State to track the selected model in the modal
-  const [selectedModel, setSelectedModel] = useState(getInitialModel());
+  const [selectedModel, setSelectedModel] = useState<SharePriceModelType>(getInitialModel());
 
   // When the modal opens, set the initial selection based on props
   React.useEffect(() => {

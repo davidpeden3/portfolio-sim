@@ -38,8 +38,7 @@ describe('GBM Dividend Model', () => {
       monthlyAppreciationPercent: 0.5, // 0.5% per month
       
       // Dividend model settings - using GBM
-      dividendModel: 'variable',
-      dividendVariableDistribution: 'gbm',
+      dividendModel: 'gbm',
       dividendGbmDrift: 2, // 2% annual drift
       dividendGbmVolatility: 30, // 30% annual volatility
       

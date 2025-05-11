@@ -12,7 +12,7 @@ export const customProfile: InvestorProfileData = {
     initialInvestment: 0,
     baseIncome: 0,
     surplusForDripPercent: 0,
-    withholdTaxes: true, // For backward compatibility
+    withholdTaxes: true, // Basic tax withholding flag
     taxWithholdingStrategy: 'none',
     taxWithholdingMethod: 'taxBracket',
     taxFilingType: 'single',

@@ -11,7 +11,7 @@ export type SharePriceModel = 'linear' | 'geometric' | 'uniform' | 'normal' | 'g
 export type VariableDistribution = 'uniform' | 'normal' | 'gbm';
 
 // Dividend model types
-export type DividendModel = 'flatAmount' | 'yieldBased' | 'variable';
+export type DividendModel = 'linear' | 'yieldBased' | 'uniform' | 'normal' | 'gbm';
 export type YieldPeriod = '4w' | 'yearly';
 
 // Import supplemental contribution types
@@ -25,7 +25,7 @@ export interface Assumptions {
     surplusForDripToPrincipalPercent: number;
 
     // Tax Settings
-    withholdTaxes: boolean; // Kept for backward compatibility
+    withholdTaxes: boolean; // Basic tax withholding flag
     taxWithholdingStrategy?: TaxWithholdingStrategy;
     taxWithholdingMethod?: TaxWithholdingMethod;
     taxFilingType?: FilingType;
@@ -45,18 +45,32 @@ export interface Assumptions {
     simulationMonths: number;
     startMonth?: number; // 1-12 representing January-December
     initialSharePrice: number;
-    dividendYieldPer4wPercent?: number; // Kept for backward compatibility
+    dividendYieldPer4wPercent?: number; // Basic 4-week dividend yield percentage
 
     // Dividend Model
-    dividendModel?: DividendModel; // Default to 'yieldBased' for backward compatibility
+    dividendModel?: DividendModel; // Default to 'yieldBased'
     flatDividendAmount?: number; // For flatAmount model
+    linearDividendChangeAmount?: number; // For linear model - incremental change per month
     yieldPeriod?: YieldPeriod; // '4w' or 'yearly'
-    dividendYieldPercent?: number; // For yieldBased model
+    dividend4wYieldPercent?: number; // For yieldBased model with 4-week period
+    dividendYearlyYieldPercent?: number; // For yieldBased model with yearly period
+    dividendYieldPercent?: number; // Standard yield field
     dividendVariableDistribution?: VariableDistribution;
 
-    // Parameters for dividend variable distributions
+    // Parameters for dividend uniform distribution - separate for 4w and yearly
+    dividendUniformMin4w?: number; // Min yield for 4-week period
+    dividendUniformMax4w?: number; // Max yield for 4-week period
+    dividendUniformMinYearly?: number; // Min yield for yearly period
+    dividendUniformMaxYearly?: number; // Max yield for yearly period
+    // Standard uniform parameters
     dividendUniformMin?: number;
     dividendUniformMax?: number;
+    // Parameters for dividend normal distribution - separate for 4w and yearly
+    dividendNormalMean4w?: number; // Mean yield for 4-week period
+    dividendNormalStdDev4w?: number; // Standard deviation for 4-week period
+    dividendNormalMeanYearly?: number; // Mean yield for yearly period
+    dividendNormalStdDevYearly?: number; // Standard deviation for yearly period
+    // Standard normal parameters
     dividendNormalMean?: number;
     dividendNormalStdDev?: number;
     dividendGbmDrift?: number;
@@ -68,13 +82,13 @@ export interface Assumptions {
     initialDividendYield?: number; // Used when initialDividendMethod is 'yieldBased'
 
     // Share Price Model
-    monthlyAppreciationPercent?: number; // Kept for backward compatibility
-    sharePriceModel?: SharePriceModel; // Default to 'geometric' for backward compatibility
+    monthlyAppreciationPercent?: number; // For geometric model
+    sharePriceModel?: SharePriceModel; // Default to 'geometric'
 
     // Linear Model (flat $ amount per month)
     linearChangeAmount?: number; // Positive for increase, negative for decrease
 
-    // Geometric Model (percentage change) - uses monthlyAppreciationPercent for backward compatibility
+    // Geometric Model (percentage change) - uses monthlyAppreciationPercent
 
     // Variable Model
     variableDistribution?: VariableDistribution;
