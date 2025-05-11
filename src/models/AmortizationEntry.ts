@@ -2,6 +2,7 @@ export interface AmortizationEntry {
     month: number;
     shareCount: number;
     dividend: number;
+    naturalDividend?: number;  // The undoubled dividend value (for GBM continuity)
     distribution: number;
     ytdDistribution: number;
     marginalTaxesWithheld: number;
