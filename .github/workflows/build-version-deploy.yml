@@ -64,6 +64,10 @@ jobs:
           if git diff --staged --quiet; then
             echo "No version changes to commit"
           else
+            # Ensure we are on the correct branch
+            BRANCH_NAME=${GITHUB_REF##*/}
+            git checkout $BRANCH_NAME
+
             git commit -m "🤖 Auto-increment build number to $BUILD_NUMBER [skip ci]"
 
             # The GITHUB_TOKEN will be used automatically with the configured permissions
